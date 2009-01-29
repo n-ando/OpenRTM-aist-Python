@@ -1,0 +1,5 @@
+include OpenRTM.pth
+include MANIFEST.in
+include README
+recursive-include OpenRTM *.py *.pth *.conf README *.idl
+recursive-include OpenRTM/RTM_IDL *.pth *.py *.idl
