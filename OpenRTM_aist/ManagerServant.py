@@ -64,7 +64,7 @@ class ManagerServant(RTM__POA.Manager):
         return
         
       self._isMaster = True
-      self._rtcout.RTC_WARN("Manager CORBA servant was successfully created.")
+      self._rtcout.RTC_TRACE("Manager CORBA servant was successfully created.")
       return
     else:
       # this is slave manager
