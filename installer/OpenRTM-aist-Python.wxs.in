@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">   
-  <?define ProductName = "OpenRTM-aist-1.0.0 for Python"?>
-  <Product Name="OpenRTM-aist-1.0.0 for Python" 
+  <?define ProductName = "OpenRTM-aist-1.0.1 for Python"?>
+  <Product Name="OpenRTM-aist-1.0.1 for Python" 
            Id="11043B94-16BA-11DF-97DA-001C23DA0BDA"
            Language='$(var.language)'
            Codepage='$(var.codepage)'

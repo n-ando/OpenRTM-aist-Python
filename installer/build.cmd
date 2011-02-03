@@ -4,7 +4,7 @@
 @rem   usually only %TARGET% might be changed
 @rem ------------------------------------------------------------
 @set PATH=%WIX%\bin;%PATH%
-@set VERSION=1.0.0
+@set VERSION=1.0.1
 @set TARGET=OpenRTM-aist-Python
 @set TARGET_WXS=%TARGET%.wxs
 @set TARGET_WIXOBJ=%TARGET%.wixobj
