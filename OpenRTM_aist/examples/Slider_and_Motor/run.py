@@ -31,15 +31,19 @@ if plat == "win32":
     os.system("python Connector.py")
 
 else:
-    status,term=commands.getstatusoutput("which kterm")
+    status,term=commands.getstatusoutput("which xterm")
+    term += " -e"
     if status != 0:
-        status,term=commands.getstatusoutput("which xterm")
+        status,term=commands.getstatusoutput("which kterm")
+        term += " -e"
 
     if status != 0:
         status,term=commands.getstatusoutput("which uxterm")
+        term += " -e"
 
     if status != 0:
         status,term=commands.getstatusoutput("which gnome-terminal")
+        term += " -x"
 
     if status != 0:
         print "No terminal program (kterm/xterm/gnome-terminal) exists."
@@ -55,7 +59,7 @@ else:
         sys.exit(0)
 
     os.system('python %s/rtm-naming.py &'%path)
-    os.system('%s -e python SliderComp.py &'%term)
-    os.system('%s -e python TkMotorComp.py &'%term)
+    os.system('%s python SliderComp.py &'%term)
+    os.system('%s python TkMotorComp.py &'%term)
     time.sleep(3)
     os.system("python Connector.py")
