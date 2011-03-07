@@ -276,6 +276,9 @@ class PostComponentActionListener:
   """
   """
 
+  def __init__(self):
+    pass
+
   ##
   # @if jp
   #
@@ -397,6 +400,9 @@ class PortActionListener:
   """
   """
 
+  def __init__(self):
+    pass
+
   ##
   # @if jp
   #
@@ -503,6 +509,11 @@ class ExecutionContextActionListenerType:
 class ExecutionContextActionListener:
   """
   """
+
+  def __init__(self):
+    pass
+
+
   ##
   # @if jp
   #
@@ -528,7 +539,7 @@ class ExecutionContextActionListener:
   #static const char* toString(ExecutionContextActionListenerType type)
   def toString(type):
     typeString = ["ATTACH_EC",
-                  "DETACH_ECT",
+                  "DETACH_EC",
                   "EC_ACTION_LISTENER_NUM"]
     if type < ExecutionContextActionListenerType.EC_ACTION_LISTENER_NUM:
       return typeString[type]
@@ -1094,36 +1105,36 @@ class ComponentActionListeners:
 
   ##
   # @if jp
-  # @brief PostComponentActionTypeリスナ配列
-  # PostComponentActionTypeリスナを格納
+  # @brief PostComponentActionListenerTypeリスナ配列
+  # PostComponentActionListenerTypeリスナを格納
   # @else
-  # @brief PostComponentActionType listener array
-  # The PostComponentActionType listener is stored.
+  # @brief PostComponentActionListenerType listener array
+  # The PostComponentActionListenerType listener is stored.
   # @endif
-  postaction_num = PostComponentActionType.POST_COMPONENT_ACTION_LISTENER_NUM
+  postaction_num = PostComponentActionListenerType.POST_COMPONENT_ACTION_LISTENER_NUM
   postaction = [PostComponentActionListenerHolder()
                 for i in range(postaction_num)]
 
   ##
   # @if jp
-  # @brief PortActionTypeリスナ配列
-  # PortActionTypeリスナを格納
+  # @brief PortActionListenerTypeリスナ配列
+  # PortActionListenerTypeリスナを格納
   # @else
-  # @brief PortActionType listener array
-  # The PortActionType listener is stored.
+  # @brief PortActionListenerType listener array
+  # The PortActionListenerType listener is stored.
   # @endif
-  portaction_num = PortActionType.PORT_ACTION_LISTENER_NUM
+  portaction_num = PortActionListenerType.PORT_ACTION_LISTENER_NUM
   portaction = [PortActionListenerHolder()
                 for i in range(portaction_num)]
   
   ##
   # @if jp
-  # @brief ExecutionContextActionTypeリスナ配列
-  # ExecutionContextActionTypeリスナを格納
+  # @brief ExecutionContextActionListenerTypeリスナ配列
+  # ExecutionContextActionListenerTypeリスナを格納
   # @else
-  # @brief ExecutionContextActionType listener array
-  # The ExecutionContextActionType listener is stored.
+  # @brief ExecutionContextActionListenerType listener array
+  # The ExecutionContextActionListenerType listener is stored.
   # @endif
-  ecaction_num = ExecutionContextActionType.EC_ACTION_LISTENER_NUM
+  ecaction_num = ExecutionContextActionListenerType.EC_ACTION_LISTENER_NUM
   ecaction = [ExecutionContextActionListenerHolder()
                 for i in range(ecaction_num)]
