@@ -577,7 +577,7 @@ class ExecutionContextActionListener:
 
 
 class Entry:
-  def __init__(self,listener,autoclean):
+  def __init__(self,listener, autoclean):
     self.listener  = listener
     self.autoclean = autoclean
     return
@@ -621,9 +621,9 @@ class PreComponentActionListenerHolder:
   # @brief Destructor
   # @endif
   def __del__(self):
-    for (id,listener) in enumerate(self._listeners):
+    for (idx, listener) in enumerate(self._listeners):
       if listener.autoclean:
-        self._listeners[id] = None
+        self._listeners[idx] = None
     return
 
   ##
@@ -648,7 +648,7 @@ class PreComponentActionListenerHolder:
   # @endif
   #void addListener(PreComponentActionListener* listener, bool autoclean);
   def addListener(self, listener, autoclean):
-    self._listeners.append(Entry(listener,autoclean))
+    self._listeners.append(Entry(listener, autoclean))
     return
     
   ##
@@ -740,9 +740,9 @@ class PostComponentActionListenerHolder:
   # @brief Destructor
   # @endif
   def __del__(self):
-    for (id,listener) in enumerate(self._listeners):
+    for (idx, listener) in enumerate(self._listeners):
       if listener.autoclean:
-        self._listeners[id] = None
+        self._listeners[idx] = None
     return
     
   ##
@@ -767,7 +767,7 @@ class PostComponentActionListenerHolder:
   # @endif
   #void addListener(PostComponentActionListener* listener, bool autoclean);
   def addListener(self, listener, autoclean):
-    self._listeners.append(Entry(listener,autoclean))
+    self._listeners.append(Entry(listener, autoclean))
     return
     
   ##
@@ -820,7 +820,7 @@ class PostComponentActionListenerHolder:
   #void notify(UniqueId ec_id, ReturnCode_t ret);
   def notify(self, ec_id, ret):
     for listener in self._listeners:
-      listener.listener(ec_id,ret)
+      listener.listener(ec_id, ret)
     return
     
 
@@ -863,9 +863,9 @@ class PortActionListenerHolder:
   # @brief Destructor
   # @endif
   def __del__(self):
-    for (id,listener) in enumerate(self._listeners):
+    for (idx, listener) in enumerate(self._listeners):
       if listener.autoclean:
-        self._listeners[id] = None
+        self._listeners[idx] = None
     pass
     
   ##
@@ -890,7 +890,7 @@ class PortActionListenerHolder:
   # @endif
   #void addListener(PortActionListener* listener, bool autoclean);
   def addListener(self, listener, autoclean):
-    self._listeners.append(Entry(listener,autoclean))
+    self._listeners.append(Entry(listener, autoclean))
     return
     
 
@@ -985,9 +985,9 @@ class ExecutionContextActionListenerHolder:
   # @brief Destructor
   # @endif
   def __del__(self):
-    for (id,listener) in enumerate(self._listeners):
+    for (idx, listener) in enumerate(self._listeners):
       if listener.autoclean:
-        self._listeners[id] = None
+        self._listeners[idx] = None
     pass
     
 
@@ -1013,7 +1013,7 @@ class ExecutionContextActionListenerHolder:
   # @endif
   #void addListener(ExecutionContextActionListener* listener, bool autoclean);
   def addListener(self, listener, autoclean):
-    self._listeners.append(Entry(listener,autoclean))
+    self._listeners.append(Entry(listener, autoclean))
     return
 
     
@@ -1065,7 +1065,7 @@ class ExecutionContextActionListenerHolder:
   # @param cdrdata Data
   # @endif
   #void notify(UniqueId ec_id);
-  def notify(self ,ec_id):
+  def notify(self, ec_id):
     for listener in self._listeners:
       listener.listener(ec_id)
     return
