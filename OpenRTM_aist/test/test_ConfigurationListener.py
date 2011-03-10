@@ -99,7 +99,7 @@ class TestListener(unittest.TestCase):
     return
 
   def test_ConfigurationSetListenerHolder(self):
-    configsetss = ConfigurationListeners()
+    configsets = ConfigurationListeners()
     listener = MockConfigurationSetListener()
     configsets.configset_[0].addListener(listener,True)
     prop = OpenRTM_aist.Properties(defaults_str=config_set)
