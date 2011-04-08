@@ -418,6 +418,15 @@ for ex in example_dir:
 
 win32_packages = ["OpenRTM_aist",
                   "OpenRTM_aist.RTM_IDL",
+                  "OpenRTM_aist.RTM_IDL.OpenRTM",
+                  "OpenRTM_aist.RTM_IDL.OpenRTM__POA",
+                  "OpenRTM_aist.RTM_IDL.RTC",
+                  "OpenRTM_aist.RTM_IDL.RTC__POA",
+                  "OpenRTM_aist.RTM_IDL.RTM",
+                  "OpenRTM_aist.RTM_IDL.RTM__POA",
+                  "OpenRTM_aist.RTM_IDL.SDOPackage",
+                  "OpenRTM_aist.RTM_IDL.SDOPackage__POA",
+                  "OpenRTM_aist.RTM_IDL.device_interfaces",
                   "OpenRTM_aist.examples.AutoControl",
                   "OpenRTM_aist.examples.Composite",
                   "OpenRTM_aist.examples.ConfigSample",
@@ -605,8 +614,8 @@ try:
                scripts= ['OpenRTM_aist/utils/rtcprof/rtcprof_python.bat',
                          'OpenRTM_aist/utils/rtcd/rtcd_python.bat',
                          'OpenRTM_aist/utils/rtcd/rtcd_python.exe'],
-               data_files       = win32_data_files,
-               script_args      = ["sdist", "--format=zip"])
+               data_files       = win32_data_files)
+#               script_args      = ["sdist", "--format=zip"])
 
 except Exception, e:
   log.error("Error: %s", e)
