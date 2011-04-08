@@ -1100,8 +1100,8 @@ class ComponentActionListeners:
   # The PreComponentActionListenerType listener is stored. 
   # @endif
   preaction_num = PreComponentActionListenerType.PRE_COMPONENT_ACTION_LISTENER_NUM
-  preaction = [PreComponentActionListenerHolder() 
-               for i in range(preaction_num)]
+  preaction_ = [PreComponentActionListenerHolder() 
+                for i in range(preaction_num)]
 
   ##
   # @if jp
@@ -1112,8 +1112,8 @@ class ComponentActionListeners:
   # The PostComponentActionListenerType listener is stored.
   # @endif
   postaction_num = PostComponentActionListenerType.POST_COMPONENT_ACTION_LISTENER_NUM
-  postaction = [PostComponentActionListenerHolder()
-                for i in range(postaction_num)]
+  postaction_ = [PostComponentActionListenerHolder()
+                 for i in range(postaction_num)]
 
   ##
   # @if jp
@@ -1124,8 +1124,8 @@ class ComponentActionListeners:
   # The PortActionListenerType listener is stored.
   # @endif
   portaction_num = PortActionListenerType.PORT_ACTION_LISTENER_NUM
-  portaction = [PortActionListenerHolder()
-                for i in range(portaction_num)]
+  portaction_ = [PortActionListenerHolder()
+                 for i in range(portaction_num)]
   
   ##
   # @if jp
@@ -1136,5 +1136,5 @@ class ComponentActionListeners:
   # The ExecutionContextActionListenerType listener is stored.
   # @endif
   ecaction_num = ExecutionContextActionListenerType.EC_ACTION_LISTENER_NUM
-  ecaction = [ExecutionContextActionListenerHolder()
-                for i in range(ecaction_num)]
+  ecaction_ = [ExecutionContextActionListenerHolder()
+               for i in range(ecaction_num)]

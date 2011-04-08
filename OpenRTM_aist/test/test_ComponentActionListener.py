@@ -194,36 +194,36 @@ class TestListener(unittest.TestCase):
   def test_PreComponentActionListenerHolder(self):
     preactions = ComponentActionListeners()
     listener = MockPreComponentActionListener()
-    preactions.preaction[0].addListener(listener,True)
-    preactions.preaction[0].notify("test precomp ec_id")
-    preactions.preaction[0].removeListener(listener)
+    preactions.preaction_[0].addListener(listener,True)
+    preactions.preaction_[0].notify("test precomp ec_id")
+    preactions.preaction_[0].removeListener(listener)
     return
 
   def test_PostComponentActionListenerHolder(self):
     postactions = ComponentActionListeners()
     listener = MockPostComponentActionListener()
-    postactions.postaction[0].addListener(listener,True)
-    postactions.postaction[0].notify("test postcomp ec_id",True)
-    postactions.postaction[0].removeListener(listener)
+    postactions.postaction_[0].addListener(listener,True)
+    postactions.postaction_[0].notify("test postcomp ec_id",True)
+    postactions.postaction_[0].removeListener(listener)
     return
 
   def test_PortActionListenerHolder(self):
     portactions = ComponentActionListeners()
     listener = MockPortActionListener()
-    portactions.portaction[0].addListener(listener,True)
-    portactions.portaction[0].notify("test port pprof")
-    portactions.portaction[0].removeListener(listener)
+    portactions.portaction_[0].addListener(listener,True)
+    portactions.portaction_[0].notify("test port pprof")
+    portactions.portaction_[0].removeListener(listener)
     return
 
   def test_ExecutionContextActionListenerHolder(self):
     ecactions = ComponentActionListeners()
     listener = MockExecutionContextActionListener()
-    ecactions.ecaction[0].addListener(listener,True)
-    ecactions.ecaction[0].notify("test ec ec_id")
-    ecactions.ecaction[0].removeListener(listener)
+    ecactions.ecaction_[0].addListener(listener,True)
+    ecactions.ecaction_[0].notify("test ec ec_id")
+    ecactions.ecaction_[0].removeListener(listener)
     return
 
 
 ############### test #################
 if __name__ == '__main__':
-        unittest.main()
+  unittest.main()
