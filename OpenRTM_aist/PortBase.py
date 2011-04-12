@@ -693,10 +693,12 @@ class PortBase(RTC__POA.PortService):
     # publish owned interface information to the ConnectorProfile
     retval = [RTC.RTC_OK for i in range(3)]
 
+    self.onNotifyConnect(self.getName(),connector_profile)
     retval[0] = self.publishInterfaces(connector_profile)
     if retval[0] != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("publishInterfaces() in notify_connect() failed.")
 
+    self.onPublishInterfaces(self.getName(), connector_profile, retval[0])
     if self._onPublishInterfaces:
       self._onPublishInterfaces(connector_profile)
 
@@ -705,13 +707,17 @@ class PortBase(RTC__POA.PortService):
     if retval[1] != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("connectNext() in notify_connect() failed.")
 
+    self.onConnectNextport(self.getName(), connector_profile, retval[1])
     # subscribe interface from the ConnectorProfile's information
     if self._onSubscribeInterfaces:
       self._onSubscribeInterfaces(connector_profile)
+
     retval[2] = self.subscribeInterfaces(connector_profile)
     if retval[2] != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("subscribeInterfaces() in notify_connect() failed.")
       #self.notify_disconnect(connector_profile.connector_id)
+
+    self.onSubscribeInterfaces(self.getName(), connector_profile, retval[2])
 
     self._rtcout.RTC_PARANOID("%d connectors are existing",
                               len(self._profile.connector_profiles))
@@ -730,12 +736,13 @@ class PortBase(RTC__POA.PortService):
 
     for ret in retval:
       if ret != RTC.RTC_OK:
+        self.onConnected(self.getName(), connector_profile, ret)
         return (ret, connector_profile)
 
     # connection established without errors
     if self._onConnected:
       self._onConnected(connector_profile)
-
+    self.onConnected(self.getName(), connector_profile, RTC.RTC_OK)
     return (RTC.RTC_OK, connector_profile)
 
 
@@ -946,11 +953,14 @@ class PortBase(RTC__POA.PortService):
                                 self._profile.connector_profiles[index].connector_id,
                                 self._profile.connector_profiles[index].ports,
                                 self._profile.connector_profiles[index].properties)
+    self.onNotifyDisconnect(self.getName(), prof)
 
     retval = self.disconnectNext(prof)
+    self.onDisconnectNextport(self.getName(), prof, retval)
 
     if self._onUnsubscribeInterfaces:
       self._onUnsubscribeInterfaces(prof)
+    self.onUnsubscribeInterfaces(self.getName(), prof)
     self.unsubscribeInterfaces(prof)
 
     if self._onDisconnected:
@@ -958,6 +968,7 @@ class PortBase(RTC__POA.PortService):
 
     OpenRTM_aist.CORBA_SeqUtil.erase(self._profile.connector_profiles, index)
     
+    self.onDisconnected(self.getName(), prof, retval)
     return retval
 
 
@@ -1449,6 +1460,7 @@ class PortBase(RTC__POA.PortService):
   #
   # void setPortConnectListenerHolder(PortConnectListeners* portconnListeners);
   def setPortConnectListenerHolder(self, portconnListeners):
+    self._portconnListeners = portconnListeners
     return
 
 
