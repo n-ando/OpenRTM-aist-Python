@@ -32,7 +32,27 @@ TIMEVALUE_ONE_SECOND_IN_USECS = 1000000 # 1 [sec] = 1000000 [usec]
 
 import time
 
-# for C++
+
+##
+# @if jp
+# @brief データにタイムスタンプをセットする
+#
+# データポートのデータに対してタイムスタンプをセットする。データポート
+# のデータは構造体のメンバーとして tm.sec, tm.nsec を持つ必要がある。
+#
+# @param data タイムスタンプをセットするデータ。実行後実行時のタイムス
+#             タンプがセットされる
+#
+# @else
+# @brief Setting timestamp to data
+#
+# This function sets timestamp to data of data port. This data should
+# have tm.sec, tm.nsec as members of the structure.
+#
+# @param data Data to be set timestamp. After executing this
+#             function, current timestamp is set to the data.
+#
+# @endif
 # template <class DataType>
 # void setTimestamp(DataType& data)
 def setTimestamp(data):
