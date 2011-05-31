@@ -274,9 +274,6 @@ class InPort(OpenRTM_aist.InPortBase):
   # 
   # - 初回読み出し時に不定値を返さないようにバインド変数を事前に初期化する
   # 
-  # - ReturnCode read(DataType& data) 関数の利用を検討する。
-  #
-  # ことが望ましい。
   #
   # 各コールバック関数は以下のように呼び出される。
   # - OnRead: read() 関数が呼ばれる際に必ず呼ばれる。
