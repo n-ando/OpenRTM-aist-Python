@@ -173,15 +173,19 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # コンストラクタ
   #
   # @param self
-  # @param configsets ConfigurationSetList
+  # @param configAdmin ConfigurationSetList
+  # @param sdoServiceAdmin SdoServiceAdmin
   # 
   # @else
   # @brief class constructor
   # @param self
-  # @param configsets ConfigurationSetList
+  # @param configAdmin ConfigurationSetList
+  # @param sdoServiceAdmin SdoServiceAdmin
   #
   # @endif
-  def __init__(self, configsets):
+  # Configuration_impl(RTC::ConfigAdmin& configAdmin,
+  #                    RTC::SdoServiceAdmin& sdoServiceAdmin);
+  def __init__(self, configAdmin, sdoServiceAdmin):
     """
      \var self._deviceProfile SDO DeviceProfile with mutex lock
     """
@@ -197,8 +201,10 @@ class Configuration_impl(SDOPackage__POA.Configuration):
     self._parameters = []
     self._params_mutex = threading.RLock()
 
-    self._configsets = configsets
+    self._configsets = configAdmin
     self._config_mutex = threading.RLock()
+
+    self._sdoservice = sdoServiceAdmin
 
     """
      \var self._organizations SDO OrganizationList
@@ -324,24 +330,12 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       raise SDOPackage.InvalidParameter("sProfile is empty.")
 
     try:
-      if not sProfile.id:
-        prof = sProfile
-        prof.id = self.getUUID()
-        OpenRTM_aist.CORBA_SeqUtil.push_back(self._serviceProfiles, prof)
-        return True
-
-      index = OpenRTM_aist.CORBA_SeqUtil.find(self._serviceProfiles,
-                                              self.service_id(sProfile.id))
-      if index >= 0:
-        OpenRTM_aist.CORBA_SeqUtil.erase(self._serviceProfiles, index)
-
-      OpenRTM_aist.CORBA_SeqUtil.push_back(self._serviceProfiles, sProfile)
-      return True
+      return self._sdoservice.addSdoServiceConsumer(sProfile)
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.add_service_profile")
 
-    return True
+    return False
 
 
   ##
@@ -442,12 +436,12 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       raise SDOPackage.InvalidParameter("id is empty.")
 
     try:
-      OpenRTM_aist.CORBA_SeqUtil.erase_if(self._serviceProfiles, self.service_id(id_))
+      return self._sdoservice.removeSdoServiceConsumer(id_)
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.remove_service_profile")
 
-    return True
+    return False
 
 
   ##
@@ -797,8 +791,14 @@ class Configuration_impl(SDOPackage__POA.Configuration):
 
     guard = OpenRTM_aist.ScopedLock(self._config_mutex)
 
-    if not self._configsets.haveConfig(config_id):
-      raise SDOPackage.InternalError("No such ConfigurationSet")
+    try:
+      if not self._configsets.haveConfig(config_id):
+        self._rtcout.RTC_ERROR("No such ConfigurationSet")
+        raise SDOPackage.InternalError("No such ConfigurationSet")
+    except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      raise SDOPackage.InternalError("Unknown exception")
+      
 
     configset = self._configsets.getConfigurationSet(config_id)
 
