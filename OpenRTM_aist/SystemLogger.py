@@ -14,7 +14,8 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
-
+import sys
+import traceback
 import time
 import threading
 import logging
@@ -36,8 +37,8 @@ logger = None
 #
 # @endif
 class Logger:
-
-
+  """
+  """
 
   SILENT    = 0  # ()
   FATAL     = 41 # (FATAL)
@@ -251,6 +252,31 @@ class Logger:
       logging.getLogger("").addHandler(ch)
 
 
+  ##
+  # @if jp
+  #
+  # @brief 例外情報出力
+  #  例外情報を文字列で返す。
+  #
+  # @return 例外情報の文字列出力
+  #
+  # @else
+  #
+  # @brief Print exception information 
+  # @return Return exception information string.
+  #
+  # @endif
+  def print_exception():
+    if sys.version_info[0:3] >= (2, 4, 0):
+      return traceback.format_exc()
+    else:
+      _exc_list = traceback.format_exception(*sys.exc_info())
+      _exc_str = "".join(_exc_list)
+      return _exc_str
+    
+  print_exception = staticmethod(print_exception)
+
+
 
 ##
 # @if jp
@@ -265,6 +291,8 @@ class Logger:
 #
 # @endif
 class LogStream:
+  """
+  """
 
   ##
   # @if jp
@@ -296,6 +324,10 @@ class LogStream:
     self._log_enable = True
     self.logger = logging.getLogger(name)
 
+
+  def __del__(self):
+    logging.shutdown()
+    return
 
   def addHandler(self, *args):
     if self._loggerObj is not None:
