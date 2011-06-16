@@ -308,11 +308,7 @@ def isStringValue(nv, name, value):
 # @return string value named by name
 #
 # @endif
-def toString(nv, name=None):
-  if not name:
-    str_ = [""]
-    return dump_to_stream(str_, nv)
-
+def toString(nv, name):
   str_value = ""
   try:
     ret_value = find(nv, name)
@@ -390,24 +386,6 @@ def append(dest, src):
 
 ##
 # @if jp
-# @brief NVList に設定されている内容を文字列として出力する。
-# @else
-# @brief Print information configured in NVList as a string type
-# @endif
-# std::ostream& dump_to_stream(std::ostream& out, const SDOPackage::NVList& nv)
-def dump_to_stream(out, nv):
-  for i in range(len(nv)):
-    val = any.from_any(nv[i].value, keep_structs=True)
-    if type(val) == str:
-	    out[0] += (nv[i].name + ": " + str(nv[i].value) + "\n")
-    else:
-	    out[0] += (nv[i].name + ": not a string value \n")
-
-  return out[0]
-
-
-##
-# @if jp
 #
 # @brief NVList に設定されている内容を文字列として出力する。
 #
@@ -421,5 +399,8 @@ def dump_to_stream(out, nv):
 #
 # @endif
 def dump(nv):
-  out = [""]
-  print dump_to_stream(out, nv)
+  for i in range(len(nv)):
+    if type(nv[i].value) == str:
+      print nv[i].name, ": ", nv[i].value
+    else:
+      print nv[i].name, ": not a string value"

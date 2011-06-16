@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- Python -*-
 
-##
-# @file test_ConnectorListener.py
-# @brief test for connector listener class
-# @date $Date: 2010/01/06 $
-# @author Shinji Kurihara
+#
+# \file test_ConnectorListener.py
+# \brief test for connector listener class
+# \date $Date: 2010/01/06 $
+# \author Shinji Kurihara
 #
 # Copyright (C) 2010
 #     Task-intelligence Research Group,

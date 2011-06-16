@@ -31,7 +31,6 @@ from CdrRingBuffer import *
 from DataPortStatus import *
 from NumberingPolicy import *
 from Listener import *
-from ComponentActionListener import *
 from Typename import *
 from Guard import *
 from PeriodicTask import *
@@ -64,9 +63,6 @@ from ExtTrigExecutionContext import *
 from uuid import *
 from SdoConfiguration import *
 from SdoOrganization import *
-from SdoServiceConsumerBase import *
-from SdoServiceAdmin import *
-from ConfigurationListener import *
 from PeriodicECSharedComposite import *
 from RTCUtil import *
 from OutPortBase import *
@@ -81,7 +77,6 @@ from InPortPullConnector import *
 from InPortPushConnector import *
 from OutPort import *
 from PortCallBack import *
-from PortConnectListener import *
 from CorbaPort import *
 from OutPortConnector import *
 from OutPortCorbaCdrConsumer import *
