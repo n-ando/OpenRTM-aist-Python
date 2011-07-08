@@ -107,7 +107,9 @@ class SdoServiceAdmin:
   def __init__(self, rtobj):
     self._rtobj = rtobj
     self._consumerTypes = []
-    self._allConsumerAllowed = True
+    self._providers = []
+    self._allConsumerEnabled = True
+
 
     ##
     # @if jp
@@ -138,18 +140,67 @@ class SdoServiceAdmin:
     self._rtcout.RTC_TRACE("SdoServiceAdmin::SdoServiceAdmin(%s)",
                            rtobj.getProperties().getProperty("instance_name"))
 
+    prop = self._rtobj.getProperties()
+
+    # ------------------------------------------------------------
+    # SDO service provider
+    enabledProviderTypes = [s.strip() for s in prop.getProperty("sdo.service.provider.enabled_services").split(",")]
+    self._rtcout.RTC_DEBUG("sdo.service.provider.enabled_services: %s",
+                           prop.getProperty("sdo.service.provider.enabled_services"))
+
+    availableProviderTypes = OpenRTM_aist.SdoServiceProviderFactory.instance().getIdentifiers()
+    prop.setProperty("sdo.service.provider.available_services",
+                     str(OpenRTM_aist.flatten(availableProviderTypes)))
+    self._rtcout.RTC_DEBUG("sdo.service.provider.available_services: %s",
+                           prop.getProperty("sdo.service.provider.available_services"))
+
+    
+    # If types include '[Aa][Ll][Ll]', all types enabled in this RTC
+    activeProviderTypes = []
+    for i in range(len(enabledProviderTypes)):
+      tmp = enabledProviderTypes[i].lower()
+      if tmp == "all":
+        activeProviderTypes = availableProviderTypes
+        self._rtcout.RTC_DEBUG("sdo.service.provider.enabled_services: ALL")
+        break
+
+      for j in range(len(availableProviderTypes)):
+        if availableProviderTypes[j] == enabledProviderTypes[i]:
+          activeProviderTypes.append(availableProviderTypes[j])
+
+    factory = OpenRTM_aist.SdoServiceProviderFactory.instance()
+    for i in range(len(activeProviderTypes)):
+      svc = factory.createObject(activeProviderTypes[i])
+      propkey = self.ifrToKey(activeProviderTypes[i])
+      properties = []
+      OpenRTM_aist.NVUtil.copyFromProperties(properties,
+                                             prop.getNode(str(propkey)))
+      prof = SDOPackage.ServiceProfile(str(activeProviderTypes[i]),
+                                       str(activeProviderTypes[i]),
+                                       properties,
+                                       svc._this())
+
+      svc.init(rtobj, prof)
+      self._providers.append(svc)
+
+    # ------------------------------------------------------------
+    # SDO service consumer
     # getting consumer types from RTC's properties
-    prop = copy.deepcopy(self._rtobj.getProperties())
-    constypes = prop.getProperty("sdo_service.consumer_types")
+    constypes = prop.getProperty("sdo.service.consumer.enabled_services")
     self._consumerTypes = [s.strip() for s in constypes.split(",")]
-    self._rtcout.RTC_DEBUG("sdo_service.consumer_types: %s",
-                           str(OpenRTM_aist.flatten(self._consumerTypes)))
+    self._rtcout.RTC_DEBUG("sdo.service.consumer.enabled_services: %s",
+                           str(constypes))
+
+    prop.setProperty("sdo.service.consumer.available_services",
+                     str(OpenRTM_aist.flatten(OpenRTM_aist.SdoServiceConsumerFactory.instance().getIdentifiers())))
+    self._rtcout.RTC_DEBUG("sdo.service.consumer.available_services: %s",
+                           prop.getProperty("sdo.service.consumer.available_services"))
 
     # If types include '[Aa][Ll][Ll]', all types allowed in this RTC
     for ctype in self._consumerTypes:
       tmp = ctype.lower()
       if tmp == "all":
-        self._allConsumerAllowed = True
+        self._allConsumerEnabled = True
         self._rtcout.RTC_DEBUG("sdo_service.consumer_types: ALL")
 
     return
@@ -165,32 +216,123 @@ class SdoServiceAdmin:
   # Virtual destractor.
   # @endif
   def __del__(self):
+    len_ = len(self._proiders)
+    for i in range(len_):
+      idx = (len_ - 1) - i
+      self._providers[idx].finalize()
+      del self._providers[idx]
+
+    self._providers = []
+
+    len_ = len(self._consumers)
+    for i in range(len_):
+      idx = (len_ - 1) - i
+      self._consumers[idx].finalize()
+      del self._consumers[idx]
+
+    self._consumers = []
     return
 
-    
+
   ##
   # @if jp
-  # @brief Service Consumer Factory を登録する
-  # 
+  # @brief SDO Service Provider の ServiceProfileList を取得する
   # @else
-  # @brief Add Service Consumer Factory
+  # @brief Get ServiceProfileList of SDO Service Provider
   # @endif
-  # bool addSdoServiceConsumerFactory();
-  def addSdoServiceConsumerFactory(self):
-    return False
+  #
+  # SDOPackage::ServiceProfileList* SdoServiceAdmin::getServiceProviderProfiles()
+  def getServiceProviderProfiles(self):
+    prof = []
+    guard = OpenRTM_aist.ScopedLock(self._provider_mutex)
+    for i in range(len(self._providers)):
+      prof.append(self._providers[i].getProfile())
+    return prof
 
 
   ##
   # @if jp
-  # @brief Service Consumer Factory を削除する
-  # 
+  # @brief SDO Service Provider の ServiceProfile を取得する
   # @else
-  # @brief Remove Service Consumer Factory
+  # @brief Get ServiceProfile of an SDO Service Provider
   # @endif
-  # bool removeSdoServiceConsumerFactory();
-  def removeSdoServiceConsumerFactory(self):
+  #
+  # SDOPackage::ServiceProfile*
+  # SdoServiceAdmin::getServiceProviderProfile(const char* id)
+  def getServiceProviderProfile(self, id):
+    idstr = id
+    guard = OpenRTM_aist.ScopedLock(self._provider_mutex)
+    for i in range(len(self._providers)):
+      if idstr == str(self._providers[i].getProfile().id):
+        return self._providers[i].getProfile()
+
+    raise SDOPackage.InvalidParameter()
+
+
+  ##
+  # @if jp
+  # @brief SDO Service Provider の Service を取得する
+  # @else
+  # @brief Get ServiceProfile of an SDO Service
+  # @endif
+  #
+  # SDOPackage::SDOService_ptr SdoServiceAdmin::getServiceProvider(const char* id)
+  def getServiceProvider(self, id):
+    prof = self.getServiceProviderProfile(id)
+    return prof.service
+
+
+  ##
+  # @if jp
+  # @brief SDO service provider をセットする
+  # @else
+  # @brief Set a SDO service provider
+  # @endif
+  #
+  # bool SdoServiceAdmin::
+  # addSdoServiceProvider(const SDOPackage::ServiceProfile& prof,
+  #                       SdoServiceProviderBase* provider)
+  def addSdoServiceProvider(self, prof, provider):
+    self._rtcout.RTC_TRACE("SdoServiceAdmin::addSdoServiceProvider(if=%s)",
+                           prof.interface_type)
+    guard = OpenRTM_aist.ScopedLock(self._provider_mutex)
+    id = prof.id
+    for i in range(len(self._providers)):
+      if id == str(self._providers[i].getProfile().id):
+        self._rtcout.RTC_ERROR("SDO service(id=%s, ifr=%s) already exists",
+                               str(prof.id), str(prof.interface_type))
+        return False
+
+    self._providers.append(provider)
+    return True
+
+
+  ##
+  # @if jp
+  # @brief SDO service provider を削除する
+  # @else
+  # @brief Remove a SDO service provider
+  # @endif
+  #
+  # bool SdoServiceAdmin::removeSdoServiceProvider(const char* id)
+  def removeSdoServiceProvider(self, id):
+    self._rtcout.RTC_TRACE("removeSdoServiceProvider(%d)", id)
+    guard = OpenRTM_aist.ScopedLock(self._provider_mutex)
+
+    strid = id
+    len_ = len(self._providers)
+    for i in range(len_):
+      idx = (len_ - 1) - i
+      if strid == str(self._providers[idx].getProfile().id):
+        self._providers[idx].finalize()
+        factory = OpenRTM_aist.SdoServiceProviderFactory.instance()
+        factory.deleteObject(self._providers[idx])
+        del self._providers[idx]
+        self._rtcout.RTC_INFO("SDO service provider has been deleted: %s", id)
+        return True
+    self._rtcout.RTC_WARN("Specified SDO service provider not found: %s", id)
     return False
-    
+
 
   ##
   # @if jp
@@ -206,14 +348,13 @@ class SdoServiceAdmin:
     profile = copy.deepcopy(sProfile)
 
     # Not supported consumer type -> error return
-    if not self.isAllowedConsumerType(sProfile):
+    if not self.isEnabledConsumerType(sProfile):
       self._rtcout.RTC_ERROR("Not supported consumer type. %s", profile.id)
       return False
 
     if not self.isExistingConsumerType(sProfile):
       self._rtcout.RTC_ERROR("type %s already exists.", profile.id)
       return False
-    
     if str(profile.id) ==  "":
       self._rtcout.RTC_WARN("No id specified. It should be given by clients.")
       return False
@@ -289,20 +430,24 @@ class SdoServiceAdmin:
   ##
   # @if jp
   # @brief 許可されたサービス型かどうか調べる
-  # 
   # @else
-  # @brief If it is allowed service type
+  # @brief If it is enabled service type
   # @endif
-  # bool isAllowedConsumerType(const SDOPackage::ServiceProfile& sProfile);
-  def isAllowedConsumerType(self, sProfile):
-    if self._allConsumerAllowed:
+  #
+  # bool SdoServiceAdmin::
+  # isEnabledConsumerType(const SDOPackage::ServiceProfile& sProfile)
+  def isEnabledConsumerType(self, sProfile):
+    if self._allConsumerEnabled:
       return True
 
     for i in range(len(self._consumerTypes)):
       if self._consumerTypes[i] == str(sProfile.interface_type):
-        self._rtcout.RTC_DEBUG("%s is supported SDO service.", str(sProfile.interface_type))
+        self._rtcout.RTC_DEBUG("%s is supported SDO service.",
+                               str(sProfile.interface_type))
         return True
-    self._rtcout.RTC_WARN("Consumer type is not supported: %s", str(sProfile.interface_type))
+
+    self._rtcout.RTC_WARN("Consumer type is not supported: %s",
+                          str(sProfile.interface_type))
     return False
 
 
@@ -330,3 +475,11 @@ class SdoServiceAdmin:
   # const std::string getUUID() const;
   def getUUID(self):
     return str(OpenRTM_aist.uuid1())
+
+  # std::string SdoServiceAdmin::ifrToKey(std::string& ifr)
+  def ifrToKey(self, ifr):
+    ifrvstr = ifr.split(":")
+    ifrvstr[1] = ifrvstr[1].lower()
+    ifrvstr[1] = ifrvstr[1].replace(".", "_")
+    ifrvstr[1] = ifrvstr[1].replace("/", ".")
+    return ifrvstr[1]

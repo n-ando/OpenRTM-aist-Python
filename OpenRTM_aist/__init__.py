@@ -65,6 +65,7 @@ from uuid import *
 from SdoConfiguration import *
 from SdoOrganization import *
 from SdoServiceConsumerBase import *
+from SdoServiceProviderBase import *
 from SdoServiceAdmin import *
 from ConfigurationListener import *
 from PeriodicECSharedComposite import *

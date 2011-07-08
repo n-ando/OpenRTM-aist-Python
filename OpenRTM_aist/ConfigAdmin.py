@@ -346,14 +346,7 @@ class ConfigAdmin:
     self._params     = []
     self._emptyconf  = OpenRTM_aist.Properties()
     self._newConfig  = []
-
-    self._updateCb          = None
-    self._updateParamCb     = None
-    self._setConfigSetCb    = None
-    self._addConfigSetCb    = None
-    self._removeConfigSetCb = None
-    self._activateSetCb     = None
-
+    self._listeners  = OpenRTM_aist.ConfigurationListeners()
 
   ##
   # @if jp
@@ -1031,6 +1024,10 @@ class ConfigAdmin:
     return True
 
 
+  #------------------------------------------------------------
+  # obsolete functions
+  #
+
   ##
   # @if jp
   #
@@ -1052,7 +1049,9 @@ class ConfigAdmin:
   #
   # void setOnUpdate(OnUpdateCallback* cb);
   def setOnUpdate(self, cb):
-    self._updateCb = cb
+    print "setOnUpdate function is obsolete."
+    print "Use addConfigurationSetNameListener instead."
+    self._listeners.configsetname_[OpenRTM_aist.ConfigurationSetNameListenerType.ON_UPDATE_CONFIG_SET].addListener(cb, False)
     return
 
 
@@ -1077,7 +1076,9 @@ class ConfigAdmin:
   #
   # void setOnUpdateParam(OnUpdateParamCallback* cb);
   def setOnUpdateParam(self, cb):
-    self._updateParamCb = cb
+    print "setOnUpdateParam function is obsolete."
+    print "Use addConfigurationParamListener instead."
+    self._listeners.configparam_[OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM].addListener(cb, False)
     return
 
 
@@ -1102,7 +1103,9 @@ class ConfigAdmin:
   #
   # void setOnSetConfigurationSet(OnSetConfigurationSetCallback* cb);
   def setOnSetConfigurationSet(self, cb):
-    self._setConfigSetCb = cb
+    print "setOnSetConfigurationSet function is obsolete."
+    print "Use addConfigurationSetListener instead."
+    self._listeners.configset_[OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET].addListener(cb, False)
     return
 
 
@@ -1127,7 +1130,9 @@ class ConfigAdmin:
   #
   # void setOnAddConfigurationSet(OnAddConfigurationAddCallback* cb);
   def setOnAddConfigurationSet(self, cb):
-    self._addConfigSetCb = cb
+    print "setOnAddConfigurationSet function is obsolete."
+    print "Use addConfigurationSetListener instead."
+    self._listeners.configset_[OpenRTM_aist.ConfigurationSetListenerType.ON_ADD_CONFIG_SET].addListener(cb, False)
     return
 
 
@@ -1152,7 +1157,9 @@ class ConfigAdmin:
   #
   # void setOnRemoveConfigurationSet(OnRemoveConfigurationSetCallback* cb);
   def setOnRemoveConfigurationSet(self, cb):
-    self._removeConfigSetCb = cb
+    print "setOnRemoveConfigurationSet function is obsolete."
+    print "Use addConfigurationSetNameListener instead."
+    self._listeners.configsetname_[OpenRTM_aist.ConfigurationSetNameListenerType.ON_REMOVE_CONFIG_SET].addListener(cb, False)
     return
 
 
@@ -1177,9 +1184,227 @@ class ConfigAdmin:
   #
   # void setOnActivateSet(OnActivateSetCallback* cb);
   def setOnActivateSet(self, cb):
-    self._activateSetCb = cb
+    print "setOnActivateSet function is obsolete."
+    print "Use addConfigurationSetNameListener instead."
+    self._listeners.configsetname_[OpenRTM_aist.ConfigurationSetNameListenerType.ON_ACTIVATE_CONFIG_SET].addListener(cb, False)
     return
 
+  #
+  # end of obsolete functions
+  #------------------------------------------------------------
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationParamListener を追加する
+  #
+  # update(const char* config_set, const char* config_param) が呼ばれた際に
+  # コールされるリスナ ConfigurationParamListener を追加する。
+  # type には現在のところ ON_UPDATE_CONFIG_PARAM のみが入る。
+  #
+  # @param type ConfigurationParamListenerType型の値。
+  #             ON_UPDATE_CONFIG_PARAM がある。
+  #
+  # @param listener ConfigurationParamListener 型のリスナオブジェクト。
+  # @param autoclean リスナオブジェクトを自動で削除するかどうかのフラグ
+  # 
+  # @else
+  #
+  # @brief Adding ConfigurationParamListener 
+  # 
+  # This function adds a listener object which is called when
+  # update(const char* config_set, const char* config_param) is
+  # called. In the type argument, currently only
+  # ON_UPDATE_CONFIG_PARAM is allowed.
+  #
+  # @param type ConfigurationParamListenerType value
+  #             ON_UPDATE_CONFIG_PARAM is only allowed.
+  #
+  # @param listener ConfigurationParamListener listener object.
+  # @param autoclean a flag whether if the listener object autocleaned.
+  #
+  # @endif
+  #
+  # void addConfigurationParamListener(ConfigurationParamListenerType type,
+  #                                    ConfigurationParamListener* listener,
+  #                                    bool autoclean = true);
+  def addConfigurationParamListener(self, type, listener, autoclean = True):
+    self._listeners.configparam_[type].addListener(listener, autoclean)
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationParamListener を削除する
+  #
+  # addConfigurationParamListener で追加されたリスナオブジェクトを削除する。
+  #
+  # @param type ConfigurationParamListenerType型の値。
+  #             ON_UPDATE_CONFIG_PARAM がある。
+  # @param listener 与えたリスナオブジェクトへのポインタ
+  # 
+  # @else
+  #
+  # @brief Removing ConfigurationParamListener 
+  # 
+  # This function removes a listener object which is added by
+  # addConfigurationParamListener() function.
+  #
+  # @param type ConfigurationParamListenerType value
+  #             ON_UPDATE_CONFIG_PARAM is only allowed.
+  # @param listener a pointer to ConfigurationParamListener listener object.
+  #
+  # @endif
+  #
+  # void removeConfigurationParamListener(ConfigurationParamListenerType type,
+  #                                       ConfigurationParamListener* listener);
+  def removeConfigurationParamListener(self, type, listener):
+    self._listeners.configparam_[type].removeListener(listener)
+    return
+    
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationSetListener を追加する
+  #
+  # ConfigurationSet が更新されたときなどに呼ばれるリスナ
+  # ConfigurationSetListener を追加する。設定可能なイベントは以下の
+  # 2種類がある。
+  #
+  # - ON_SET_CONFIG_SET: setConfigurationSetValues() で
+  #                      ConfigurationSet に値が設定された場合。
+  # - ON_ADD_CONFIG_SET: addConfigurationSet() で新しい
+  #                      ConfigurationSet が追加された場合。
+  #
+  # @param type ConfigurationSetListenerType型の値。
+  # @param listener ConfigurationSetListener 型のリスナオブジェクト。
+  # @param autoclean リスナオブジェクトを自動で削除するかどうかのフラグ
+  # 
+  # @else
+  #
+  # @brief Adding ConfigurationSetListener 
+  # 
+  # This function add a listener object which is called when
+  # ConfigurationSet is updated. Available events are the followings.
+  #
+  # @param type ConfigurationSetListenerType value
+  # @param listener ConfigurationSetListener listener object.
+  # @param autoclean a flag whether if the listener object autocleaned.
+  #
+  # @endif
+  #
+  # void addConfigurationSetListener(ConfigurationSetListenerType type,
+  #                                  ConfigurationSetListener* listener,
+  #                                  bool autoclean = true);
+  def addConfigurationSetListener(self, type, listener, autoclean = True):
+    self._listeners.configset_[type].addListener(listener, autoclean)
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationSetListener を削除する
+  #
+  # addConfigurationSetListener で追加されたリスナオブジェクトを削除する。
+  #
+  # @param type ConfigurationSetListenerType型の値。
+  # @param listener 与えたリスナオブジェクトへのポインタ
+  # 
+  # @else
+  #
+  # @brief Removing ConfigurationSetListener 
+  # 
+  # This function removes a listener object which is added by
+  # addConfigurationSetListener() function.
+  #
+  # @param type ConfigurationSetListenerType value
+  # @param listener a pointer to ConfigurationSetListener listener object.
+  #
+  # @endif
+  # void removeConfigurationSetListener(ConfigurationSetListenerType type,
+  #                                     ConfigurationSetListener* listener);
+  def removeConfigurationSetListener(self, type, listener):
+    self._listeners.configset_[type].removeListener(listener)
+    return
+    
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationSetNameListener を追加する
+  #
+  # ConfigurationSetName が更新されたときなどに呼ばれるリスナ
+  # ConfigurationSetNameListener を追加する。設定可能なイベントは以下の
+  # 3種類がある。
+  #
+  # - ON_UPDATE_CONFIG_SET: ある ConfigurationSet がアップデートされた
+  # - ON_REMOVE_CONFIG_SET: ある ConfigurationSet が削除された
+  # - ON_ACTIVATE_CONFIG_SET: ある ConfigurationSet がアクティブ化された
+  #
+  # @param type ConfigurationSetNameListenerType型の値。
+  # @param listener ConfigurationSetNameListener 型のリスナオブジェクト。
+  # @param autoclean リスナオブジェクトを自動で削除するかどうかのフラグ
+  # 
+  # @else
+  #
+  # @brief Adding ConfigurationSetNameListener 
+  # 
+  # This function add a listener object which is called when
+  # ConfigurationSetName is updated. Available events are the followings.
+  #
+  # - ON_UPDATE_CONFIG_SET: A ConfigurationSet has been updated.
+  # - ON_REMOVE_CONFIG_SET: A ConfigurationSet has been deleted.
+  # - ON_ACTIVATE_CONFIG_SET: A ConfigurationSet has been activated.
+  #
+  # @param type ConfigurationSetNameListenerType value
+  # @param listener ConfigurationSetNameListener listener object.
+  # @param autoclean a flag whether if the listener object autocleaned.
+  #
+  # @endif
+  # void 
+  # addConfigurationSetNameListener(ConfigurationSetNameListenerType type,
+  #                                 ConfigurationSetNameListener* listener,
+  #                                 bool autoclean = true);
+  def addConfigurationSetNameListener(self, type, listener, autoclean = True):
+    self._listeners.configsetname_[type].addListener(listener, autoclean)
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationSetNameListener を削除する
+  #
+  # addConfigurationSetNameListener で追加されたリスナオブジェクトを
+  # 削除する。
+  #
+  # @param type ConfigurationSetNameListenerType型の値。
+  #             ON_UPDATE_CONFIG_PARAM がある。
+  # @param listener 与えたリスナオブジェクトへのポインタ
+  # 
+  # @else
+  #
+  # @brief Removing ConfigurationSetNameListener 
+  # 
+  # This function removes a listener object which is added by
+  # addConfigurationSetNameListener() function.
+  #
+  # @param type ConfigurationSetNameListenerType value
+  #             ON_UPDATE_CONFIG_PARAM is only allowed.
+  # @param listener a pointer to ConfigurationSetNameListener
+  #             listener object.
+  #
+  # @endif
+  # void
+  # removeConfigurationSetNameListener(ConfigurationSetNameListenerType type,
+  #                                    ConfigurationSetNameListener* listener);
+  def removeConfigurationSetNameListener(self, type, listener):
+    self._listeners.configsetname_[type].removeListener(listener)
+    return
+    
 
   ##
   # @if jp
@@ -1204,8 +1429,7 @@ class ConfigAdmin:
   #
   # void onUpdate(const char* config_set);
   def onUpdate(self, config_set):
-    if self._updateCb is not None:
-      self._updateCb(config_set)
+    self._listeners.configsetname_[OpenRTM_aist.ConfigurationSetNameListenerType.ON_UPDATE_CONFIG_SET].notify(config_set)
     return
 
 
@@ -1234,8 +1458,8 @@ class ConfigAdmin:
   #
   # void onUpdateParam(const char* config_set, const char* config_param);
   def onUpdateParam(self, config_set, config_param):
-    if self._updateParamCb is not None:
-      self._updateParamCb(config_set, config_param)
+    self._listeners.configparam_[OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM].notify(config_set,
+                                                                                                            config_param)
     return
 
 
@@ -1262,8 +1486,7 @@ class ConfigAdmin:
   #
   # void onSetConfigurationSet(const coil::Properties& config_set);
   def onSetConfigurationSet(self, config_set):
-    if self._setConfigSetCb is not None:
-      self._setConfigSetCb(config_set)
+    self._listeners.configset_[OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET].notify(config_set)
     return
 
 
@@ -1290,8 +1513,7 @@ class ConfigAdmin:
   #
   # void onAddConfigurationSet(const coil::Properties& config_set);
   def onAddConfigurationSet(self, config_set):
-    if self._addConfigSetCb is not None:
-      self._addConfigSetCb(config_set)
+    self._listeners.configset_[OpenRTM_aist.ConfigurationSetListenerType.ON_ADD_CONFIG_SET].notify(config_set)
     return
 
 
@@ -1318,8 +1540,7 @@ class ConfigAdmin:
   #
   # void onRemoveConfigurationSet(const char* config_id);
   def onRemoveConfigurationSet(self, config_id):
-    if self._removeConfigSetCb is not None:
-      self._removeConfigSetCb(config_id)
+    self._listeners.configsetname_[OpenRTM_aist.ConfigurationSetNameListenerType.ON_REMOVE_CONFIG_SET].notify(config_id)
     return
 
 
@@ -1346,8 +1567,7 @@ class ConfigAdmin:
   #
   # void onActivateSet(const char* config_id);
   def onActivateSet(self, config_id):
-    if self._activateSetCb is not None:
-      self._activateSetCb(config_id)
+    self._listeners.configsetname_[OpenRTM_aist.ConfigurationSetNameListenerType.ON_ACTIVATE_CONFIG_SET].notify(config_id)
     return
 
 
