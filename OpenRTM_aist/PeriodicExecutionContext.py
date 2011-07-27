@@ -744,7 +744,22 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
         if not compIn._sm._sm.isIn(RTC.ACTIVE_STATE):
           return RTC.PRECONDITION_NOT_MET
         compIn._sm._sm.goTo(RTC.INACTIVE_STATE)
-        return RTC.RTC_OK
+        count_ = 0
+        usec_per_sec_ = 1.0e6
+        sleeptime_ = 10.0 * usec_per_sec_ / float(self.get_rate())
+        self._rtcout.RTC_PARANOID("Sleep time is %f [us]", sleeptime_)
+        while compIn._sm._sm.isIn(RTC.ACTIVE_STATE):
+          self._rtcout.RTC_TRACE("Waiting to be the INACTIVE state %d %f", count_, float(time.time()))
+          time.sleep(sleeptime_/usec_per_sec_)
+          if count_ > 1000:
+            self._rtcout.RTC_ERROR("The component is not responding.")
+            break
+          count_ += 1
+        if compIn._sm._sm.isIn(RTC.INACTIVE_STATE):
+          self._rtcout.RTC_TRACE("The component has been properly deactivated.")
+          return RTC.RTC_OK
+        self._rtcout.RTC_ERROR("The component could not be deactivated.")
+        return RTC.RTC_ERROR
 
     return RTC.BAD_PARAMETER
 
