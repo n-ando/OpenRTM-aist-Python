@@ -29,7 +29,8 @@ import OpenRTM_aist
 # @else
 # @endif
 default_config =["config.version",                   OpenRTM_aist.openrtm_version,
-                 "openrtm.version",                  OpenRTM_aist.openrtm_name,
+                 "openrtm.name",                     OpenRTM_aist.openrtm_name,
+                 "openrtm.version",                  OpenRTM_aist.openrtm_version,
                  "manager.instance_name",            "manager",
                  "manager.name",                     "manager",
                  "manager.naming_formats",           "%h.host_cxt/%n.mgr",
@@ -70,7 +71,10 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "manager.corba_servant",            "YES",
                  "manager.shutdown_on_nortcs",       "YES",
                  "manager.shutdown_auto",            "YES",
+                 "manager.auto_shutdown_duration",   "10.0",
                  "manager.name",                     "manager",
                  "manager.command",                  "rtcd",
                  "manager.language",                 "Python",
+                 "sdo.service.provider.enabled_service",  "ALL",
+                 "sdo.service.consumer.enabled_service",  "ALL",
                  ""]
