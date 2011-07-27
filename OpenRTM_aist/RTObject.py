@@ -897,15 +897,17 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   def get_component_profile(self):
     self._rtcout.RTC_TRACE("get_component_profile()")
     try:
-      return RTC.ComponentProfile(self._properties.getProperty("instance_name"),
-                                  self._properties.getProperty("type_name"),
-                                  self._properties.getProperty("description"),
-                                  self._properties.getProperty("version"),
-                                  self._properties.getProperty("vendor"),
-                                  self._properties.getProperty("category"),
-                                  self._portAdmin.getPortProfileList(),
-                                  self._profile.parent,
-                                  self._profile.properties)
+      prop_ = RTC.ComponentProfile(self._properties.getProperty("instance_name"),
+                                   self._properties.getProperty("type_name"),
+                                   self._properties.getProperty("description"),
+                                   self._properties.getProperty("version"),
+                                   self._properties.getProperty("vendor"),
+                                   self._properties.getProperty("category"),
+                                   self._portAdmin.getPortProfileList(),
+                                   self._profile.parent,
+                                   self._profile.properties) 
+      OpenRTM_aist.NVUtil.copyFromProperties(self._profile.properties, self._properties)
+      return prop_
       # return RTC.ComponentProfile(self._profile.instance_name,
       #               self._profile.type_name,
       #               self._profile.description,
