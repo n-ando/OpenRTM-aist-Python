@@ -1166,6 +1166,9 @@ class PortBase(RTC__POA.PortService):
 
     guard = OpenRTM_aist.ScopedLock(self._profile_mutex)
     plist = self._profile.name.split(".")
+    if not self._ownerInstanceName:
+      self._rtcout.RTC_ERROR("Owner is not set.")
+      self._rtcout.RTC_ERROR("addXXXPort() should be called in onInitialize().")
     portname = self._ownerInstanceName+"."+plist[-1]
 
     self._profile.owner = owner
