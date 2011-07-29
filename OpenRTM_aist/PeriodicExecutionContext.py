@@ -363,13 +363,13 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
 
     if rate is None:
       self._rate = 1000.0
-      rate_ = 0.0
-      self._usec = long(0)
+      rate_ = 1000.0
+      self._usec = long(1000)
     else:
       self._rate = rate
       rate_ = rate
       if rate == 0:
-        rate_ = 0.0000001
+        rate_ = 10000000
       self._usec = long(1000000/rate_)
       if self._usec == 0:
         self._nowait = True
@@ -749,7 +749,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
         sleeptime_ = 10.0 * usec_per_sec_ / float(self.get_rate())
         self._rtcout.RTC_PARANOID("Sleep time is %f [us]", sleeptime_)
         while compIn._sm._sm.isIn(RTC.ACTIVE_STATE):
-          self._rtcout.RTC_TRACE("Waiting to be the INACTIVE state %d %f", count_, float(time.time()))
+          self._rtcout.RTC_TRACE("Waiting to be the INACTIVE state %d %f", (count_, float(time.time())))
           time.sleep(sleeptime_/usec_per_sec_)
           if count_ > 1000:
             self._rtcout.RTC_ERROR("The component is not responding.")
