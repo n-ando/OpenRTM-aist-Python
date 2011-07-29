@@ -329,7 +329,7 @@ class TestRTObject_impl(unittest.TestCase):
     ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
     ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
     ec.bindComponent(rtobj)
-    self.assertNotEqual(rtobj.getExecutionRate(0),1000)
+    self.assertEqual(rtobj.getExecutionRate(0),1000.0)
     return
 
   def test_setExecutionRate(self):
@@ -353,11 +353,14 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
     ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
     ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec.set_rate(1000.0)
     ec.bindComponent(rtobj)
     self.assertEqual(rtobj.activate(0),RTC.RTC_OK)
     ec.start()
     time.sleep(0.1)
-    self.assertEqual(rtobj.deactivate(0),RTC.RTC_OK)
+    ret = rtobj.deactivate(0)
+    time.sleep(0.1)
+    self.assertEqual(ret,RTC.RTC_OK)
     ec.stop()
     return
 
@@ -405,13 +408,13 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
 
     rtobj.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_INITIALIZE,
-                                        self, self.prelistenerFunc)
+                                        self.prelistenerFunc)
 
     rtobj.removePreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_INITIALIZE,
                                            self.prelistenerFunc)
 
     rtobj.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_FINALIZE,
-                                        self, self.prelistenerFunc)
+                                        self.prelistenerFunc)
 
     rtobj.removePreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_FINALIZE,
                                            self.prelistenerFunc)
@@ -425,7 +428,7 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
 
     rtobj.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_FINALIZE,
-                                         self, self.postlistenerFunc)
+                                         self.postlistenerFunc)
 
     rtobj.removePostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_FINALIZE,
                                             self.postlistenerFunc)
@@ -435,7 +438,7 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
 
     rtobj.addPortActionListener(OpenRTM_aist.PortActionListenerType.ADD_PORT,
-                                self, self.prelistenerFunc)
+                                self.prelistenerFunc)
 
     rtobj.removePortActionListener(OpenRTM_aist.PortActionListenerType.ADD_PORT,
                                    self.prelistenerFunc)
@@ -445,7 +448,7 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
 
     rtobj.addExecutionContextActionListener(OpenRTM_aist.ExecutionContextActionListenerType.EC_ATTACHED,
-                                            self, self.prelistenerFunc)
+                                            self.prelistenerFunc)
 
     rtobj.removeExecutionContextActionListener(OpenRTM_aist.ExecutionContextActionListenerType.EC_ATTACHED,
                                             self.prelistenerFunc)
@@ -455,7 +458,7 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
 
     rtobj.addPortConnectListener(OpenRTM_aist.PortConnectListenerType.ON_NOTIFY_CONNECT,
-                                 self, self.postlistenerFunc)
+                                 self.postlistenerFunc)
 
     rtobj.removePortConnectListener(OpenRTM_aist.PortConnectListenerType.ON_NOTIFY_CONNECT,
                                     self.postlistenerFunc)
@@ -469,7 +472,7 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
 
     rtobj.addPortConnectRetListener(OpenRTM_aist.PortConnectRetListenerType.ON_CONNECTED,
-                                    self, self.portconretlistenerFunc)
+                                    self.portconretlistenerFunc)
 
     rtobj.removePortConnectRetListener(OpenRTM_aist.PortConnectRetListenerType.ON_CONNECTED,
                                        self.portconretlistenerFunc)
@@ -483,7 +486,7 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
 
     rtobj.addConfigurationParamListener(OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM,
-                                        self, self.configparamlistenerFunc)
+                                        self.configparamlistenerFunc)
 
     rtobj.removeConfigurationParamListener(OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM,
                                            self.configparamlistenerFunc)
@@ -493,7 +496,7 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
 
     rtobj.addConfigurationSetListener(OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET,
-                                      self, self.prelistenerFunc)
+                                      self.prelistenerFunc)
 
     rtobj.removeConfigurationSetListener(OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET,
                                          self.prelistenerFunc)
@@ -503,7 +506,7 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
 
     rtobj.addConfigurationSetNameListener(OpenRTM_aist.ConfigurationSetNameListenerType.ON_UPDATE_CONFIG_SET,
-                                          self, self.prelistenerFunc)
+                                          self.prelistenerFunc)
 
     rtobj.removeConfigurationSetNameListener(OpenRTM_aist.ConfigurationSetNameListenerType.ON_UPDATE_CONFIG_SET,
                                              self.prelistenerFunc)
