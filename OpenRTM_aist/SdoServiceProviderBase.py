@@ -122,6 +122,8 @@ import SDOPackage, SDOPackage__POA
 # @endif
 #
 class SdoServiceProviderBase(SDOPackage__POA.SDOService):
+  """
+  """
 
   ##
   # @if jp
