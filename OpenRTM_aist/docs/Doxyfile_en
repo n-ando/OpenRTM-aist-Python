@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = OpenRTM-aist-1.0.0-Python
+PROJECT_NAME           = OpenRTM-aist-1.1.0-Python
 PROJECT_NUMBER         = 
 OUTPUT_DIRECTORY       = ./ClassReference-en
 CREATE_SUBDIRS         = NO
