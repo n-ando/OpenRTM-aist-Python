@@ -3546,7 +3546,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # 数に false を指定し、自動的な解体を抑制することができる。
   #
   # @param listener_type リスナタイプ
-  # @param obj リスナオブジェクト
   # @param memfunc 関数オブジェクト
   # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
   #
@@ -3581,7 +3580,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # "false" value to 3rd argument to inhibit automatic destruction.
   #
   # @param listener_type A listener type
-  # @param obj A listener object
   # @param memfunc  member function object
   # @param autoclean A flag for automatic listener destruction
   #
@@ -3590,21 +3588,19 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # template <class Listener>
   # PreComponentActionListener*
   # addPreComponentActionListener(PreCompActionListenerType listener_type,
-  #                               Listener& obj,
   #                               void (Listener::*memfunc)(UniqueId ec_id),
   #                               bool autoclean = true)
   def addPreComponentActionListener(self, listener_type,
-                                    obj, memfunc, autoclean = True):
+                                    memfunc, autoclean = True):
     class Noname(OpenRTM_aist.PreComponentActionListener):
-      def __init__(self, obj, memfunc):
-        self._obj = obj
+      def __init__(self, memfunc):
         self._memfunc = memfunc
 
       def __call__(self, ec_id):
         self._memfunc(ec_id)
         return
 
-    listener = Noname(obj, memfunc)
+    listener = Noname(memfunc)
     self._actionListeners.preaction_[listener_type].addListener(listener, autoclean)
     return listener
 
@@ -3669,7 +3665,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # 数に false を指定し、自動的な解体を抑制することができる。
   #
   # @param listener_type リスナタイプ
-  # @param obj リスナオブジェクト
   # @param memfunc 関数オブジェクト
   # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
   #
@@ -3704,7 +3699,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # "false" value to 3rd argument to inhibit automatic destruction.
   #
   # @param listener_type A listener type
-  # @param obj A listener object
   # @param memfunc  member function object
   # @param autoclean A flag for automatic listener destruction
   #
@@ -3713,22 +3707,20 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # template <class Listener>
   # PostComponentActionListener*
   # addPostComponentActionListener(PostCompActionListenerType listener_type,
-  #                                Listener& obj,
   #                                void (Listener::*memfunc)(UniqueId ec_id,
   #                                                          ReturnCode_t ret),
   #                                bool autoclean = true)
-  def addPostComponentActionListener(self, listener_type, obj,
+  def addPostComponentActionListener(self, listener_type,
                                      memfunc, autoclean = True):
     class Noname(OpenRTM_aist.PostComponentActionListener):
-      def __init__(self, obj, memfunc):
-        self._obj = obj
+      def __init__(self, memfunc):
         self._memfunc = memfunc
         return
       def __call__(self, ec_id, ret):
         self._memfunc(ec_id, ret)
         return
       
-    listener = Noname(obj, memfunc)
+    listener = Noname(memfunc)
     self._actionListeners.postaction_[listener_type].addListener(listener, autoclean)
     return listener
 
@@ -3783,7 +3775,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # 数に false を指定し、自動的な解体を抑制することができる。
   #
   # @param listener_type リスナタイプ
-  # @param obj リスナオブジェクト
   # @param memfunc 関数オブジェクト
   # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
   #
@@ -3809,7 +3800,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # "false" value to 3rd argument to inhibit automatic destruction.
   #
   # @param listener_type A listener type
-  # @param obj A listener object
   # @param memfunc  member function object
   # @param autoclean A flag for automatic listener destruction
   #
@@ -3818,14 +3808,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # template <class Listener>
   # PortActionListener*
   # addPortActionListener(PortActionListenerType listener_type,
-  #                       Listener& obj,
   #                       void (Listener::*memfunc)(const RTC::PortProfile&),
   #                       bool autoclean=true)
-  def addPortActionListener(self, listener_type, obj,
+  def addPortActionListener(self, listener_type,
                             memfunc, autoclean = True):
     class Noname(OpenRTM_aist.PortActionListener):
-      def __init__(self, obj, memfunc):
-        self._obj = obj
+      def __init__(self, memfunc):
         self._memfunc = memfunc
         return
 
@@ -3833,7 +3821,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._memfunc(pprofile)
         return
 
-    listener = Noname(obj, memfunc)
+    listener = Noname(memfunc)
     self._actionListeners.portaction_[listener_type].addListener(listener, autoclean)
     return listener
 
@@ -3887,7 +3875,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # 数に false を指定し、自動的な解体を抑制することができる。
   #
   # @param listener_type リスナタイプ
-  # @param obj リスナオブジェクト
   # @param memfunc 関数オブジェクト
   # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
   #
@@ -3913,7 +3900,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # "false" value to 3rd argument to inhibit automatic destruction.
   #
   # @param listener_type A listener type
-  # @param obj A listener object
   # @param memfunc  member function object
   # @param autoclean A flag for automatic listener destruction
   #
@@ -3922,14 +3908,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # template <class Listener>
   # ECActionListener*
   # addExecutionContextActionListener(ECActionListenerType listener_type,
-  #                                   Listener& obj,
   #                                   void (Listener::*memfunc)(UniqueId),
   #                                   bool autoclean = true);
   def addExecutionContextActionListener(self, listener_type,
-                                        obj, memfunc, autoclean = True):
+                                        memfunc, autoclean = True):
     class Noname(OpenRTM_aist.ExecutionContextActionListener):
-      def __init__(self, obj, memfunc):
-        self._obj = obj
+      def __init__(self, memfunc):
         self._memfunc = memfunc
         return
 
@@ -3937,7 +3921,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._memfunc(ec_id)
         return
 
-    listener = Noname(obj, memfunc)
+    listener = Noname(memfunc)
     self._actionListeners.ecaction_[listener_type].addListener(listener, autoclean)
     return listener
     
@@ -3993,7 +3977,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # 数に false を指定し、自動的な解体を抑制することができる。
   #
   # @param listener_type リスナタイプ
-  # @param obj リスナオブジェクト
   # @param memfunc 関数オブジェクト
   # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
   #
@@ -4019,7 +4002,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # "false" value to 3rd argument to inhibit automatic destruction.
   #
   # @param listener_type A listener type
-  # @param obj A listener object
   # @param memfunc  member function object
   # @param autoclean A flag for automatic listener destruction
   #
@@ -4028,15 +4010,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # template <class Listener>
   # PortConnectListener*
   # addPortConnectListener(PortConnectListenerType listener_type,
-  #                        Listener& obj,
   #                        void (Listener::*memfunc)(const char*,
   #                                                  ConnectorProfile&),
   #                        bool autoclean = true)
   def addPortConnectListener(self, listener_type,
-                             obj, memfunc, autoclean = True):
+                             memfunc, autoclean = True):
     class Noname(OpenRTM_aist.PortConnectListener):
-      def __init__(self, obj, memfunc):
-        self._obj = obj
+      def __init__(self, memfunc):
         self._memfunc = memfunc
         return
 
@@ -4044,7 +4024,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._memfunc(portname, cprofile)
         return
 
-    listener = Noname(obj, memfunc)
+    listener = Noname(memfunc)
     self._portconnListeners.portconnect_[listener_type].addListener(listener, autoclean)
     return listener
     
@@ -4102,7 +4082,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # 数に false を指定し、自動的な解体を抑制することができる。
   #
   # @param listener_type リスナタイプ
-  # @param obj リスナオブジェクト
   # @param memfunc 関数オブジェクト
   # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
   #
@@ -4130,7 +4109,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # "false" value to 3rd argument to inhibit automatic destruction.
   #
   # @param listener_type A listener type
-  # @param obj A listener object
   # @param memfunc  member function object
   # @param autoclean A flag for automatic listener destruction
   #
@@ -4139,15 +4117,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # template <class Listener>
   # PortConnectRetListener*
   # addPortConnectRetListener(PortConnectRetListenerType listener_type,
-  #                           Listener& obj,
   #                           void (Listener::*memfunc)(const char*,
   #                                                     ConnectorProfile&,
   #                                                     ReturnCode_t))
-  def addPortConnectRetListener(self, listener_type, obj,
+  def addPortConnectRetListener(self, listener_type,
                                 memfunc, autoclean = True):
     class Noname(OpenRTM_aist.PortConnectRetListener):
-      def __init__(self, obj, memfunc):
-        self._obj = obj
+      def __init__(self, memfunc):
         self._memfunc = memfunc
         return
 
@@ -4155,7 +4131,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._memfunc(portname, cprofile, ret)
         return
 
-    listener = Noname(obj, memfunc)
+    listener = Noname(memfunc)
     self._portconnListeners.portconnret_[listener_type].addListener(listener, autoclean)
     return listener
     
@@ -4199,7 +4175,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # @param type ConfigurationParamListenerType型の値。
   #             ON_UPDATE_CONFIG_PARAM がある。
   #
-  # @param obj リスナオブジェクト
   # @param memfunc 関数オブジェクト
   # @param autoclean リスナオブジェクトを自動で削除するかどうかのフラグ
   # 
@@ -4215,7 +4190,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # @param type ConfigurationParamListenerType value
   #             ON_UPDATE_CONFIG_PARAM is only allowed.
   #
-  # @param obj A listener object
   # @param memfunc  member function object
   # @param autoclean a flag whether if the listener object autocleaned.
   #
@@ -4224,15 +4198,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # template <class Listener>
   # ConfigurationParamListener*
   # addConfigurationParamListener(ConfigurationParamListenerType listener_type,
-  #                               Listener& obj,
   #                               void (Listener::*memfunc)(const char*,
   #                                                         const char*),
   #                               bool autoclean = true)
   def addConfigurationParamListener(self, type,
-                                    obj, memfunc, autoclean = True):
+                                    memfunc, autoclean = True):
     class Noname(OpenRTM_aist.ConfigurationParamListener):
-      def __init__(self, obj, memfunc):
-        self._obj = obj
+      def __init__(self, memfunc):
         self._memfunc = memfunc
         return
 
@@ -4240,7 +4212,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._memfunc(config_set_name, config_param_name)
         return
 
-    listener = Noname(obj, memfunc)
+    listener = Noname(memfunc)
     self._configsets.addConfigurationParamListener(type, listener, autoclean)
     return listener
 
@@ -4291,7 +4263,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   #                      ConfigurationSet が追加された場合。
   #
   # @param type ConfigurationSetListenerType型の値。
-  # @param obj リスナオブジェクト
   # @param memfunc 関数オブジェクト
   # @param autoclean リスナオブジェクトを自動で削除するかどうかのフラグ
   # 
@@ -4303,7 +4274,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # ConfigurationSet is updated. Available events are the followings.
   #
   # @param type ConfigurationSetListenerType value
-  # @param obj A listener object
   # @param memfunc  member function object
   # @param autoclean a flag whether if the listener object autocleaned.
   #
@@ -4312,14 +4282,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # template <class Listener>
   # ConfigurationSetListener*
   # addConfigurationSetListener(ConfigurationSetListenerType listener_type,
-  #                             Listener& obj,
   #                             void (Listener::*memfunc)
   #                             (const coil::Properties& config_set))
-  def addConfigurationSetListener(self, listener_type, obj,
+  def addConfigurationSetListener(self, listener_type,
                                   memfunc, autoclean = True):
     class Noname(OpenRTM_aist.ConfigurationSetListener):
-      def __init__(self, obj, memfunc):
-        self._obj = obj
+      def __init__(self, memfunc):
         self._memfunc = memfunc
         return
 
@@ -4327,7 +4295,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._memfunc(config_set)
         return
 
-    listener = Noname(obj, memfunc)
+    listener = Noname(memfunc)
     self._configsets.addConfigurationSetListener(listener_type, listener, autoclean)
     return listener
 
@@ -4375,7 +4343,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # - ON_ACTIVATE_CONFIG_SET: ある ConfigurationSet がアクティブ化された
   #
   # @param type ConfigurationSetNameListenerType型の値。
-  # @param obj リスナオブジェクト
   # @param memfunc 関数オブジェクト
   # @param autoclean リスナオブジェクトを自動で削除するかどうかのフラグ
   # 
@@ -4391,7 +4358,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # - ON_ACTIVATE_CONFIG_SET: A ConfigurationSet has been activated.
   #
   # @param type ConfigurationSetNameListenerType value
-  # @param obj A listener object
   # @param memfunc  member function object
   # @param autoclean a flag whether if the listener object autocleaned.
   #
@@ -4400,12 +4366,10 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # template <class Listener>
   # ConfigurationSetNameListener*
   # addConfigurationSetNameListener(ConfigurationSetNameListenerType type,
-  #                                 Listener& obj,
   #                                 void (Listener::*memfunc)(const char*))
-  def addConfigurationSetNameListener(self, type, obj, memfunc, autoclean = True):
+  def addConfigurationSetNameListener(self, type, memfunc, autoclean = True):
     class Noname(OpenRTM_aist.ConfigurationSetNameListener):
-      def __init__(self, obj, memfunc):
-        self._obj = obj
+      def __init__(self, memfunc):
         self._memfunc = memfunc
         return
 
@@ -4413,7 +4377,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._memfunc(config_set_name)
         return
 
-    listener = Noname(obj, memfunc)
+    listener = Noname(memfunc)
     self._configsets.addConfigurationSetNameListener(type, listener, autoclean)
     return listener
 
