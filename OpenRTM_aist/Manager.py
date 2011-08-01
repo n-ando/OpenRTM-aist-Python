@@ -391,6 +391,7 @@ class Manager:
       try:
         self._module.load(mods[i], basename)
       except:
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
         self.__try_direct_load(basename)
 
     if self._initProc:
