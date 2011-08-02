@@ -147,8 +147,8 @@ class ManagerConfig :
   #
   # -f file   : コンフィギュレーションファイルを指定する。<br>
   # -l module : ロードするモジュールを指定する。(未実装)<br>
-  # -o options: その他オプションを指定する。(未実装)<br>
-  # -d        : デフォルトのコンフィギュレーションを使う。(未実装)<br>
+  # -o options: その他オプションを指定する。<br>
+  # -d        : デフォルトのコンフィギュレーションを使う。<br>
   #
   # @param self
   # @param argv コマンドライン引数
@@ -193,7 +193,6 @@ class ManagerConfig :
         prop.load(fd)
         fd.close()
       except:
-        print "Error: file open."
         print OpenRTM_aist.Logger.print_exception()
 
     self.setSystemInformation(prop)
@@ -256,7 +255,6 @@ class ManagerConfig :
     try:
       opts, args = getopt.getopt(argv[1:], "adlf:o:p:")
     except getopt.GetoptError:
-      print "Error: getopt error!"
       print OpenRTM_aist.Logger.print_exception()
       return
 
@@ -327,8 +325,10 @@ class ManagerConfig :
   # @endif
   def findConfigFile(self):
     if self._configFile != "":
-      if self.fileExist(self._configFile):
-        return True
+      if not self.fileExist(self._configFile):
+        print OpenRTM_aist.Logger.print_exception()
+        return False
+      return True
 
     env = os.getenv(self.config_file_env)
     if env:
@@ -416,7 +416,6 @@ class ManagerConfig :
     try:
       fp = open(filename)
     except:
-      print OpenRTM_aist.Logger.print_exception()
       return False
     else:
       fp.close()
