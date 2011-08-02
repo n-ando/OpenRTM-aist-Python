@@ -195,6 +195,7 @@ class Timer:
   #
   # @endif
   def invoke(self):
+    guard = OpenRTM_aist.ScopedLock(self._taskMutex)
     for i in range(len(self._tasks)):
       self._tasks[i].remains = self._tasks[i].remains - self._interval
       if self._tasks[i].remains.sign() <= 0.0:
