@@ -41,6 +41,9 @@ class SdoServiceConsumerBase:
   def __init__(self):
     pass
 
+  def __del__(self):
+    pass
+
   # virtual bool init(RTObject_impl& rtobj,
   #                   const SDOPackage::ServiceProfile& profile) = 0;
   def init(self, rtobj, profile):
