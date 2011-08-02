@@ -258,6 +258,7 @@ class ModuleManager:
 
     import_name = os.path.split(file_name)[-1]
     pathChanged=False
+    file_path = None
     if OpenRTM_aist.isAbsolutePath(file_name):
       if not self._absoluteAllowed:
         raise ModuleManager.NotAllowedOperation, "Absolute path is not allowed"
@@ -267,13 +268,19 @@ class ModuleManager:
         sys.path.append(splitted_name[0])
         pathChanged = True
         import_name = splitted_name[-1]
+        file_path = file_name
 
     else:
-      if not self.findFile(file_name, self._loadPath):
+      file_path = self.findFile(file_name, self._loadPath)
+      if not file_path:
         raise ModuleManager.InvalidArguments, "Invalid file name."
 
-    if not self.fileExist(file_name):
-      raise ModuleManager.FileNotFound, file_path
+    if not self.fileExist(file_path):
+      raise ModuleManager.FileNotFound, file_name
+
+    if not pathChanged:
+      splitted_name = os.path.split(file_path)
+      sys.path.append(splitted_name[0])
 
     ext_pos = import_name.find(".py")
     if ext_pos > 0:
@@ -284,14 +291,14 @@ class ModuleManager:
       sys.path = save_path
 
     dll = self.DLLEntity(mo,OpenRTM_aist.Properties())
-    dll.properties.setProperty("file_path",file_name)
+    dll.properties.setProperty("file_path",file_path)
     self._modules.registerObject(dll)
 
 
     if init_func is None:
       return file_name
 
-    self.symbol(file_name,init_func)(self._mgr)
+    self.symbol(file_path,init_func)(self._mgr)
 
     return file_name
 
@@ -508,7 +515,7 @@ class ModuleManager:
       if path == "":
         continue
 
-      flist = glob.glob(path+"/"+'*.py')
+      flist = glob.glob(path + os.sep + '*.py')
       for file in flist:
         if file.find("__init__.py") == -1:
           modules_.append(file)
@@ -607,11 +614,11 @@ class ModuleManager:
     file_name = fname
     for path in load_path:
       if fname.find(".py") == -1:
-        f = str(path)+"/"+str(file_name)+".py"
+        f = str(path) + os.sep + str(file_name)+".py"
       else:
-        f = str(path)+"/"+str(file_name)
+        f = str(path)+ os.sep + str(file_name)
       if self.fileExist(f):
-        return fname
+        return f
     return ""
 
 
@@ -633,13 +640,12 @@ class ModuleManager:
     fname = filename
     if fname.find(".py") == -1:
       fname = str(filename)+".py"
-    try:
-      infile = open(fname)
-    except:
-      return False
 
-    infile.close()
-    return True
+    if os.path.isfile(fname):
+      return True
+
+    return False
+
 
 
   ##
