@@ -96,6 +96,7 @@ class Timer:
   def join(self):
     try:
       self._thread.join()
+      self._thread = threading.Thread(target=self.run)
     except:
       pass
 
@@ -124,7 +125,8 @@ class Timer:
       self.invoke()
       if self._interval.tv_sec != 0:
         time.sleep(self._interval.tv_sec)
-      time.sleep(self._interval.tv_usec/1000000.0)
+      elif self._interval.tv_usec:
+        time.sleep(self._interval.tv_usec/1000000.0)
     return 0
 
 
@@ -201,6 +203,7 @@ class Timer:
       if self._tasks[i].remains.sign() <= 0.0:
         self._tasks[i].listener.invoke()
         self._tasks[i].remains = self._tasks[i].period
+    del guard
     return
 
   ##
