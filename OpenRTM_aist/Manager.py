@@ -1321,6 +1321,7 @@ class Manager:
   # @endif
   def shutdownLogger(self):
     self._rtcout.RTC_TRACE("Manager.shutdownLogger()")
+    self._rtcout.shutdown()
     return
 
 

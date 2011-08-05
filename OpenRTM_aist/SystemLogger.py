@@ -326,6 +326,9 @@ class LogStream:
 
 
   def __del__(self):
+    return
+
+  def shutdown(self):
     logging.shutdown()
     return
 
