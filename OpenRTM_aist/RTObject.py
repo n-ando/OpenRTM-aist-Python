@@ -2678,10 +2678,10 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     elif isinstance(port, OpenRTM_aist.PortBase):
       self._rtcout.RTC_TRACE("addPort(PortBase)")
       port.setOwner(self.getObjRef())
+      self.onAddPort(port.getPortProfile())
 
     elif isinstance(port, RTC._objref_PortService):
       self._rtcout.RTC_TRACE("addPort(PortService)")
-    self.onAddPort(port.getPortProfile())
     return self._portAdmin.addPort(port)
 
 
@@ -2886,7 +2886,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # new interface. since 1.0.0-RELEASE
   def removePort(self, port):
     self._rtcout.RTC_TRACE("removePort()")
-    self.onRemovePort(port.getPortProfile())
+    if isinstance(port, OpenRTM_aist.PortBase) or isinstance(port, OpenRTM_aist.CorbaPort):
+      self.onRemovePort(port.getPortProfile())
     return self._portAdmin.removePort(port)
 
 
