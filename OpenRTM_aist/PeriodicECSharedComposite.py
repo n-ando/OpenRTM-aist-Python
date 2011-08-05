@@ -51,7 +51,7 @@ def stringToStrVec(v, _is):
   return True
 
 
-class setCallback(OpenRTM_aist.OnSetConfigurationSetCallback):
+class setCallback(OpenRTM_aist.ConfigurationSetListener):
   def __init__(self, org):
     self._org = org
     pass
@@ -61,7 +61,7 @@ class setCallback(OpenRTM_aist.OnSetConfigurationSetCallback):
 
 
 
-class addCallback(OpenRTM_aist.OnAddConfigurationAddCallback):
+class addCallback(OpenRTM_aist.ConfigurationSetListener):
   def __init__(self, org):
     self._org = org
     pass
@@ -645,8 +645,14 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
     self._members = [[]]
     self.bindParameter("members", self._members, "", stringToStrVec)
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("rtobject.periodic_ec_shared")
-    self._configsets.setOnSetConfigurationSet(setCallback(self._org))
-    self._configsets.setOnAddConfigurationSet(addCallback(self._org))
+    self._configsets.addConfigurationSetListener(\
+      OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET,
+      setCallback(self._org))
+
+    self._configsets.addConfigurationSetListener(\
+      OpenRTM_aist.ConfigurationSetListenerType.ON_ADD_CONFIG_SET,
+      addCallback(self._org))
+
     return
 
 
