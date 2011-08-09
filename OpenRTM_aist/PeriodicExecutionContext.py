@@ -376,6 +376,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._comps = []
     self._profile = RTC.ExecutionContextProfile(RTC.PERIODIC, rate_, None, [], [])
     self._ref = self._this()
+    self._mutex_del = threading.RLock()
 
     return
 
@@ -387,12 +388,14 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._worker._cond.notify()
     self._worker._cond.release()
     self._running = False
-    self.wait()
+    #self.wait()
 
     self._profile.owner = None
     self._profile.paarticipants = []
     self._profile.properties = []
+    guard = OpenRTM_aist.ScopedLock(self._mutex_del)
     Task.__del__(self)
+    del guard
 
   ##
   # @if jp
@@ -431,6 +434,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._rtcout.RTC_TRACE("svc()")
     flag = True
 
+    guard = OpenRTM_aist.ScopedLock(self._mutex_del)
     while flag:
       self._worker._cond.acquire()
       while not self._worker._running:
@@ -447,7 +451,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
         time.sleep(sec_)
 
       flag = self._running
-
+    del guard
     return 0
 
 

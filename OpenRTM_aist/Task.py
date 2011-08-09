@@ -26,9 +26,10 @@ class Task:
     
   def __del__(self):
     self._count = 0
-    if self._thread:
-      self._thread.join()
-      self._thread = None
+    #if self._thread:
+    #  if self._thread.isAlive():
+    #    self._thread.join()
+    self._thread = None
     return
 
 
@@ -49,7 +50,6 @@ class Task:
       self._thread = threading.Thread(target=self.svc_run)
       self._count += 1
       self._thread.start()
-
     return
 
 
