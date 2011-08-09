@@ -2678,6 +2678,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     elif isinstance(port, OpenRTM_aist.PortBase):
       self._rtcout.RTC_TRACE("addPort(PortBase)")
       port.setOwner(self.getObjRef())
+      port.setPortConnectListenerHolder(self._portconnListeners)
       self.onAddPort(port.getPortProfile())
 
     elif isinstance(port, RTC._objref_PortService):
@@ -4443,7 +4444,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     if self._manager:
       self._rtcout.RTC_DEBUG("Cleanup on Manager")
       self._manager.notifyFinalized(self)
-      
+
     return
 
   # inline void preOnInitialize(UniqueId ec_id)
