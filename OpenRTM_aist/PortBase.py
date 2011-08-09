@@ -2301,7 +2301,7 @@ class PortBase(RTC__POA.PortService):
   #                                ReturnCode_t ret)
   def onPublishInterfaces(self, portname, profile, ret):
     if self._portconnListeners != None:
-      type = OpenRTM_aist.PortConnectRetListenerType.ON_UNSUBSCRIBE_INTERFACES
+      type = OpenRTM_aist.PortConnectRetListenerType.ON_PUBLISH_INTERFACES
       self._portconnListeners.portconnret_[type].notify(portname, profile, ret)
     return
 
