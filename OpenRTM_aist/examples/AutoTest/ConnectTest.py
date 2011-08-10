@@ -8,12 +8,13 @@
 ## コンポーネント接続テスト
 ##
 
-from rtc_handle import *
+from rtc_handle10_11 import *
 from BasicDataType_idl import *
 import time
 import commands
 import SDOPackage
 import os
+import sys
 
 ##--------------------------------------------------------------------
 g_test_name = "<< component connection test >>"
