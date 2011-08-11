@@ -176,6 +176,44 @@ class ConsoleIn(OpenRTM_aist.DataFlowComponentBase):
     print "onDetachExecutionContextFunc"
     return
 
+
+  def onNotifyConnectFunc(self, pname, prof):
+    print "onNotifyConnectFunc pname: ",pname
+    return
+
+  def onNotifyDisconnectFunc(self, pname, prof):
+    print "onNotifyDisconnectFunc pname: ",pname
+    return
+
+  def onUnsubscribeInterfacesFunc(self, pname, profile):
+    print "onUnsubscribeInterfacesFunc pname: ", pname
+    return
+
+  def onPublishInterfacesFunc(self, portname, profile, ret):
+    print "onPublishInterfacesFunc pname: ", portname, " ret: ", ret
+    return
+
+  def onConnectNextportFunc(self, portname, profile, ret):
+    print "onConnectNextportFunc pname: ", portname, " ret: ", ret
+    return
+
+  def onSubscribeInterfacesFunc(self, portname, profile, ret):
+    print "onSubscribeInterfacesFunc pname: ", portname, " ret: ", ret
+    return
+
+  def onConnectedFunc(self, portname, profile, ret):
+    print "onConnectedFunc pname: ", portname, " ret: ", ret
+    return
+
+  def onDisconnectNextportFunc(self, portname, profile, ret):
+    print "onDisconnectNextportFunc pname: ", portname, " ret: ", ret
+    return
+
+  def onDisconnectedFunc(self, portname, profile, ret):
+    print "onDisconnectedFunc pname: ", portname, " ret: ", ret
+    return
+
+
   def onInitialize(self):
     self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_FINALIZE,
                                        self.preOnFinalizeFunc)
@@ -229,6 +267,27 @@ class ConsoleIn(OpenRTM_aist.DataFlowComponentBase):
                                self.onAddPortFunc)
     self.addPortActionListener(OpenRTM_aist.PortActionListenerType.REMOVE_PORT,
                                self.onRemovePortFunc)
+
+
+    self.addPortConnectListener(OpenRTM_aist.PortConnectListenerType.ON_NOTIFY_CONNECT,
+                                self.onNotifyConnectFunc)
+    self.addPortConnectListener(OpenRTM_aist.PortConnectListenerType.ON_NOTIFY_DISCONNECT,
+                                self.onNotifyDisconnectFunc)
+    self.addPortConnectListener(OpenRTM_aist.PortConnectListenerType.ON_UNSUBSCRIBE_INTERFACES,
+                                self.onUnsubscribeInterfacesFunc)
+
+    self.addPortConnectRetListener(OpenRTM_aist.PortConnectRetListenerType.ON_PUBLISH_INTERFACES,
+                                   self.onPublishInterfacesFunc)
+    self.addPortConnectRetListener(OpenRTM_aist.PortConnectRetListenerType.ON_CONNECT_NEXTPORT,
+                                   self.onConnectNextportFunc)
+    self.addPortConnectRetListener(OpenRTM_aist.PortConnectRetListenerType.ON_SUBSCRIBE_INTERFACES,
+                                   self.onSubscribeInterfacesFunc)
+    self.addPortConnectRetListener(OpenRTM_aist.PortConnectRetListenerType.ON_CONNECTED,
+                                   self.onConnectedFunc)
+    self.addPortConnectRetListener(OpenRTM_aist.PortConnectRetListenerType.ON_DISCONNECT_NEXT,
+                                   self.onDisconnectNextportFunc)
+    self.addPortConnectRetListener(OpenRTM_aist.PortConnectRetListenerType.ON_DISCONNECTED,
+                                   self.onDisconnectedFunc)
 
 
     self._data = RTC.TimedLong(RTC.Time(0,0),0)
