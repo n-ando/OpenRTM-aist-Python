@@ -13,6 +13,42 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
+import threading
+
+class Lock:
+  """
+  """
+
+  ##
+  # @if jp
+  # @brief コンストラクタ
+  #
+  # コンストラクタ
+  #
+  # @param self
+  # @param mutex ロック用ミューテックス
+  #
+  # @else
+  #
+  # @endif
+  def __init__(self, mutex):
+    self.mutex = mutex
+    self.mutex.acquire()
+
+
+  ##
+  # @if jp
+  # @brief デストラクタ
+  #
+  # デストラクタ
+  #
+  # @param self
+  #
+  # @else
+  #
+  # @endif
+  def __del__(self):
+    self.mutex.release()
 
 #============================================================
 
@@ -315,6 +351,7 @@ class PortConnectListenerHolder:
   # @endif
   def __init__(self):
     self._listeners = []
+    self._mutex = threading.RLock()
     return
 
     
@@ -325,7 +362,12 @@ class PortConnectListenerHolder:
   # @brief Destructor
   # @endif
   def __del__(self):
-    pass
+    guard = Lock(self._mutex)
+    for listener in self._listeners:
+      if listener.listener:
+        listener.listener = None
+    del guard
+    return
     
 
   ##
@@ -350,6 +392,9 @@ class PortConnectListenerHolder:
   # @endif
   #void addListener(PortConnectListener* listener, bool autoclean);
   def addListener(self, listener, autoclean):
+    guard = Lock(self._mutex)
+    self._listeners.append(Entry(listener, autoclean))
+    del guard
     return
 
     
@@ -371,6 +416,15 @@ class PortConnectListenerHolder:
   # @endif
   #void removeListener(PortConnectListener* listener);
   def removeListener(self, listener):
+    guard = Lock(self._mutex)
+    len_ = len(self._listeners)
+    for i in range(len_):
+      if (self._listeners[i].listener == listener) and self._listeners[i].autoclean:
+        self._listeners[i].listener = None
+      del self._listeners[i]
+      del guard
+      return
+    del guard
     return
 
 
@@ -392,8 +446,11 @@ class PortConnectListenerHolder:
   # @endif
   #void notify(const char* portname, RTC::ConnectorProfile& profile);
   def notify(self, portname, profile):
-    pass
-
+    guard = Lock(self._mutex)
+    for listener in self._listeners:
+      listener.listener(portname, profile)
+    del guard
+    return
 
 
 ##
@@ -424,6 +481,7 @@ class PortConnectRetListenerHolder:
   #PortConnectRetListenerHolder();
   def __init__(self):
     self._listeners = []
+    self._mutex = threading.RLock()
     return
 
 
@@ -434,7 +492,13 @@ class PortConnectRetListenerHolder:
   # @brief Destructor
   # @endif
   def __del__(self):
-    pass
+    guard = Lock(self._mutex)
+    for listener in self._listeners:
+      if listener.listener:
+        listener.listener = None
+    del guard
+    return
+
 
     
   ##
@@ -459,6 +523,9 @@ class PortConnectRetListenerHolder:
   # @endif
   #void addListener(PortConnectRetListener* listener, bool autoclean);
   def addListener(self, listener, autoclean):
+    guard = Lock(self._mutex)
+    self._listeners.append(Entry(listener, autoclean))
+    del guard
     return
 
     
@@ -480,6 +547,15 @@ class PortConnectRetListenerHolder:
   # @endif
   #void removeListener(PortConnectRetListener* listener);
   def removeListener(self, listener):
+    guard = Lock(self._mutex)
+    len_ = len(self._listeners)
+    for i in range(len_):
+      if (self._listeners[i].listener == listener) and self._listeners[i].autoclean:
+        self._listeners[i].listener = None
+      del self._listeners[i]
+      del guard
+      return
+    del guard
     return
 
     
@@ -504,6 +580,10 @@ class PortConnectRetListenerHolder:
   #void notify(const char* portname, RTC::ConnectorProfile& profile,
   #            ReturnCode_t ret);
   def notify(self, portname, profile, ret):
+    guard = Lock(self._mutex)
+    for listener in self._listeners:
+      listener.listener(portname, profile, ret)
+    del guard
     return
 
 
