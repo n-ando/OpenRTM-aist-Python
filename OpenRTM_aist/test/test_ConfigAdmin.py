@@ -242,6 +242,78 @@ class TestConfigAdmin(unittest.TestCase):
     return 
 
     
+  def test_addremoveConfigurationParamListener(self):
+    listener = ConfigParamListenerCallback()
+    self._ca.addConfigurationParamListener(OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM,
+                                           listener)
+    self._ca.onUpdateParam("","")
+    self._ca.removeConfigurationParamListener(OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM,
+                                              listener)
+    return
+
+  def test_addremoveConfigurationSetListener(self):
+    listener = ConfigSetListenerCallback()
+    self._ca.addConfigurationSetListener(OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET,
+                                         listener)
+    self._ca.onSetConfigurationSet(None)
+    self._ca.removeConfigurationSetListener(OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET,
+                                            listener)
+    self._ca.addConfigurationSetListener(OpenRTM_aist.ConfigurationSetListenerType.ON_ADD_CONFIG_SET,
+                                         listener)
+    self._ca.onSetConfigurationSet(None)
+    self._ca.removeConfigurationSetListener(OpenRTM_aist.ConfigurationSetListenerType.ON_ADD_CONFIG_SET,
+                                            listener)
+    return
+
+  def test_addremoveConfigurationSetNameListener(self):
+    listener = ConfigSetNameListenerCallback()
+    self._ca.addConfigurationSetNameListener(OpenRTM_aist.ConfigurationSetNameListenerType.ON_UPDATE_CONFIG_SET,
+                                             listener)
+    self._ca.onUpdate("")
+    self._ca.removeConfigurationSetNameListener(OpenRTM_aist.ConfigurationSetNameListenerType.ON_UPDATE_CONFIG_SET,
+                                                listener)
+
+    self._ca.addConfigurationSetNameListener(OpenRTM_aist.ConfigurationSetNameListenerType.ON_REMOVE_CONFIG_SET,
+                                             listener)
+    self._ca.onUpdate("")
+    self._ca.removeConfigurationSetNameListener(OpenRTM_aist.ConfigurationSetNameListenerType.ON_REMOVE_CONFIG_SET,
+                                                listener)
+
+    self._ca.addConfigurationSetNameListener(OpenRTM_aist.ConfigurationSetNameListenerType.ON_ACTIVATE_CONFIG_SET,
+                                             listener)
+    self._ca.onUpdate("")
+    self._ca.removeConfigurationSetNameListener(OpenRTM_aist.ConfigurationSetNameListenerType.ON_ACTIVATE_CONFIG_SET,
+                                                listener)
+    return
+
+class ConfigParamListenerCallback(OpenRTM_aist.ConfigurationParamListener):
+  def __init__(self):
+    OpenRTM_aist.ConfigurationParamListener.__init__(self)
+    return
+
+  def __call__(self, config_set_name, config_param_name):
+    print "ConfigParamListenerCallback called"
+    return
+
+class ConfigSetListenerCallback(OpenRTM_aist.ConfigurationSetListener):
+  def __init__(self):
+    OpenRTM_aist.ConfigurationSetListener.__init__(self)
+    return
+
+  def __call__(self, config_set):
+    print "ConfigSetListenerCallback called"
+    return
+
+class ConfigSetNameListenerCallback(OpenRTM_aist.ConfigurationSetNameListener):
+  def __init__(self):
+    OpenRTM_aist.ConfigurationSetNameListener.__init__(self)
+    return
+
+  def __call__(self, config_set_name):
+    print "ConfigSetNameListenerCallback called"
+    return
+
+
 ############### test #################
 if __name__ == '__main__':
         unittest.main()
