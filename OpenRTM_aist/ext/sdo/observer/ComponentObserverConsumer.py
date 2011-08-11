@@ -15,10 +15,12 @@
 #     All rights reserved.
 #
 
+import sys
+sys.path.insert(1,".")
+
 import RTC
 import OpenRTM
 import OpenRTM_aist
-
 
 ##
 # @if jp
