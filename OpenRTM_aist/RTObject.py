@@ -3530,7 +3530,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # - PRE_ON_SHUTDOWN:      onShutdown 直前
   # - PRE_ON_ACTIVATED:     onActivated 直前
   # - PRE_ON_DEACTIVATED:   onDeactivated 直前
-  # - PRE_ON_ABORTED:       onAborted 直前
+  # - PRE_ON_ABORTING:       onAborted 直前
   # - PRE_ON_ERROR:         onError 直前
   # - PRE_ON_RESET:         onReset 直前
   # - PRE_ON_EXECUTE:       onExecute 直前
@@ -3564,7 +3564,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # - PRE_ON_SHUTDOWN:      before onShutdown
   # - PRE_ON_ACTIVATED:     before onActivated
   # - PRE_ON_DEACTIVATED:   before onDeactivated
-  # - PRE_ON_ABORTED:       before onAborted
+  # - PRE_ON_ABORTING:       before onAborted
   # - PRE_ON_ERROR:         before onError
   # - PRE_ON_RESET:         before onReset
   # - PRE_ON_EXECUTE:       before onExecute
@@ -3649,7 +3649,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # - POST_ON_SHUTDOWN:      onShutdown 直後
   # - POST_ON_ACTIVATED:     onActivated 直後
   # - POST_ON_DEACTIVATED:   onDeactivated 直後
-  # - POST_ON_ABORTED:       onAborted 直後
+  # - POST_ON_ABORTING:       onAborted 直後
   # - POST_ON_ERROR:         onError 直後
   # - POST_ON_RESET:         onReset 直後
   # - POST_ON_EXECUTE:       onExecute 直後
@@ -3683,7 +3683,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # - POST_ON_SHUTDOWN:      after onShutdown
   # - POST_ON_ACTIVATED:     after onActivated
   # - POST_ON_DEACTIVATED:   after onDeactivated
-  # - POST_ON_ABORTED:       after onAborted
+  # - POST_ON_ABORTING:       after onAborted
   # - POST_ON_ERROR:         after onError
   # - POST_ON_RESET:         after onReset
   # - POST_ON_EXECUTE:       after onExecute
