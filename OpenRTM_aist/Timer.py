@@ -201,8 +201,8 @@ class Timer:
     for i in range(len(self._tasks)):
       self._tasks[i].remains = self._tasks[i].remains - self._interval
       if self._tasks[i].remains.sign() <= 0.0:
-        self._tasks[i].listener.invoke()
         self._tasks[i].remains = self._tasks[i].period
+        self._tasks[i].listener.invoke()
     del guard
     return
 
