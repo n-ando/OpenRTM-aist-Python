@@ -33,8 +33,6 @@ import SDOPackage, SDOPackage__POA
 #
 # このオブジェクトのライフサイクルは以下の通り。
 #
-# -# オブジェクトは通常、共有オブジェクト (so, DLL) としてコンパイル・
-#    リンクされる。
 # -# マネージャに対してロードされるとモジュール初期化関数によりオブ
 #    ジェクトファクトリが、SdoServiceProviderFactory に対して登録さ
 #    れる。登録のキーにはサービスインターフェースの IFR (interface
@@ -43,14 +41,14 @@ import SDOPackage, SDOPackage__POA
 #    指定されているサービスインプロバイダは、RTCの起動と同時にインス
 #    タンス化される。
 # -# インスタンス化後、初期化関数 init() が呼ばれる。引数には当該サー
-#    ビスのためのコンフィギュレーションオプションが coil::Propertyに
+#    ビスのためのコンフィギュレーションオプションが Propertyに
 #    より渡される。
 # -# インスタンス化されたSDOサービスプロバイダは
-#    SDO::get_get_sdo_service() により外部からアクセスされる。このと
+#    SDO.get_sdo_service() により外部からアクセスされる。このと
 #    き、サービスを指定するIDはIFR IDと同じである。このときのアタッ
 #    チシーケンスは以下の通り。
 # -# RTCがfinalizeされ解体されると同時にSDOサービスプロバイダも解体
-#    されるが、その際にはSdoServiceProviderBase::finalize()がコール
+#    されるが、その際にはSdoServiceProviderBase.finalize()がコール
 #    されるので、ここでリソースの解放など終了処理を行う。
 #
 # <pre>
@@ -87,14 +85,12 @@ import SDOPackage, SDOPackage__POA
 # - finalize(): 終了処理。コンシューマがデタッチされる際に呼び出され
 #   る関数。関数内では終了処理を実装する。
 #
-# SdoServiceProvider は通常共有オブジェクトとしてコンパイル・リンク
-# される。共有オブジェクトのエントリポイントは通常コンパイルされたファ
-# イル名の basename + "Init" にしておく。以下に、クラス名、ファイル
+# SdoServiceProviderのエントリポイントは通常、ファイル名の basename + "Init" 
+# にしておく。以下に、クラス名、ファイル
 # 名、エントリポイント関数名の推奨例を示す。
 #
-# - 実装クラス名: MySdoServiceConusmer 
-# - ファイル名: MySdoServiceProvider.h. MySdoServiceProvider.cpp
-# - 共有オブジェクト名: MySdoServiceProvider.so (or DLL)
+# - 実装クラス名: MySdoServiceProvider
+# - ファイル名: MySdoServiceProvider.py
 # - エントリポイント関数名: MySdoServiceProviderInit()
 #
 # エントリポイント関数は通常以下のように、SdoServiceProviderFactory
@@ -102,19 +98,12 @@ import SDOPackage, SDOPackage__POA
 # ような関数になる。
 #
 # <pre>
-# extern "C"
-# {
-#   void MySdoServiceProviderInit()
-#   {
-#     RTC::SdoServiceProviderFactory& factory
-#       = RTC::SdoServiceProviderFactory::instance();
-#     factory.addFactory(CORBA_Util::toRepositoryId<OpenRTM::MySdoService>(),
-#                        ::coil::Creator< ::RTC::SdoServiceProviderBase,
-#                        ::RTC::MySdoServiceProvider>,
-#                        ::coil::Destructor< ::RTC::SdoServiceProviderBase,
-#                        ::RTC::MySdoServiceProvider>);
-#   }
-# };
+#   def MySdoServiceProviderInit(mgr=None):
+#     factory = OpenRTM_aist.SdoServiceProviderFactory.instance()
+#     factory.addFactory(OpenRTM.MySdoService._NP_RepositoryId,
+#                        MySdoServiceProvider,
+#                        OpenRTM_aist.Delete)
+#     return
 # </pre>
 # 
 # @else
