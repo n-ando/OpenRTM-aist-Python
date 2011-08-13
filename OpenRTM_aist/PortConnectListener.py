@@ -362,12 +362,7 @@ class PortConnectListenerHolder:
   # @brief Destructor
   # @endif
   def __del__(self):
-    guard = Lock(self._mutex)
-    for listener in self._listeners:
-      if listener.listener:
-        listener.listener = None
-    del guard
-    return
+    pass
     
 
   ##
@@ -492,12 +487,7 @@ class PortConnectRetListenerHolder:
   # @brief Destructor
   # @endif
   def __del__(self):
-    guard = Lock(self._mutex)
-    for listener in self._listeners:
-      if listener.listener:
-        listener.listener = None
-    del guard
-    return
+    pass
 
 
     
