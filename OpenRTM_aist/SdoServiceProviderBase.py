@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- Python -*-
+# -*- coding: euc-jp -*-
 
 ##
 # @file SdoServiceProviderBase.py
