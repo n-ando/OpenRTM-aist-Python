@@ -17,14 +17,10 @@ env = RtmEnv(sys.argv, ["localhost:2809"])
 ## Get Manager object reference
 mgr_name = socket.gethostname()+".host_cxt/manager.mgr"
 naming = CorbaNaming(env.orb, "localhost:2809")
-print "naming.resolve: ", naming.resolve(mgr_name)
 manager = naming.resolve(mgr_name)._narrow(RTM.Manager)
 
-print "0"
 listo = env.name_space["localhost:2809"].list_obj()
-print "1"
 env.name_space['localhost:2809'].rtc_handles.keys()
-print "2"
 
 ns = env.name_space['localhost:2809']
 
@@ -33,7 +29,6 @@ config = comp.rtc_ref.get_configuration()
 configset = config.get_configuration_sets()
 config_data = configset[0].configuration_data
 
-print comp.rtc_ref.exit()
 
 time.sleep(1)
 
@@ -45,7 +40,6 @@ loop_count = 1000
 for i in range(loop_count):
   manager.create_component("PeriodicECSharedComposite?instance_name=aaa")
   env.name_space["localhost:2809"].list_obj()
-  print "ns.rtc_handles: ", ns.rtc_handles
   aaa=ns.rtc_handles[socket.gethostname()+".host_cxt/aaa.rtc"]
   org=aaa.rtc_ref.get_owned_organizations()[0]
   org.set_members ([motor.rtc_ref,sensor.rtc_ref,controller.rtc_ref])
