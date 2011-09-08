@@ -119,6 +119,11 @@ class Time:
     self.usec  = long(float(tm_f) * float(usec_per_sec)) # sec -> usec (micro second)
     return OpenRTM_aist.TimeValue(self.sec, self.usec)
 
+
+  def getTime(self):
+    return OpenRTM_aist.TimeValue(self.sec, self.usec)
+
+
 ##
 # TimeMeasure object
 #
