@@ -361,23 +361,25 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
 
     self._worker = self.Worker()
 
+    global DEFAULT_PERIOD
+
     if rate is None:
-      self._rate = 1000.0
-      rate_ = 1000.0
-      self._usec = long(1000)
+      self._period = OpenRTM_aist.TimeValue(DEFAULT_PERIOD)
     else:
-      self._rate = rate
-      rate_ = rate
       if rate == 0:
-        rate_ = 10000000
-      self._usec = long(1000000/rate_)
-      if self._usec == 0:
+        rate = 1.0 / DEFAULT_PERIOD
+      self._period = OpenRTM_aist.TimeValue(1.0 / rate)
+
+      if self._period.sec() == 0  and self._period.usec() < 0.000001:
         self._nowait = True
+
+    self._rtcout.RTC_DEBUG("Actual rate: %d [sec], %d [usec]",
+                           (self._period.sec(), self._period.usec()))    
+
     self._comps = []
-    self._profile = RTC.ExecutionContextProfile(RTC.PERIODIC, rate_, None, [], [])
+    self._profile = RTC.ExecutionContextProfile(RTC.PERIODIC, (1.0/self._period.toDouble()), None, [], [])
     self._ref = self._this()
     self._mutex_del = threading.RLock()
-
     return
 
 
@@ -433,12 +435,15 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   def svc(self):
     self._rtcout.RTC_TRACE("svc()")
     flag = True
-
+    count_ = 0
+    
     guard = OpenRTM_aist.ScopedLock(self._mutex_del)
     while flag:
       self._worker._cond.acquire()
       while not self._worker._running:
         self._worker._cond.wait()
+
+      t0_ = OpenRTM_aist.Time()
 
       if self._worker._running:
         for comp in self._comps:
@@ -446,10 +451,28 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
 
       self._worker._cond.release()
 
-      sec_ = float(self._usec)/1000000.0
-      if not self._nowait:
-        time.sleep(sec_)
+      t1_ = OpenRTM_aist.Time()
 
+      if count_ > 1000:
+        exctm_ = (t1_ - t0_).getTime().toDouble()
+        slptm_ = self._period.toDouble() - exctm_
+        self._rtcout.RTC_PARANOID("Period:    %f [s]", self._period.toDouble())
+        self._rtcout.RTC_PARANOID("Execution: %f [s]", exctm_)
+        self._rtcout.RTC_PARANOID("Sleep:     %f [s]", slptm_)
+
+      t2_ = OpenRTM_aist.Time()
+
+      if not self._nowait and self._period.toDouble() > ((t1_ - t0_).getTime().toDouble()):
+        if count_ > 1000:
+          self._rtcout.RTC_PARANOID("sleeping...")
+        slptm_ = self._period.toDouble() - (t1_ - t0_).getTime().toDouble()
+        time.sleep(slptm_)
+
+      if count_ > 1000:
+        t3_ = OpenRTM_aist.Time()
+        self._rtcout.RTC_PARANOID("Slept:     %f [s]", (t3_ - t2_).getTime().toDouble())
+        count_ = 0
+      count_ += 1
       flag = self._running
     del guard
     return 0
@@ -661,8 +684,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._rtcout.RTC_TRACE("set_rate(%f)", rate)
     if rate > 0.0:
       self._profile.rate = rate
-      self._usec = long(1000000/rate)
-      if self._usec == 0:
+      self._period.set_time(1.0/rate)
+      if long(self._period.toDouble()) == 0:
         self._nowait = True
 
       for comp in self._comps:
