@@ -874,7 +874,7 @@ class Manager:
     # The property specified by the parameter of createComponent() is set.
     # The property("exported_ports") specified by the parameter of createComponent()
     # must be set here.
-    comp.setProperties(comp_prop)
+    #comp.setProperties(comp_prop)
 
     # Component initialization
     if comp.initialize() != RTC.RTC_OK:
@@ -1173,8 +1173,13 @@ class Manager:
                            "YES", "NO", True) and \
                            not OpenRTM_aist.toBool(self._config.getProperty("manager.is_master"),
                                                    "YES", "NO", False):
+      tm = OpenRTM_aist.TimeValue(10, 0)
+      if self._config.findNode("manager.auto_shutdown_duration"):
+        duration = float(self._config.getProperty("manager.auto_shutdown_duration"))
+        if duration:
+          tm.set_time(duration)
+
       if self._timer:
-        tm = OpenRTM_aist.TimeValue(10, 0)
         self._timer.registerListenerObj(self,
                                         OpenRTM_aist.Manager.shutdownOnNoRtcs,
                                         tm)
@@ -1972,6 +1977,9 @@ class Manager:
       else:
         name_prop.load(conff)
 
+    if self._config.findNode(category + "." + inst_name):
+      name_prop.mergeProperties(self._config.getNode(category + "." + inst_name))
+
     if self._config.getProperty(type_conf) != "":
       try:
         conff = open(self._config.getProperty(type_conf))
@@ -1980,6 +1988,9 @@ class Manager:
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       else:
         type_prop.load(conff)
+
+    if self._config.findNode(category + "." + type_name):
+      type_prop.mergeProperties(self._config.getNode(category + "." + type_name))
 
     comp.setProperties(prop)
     type_prop.mergeProperties(name_prop)
