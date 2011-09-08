@@ -685,7 +685,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     if rate > 0.0:
       self._profile.rate = rate
       self._period.set_time(1.0/rate)
-      if long(self._period.toDouble()) == 0:
+      if self._period.toDouble() == 0.0:
         self._nowait = True
 
       for comp in self._comps:
