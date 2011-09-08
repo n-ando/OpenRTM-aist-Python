@@ -18,57 +18,9 @@ from omniORB import *
 from omniORB import any
 import sys
 import copy
-
-import OpenRTM_aist
-
-TIMEOUT_TICK_USEC = 10.0
-USEC_PER_SEC      = 1000000.0
-TIMEOUT_TICK_SEC = TIMEOUT_TICK_USEC/USEC_PER_SEC
-
-
 import time
 
-
-
-##
-# @if jp
-# @class Time
-# @brief 時間管理用クラス
-# 
-# 指定した時間値を保持するためのクラス。
-# 
-# @since 0.4.1
-# 
-# @else
-# 
-# @endif
-class Time:
-
-
-
-  ##
-  # @if jp
-  # @brief コンストラクタ
-  #
-  # コンストラクタ。
-  #
-  # @param self
-  #
-  # @else
-  # @brief Constructor.
-  #
-  # Constructor.
-  #
-  # @param self
-  #
-  # @endif
-  def __init__(self):
-    tm = time.time()
-    tm_f       = tm - int(tm)     # 小数部の取り出し
-    self.sec   = int(tm - tm_f)   # 整数部の取り出し
-    self.usec  = int(tm_f * USEC_PER_SEC) # sec -> usec (micro second)
-
-
+import OpenRTM_aist
 
 ##
 # @if jp
