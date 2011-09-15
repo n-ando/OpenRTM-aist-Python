@@ -27,7 +27,7 @@ import OpenRTM_aist
 # void setTimestamp(DataType& data)
 def setTimestamp(data):
   # set timestamp
-  tm = Time()
+  tm = OpenRTM_aist.Time()
   data.tm.sec  = tm.sec
   data.tm.nsec = tm.usec * 1000
 
