@@ -730,7 +730,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
   # void addConnectorListener(ConnectorListenerType type,
   #                           ConnectorListener* listener,
   #                           bool autoclean)
-  def addConnectorListener(self, listener_type, listener, autoclean):
+  def addConnectorListener(self, listener_type, listener, autoclean = True):
     self._rtcout.RTC_TRACE("addConnectorListener()")
 
     if listener_type < OpenRTM_aist.ConnectorListenerType.CONNECTOR_LISTENER_NUM:
