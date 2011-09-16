@@ -47,7 +47,7 @@ class Factory:
 
     for id in self._creators.keys():
       idlist.append(id)
-
+    idlist.sort()
     return idlist
 
 
