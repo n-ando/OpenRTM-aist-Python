@@ -65,7 +65,7 @@ data = [
 ##
 base_dir = os.getenv("OPENRTM_PY")
 if base_dir == None:
-    base_dir = "C:\\distribution\\OpenRTM-aist-Python-1.0.0\\"
+    base_dir = "C:\\distribution\\OpenRTM-aist-Python-1.1.0\\"
 else:
     base_dir = base_dir.replace("\"", "")
     base_dir += "\\"

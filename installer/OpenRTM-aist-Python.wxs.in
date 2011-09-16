@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">   
-  <?define ProductName = "OpenRTM-aist-1.0.1 for Python"?>
-  <Product Name="OpenRTM-aist-1.0.1 for Python" 
-           Id="11043B94-16BA-11DF-97DA-001C23DA0BDA"
+  <?define ProductName = "{% Product.Name %}-{% Product.Version %} for Python"?>
+  <Product Name="{% Product.Name %}-{% Product.Version %} for Python" 
+           Id="{% Product.Id %}"
            Language='$(var.language)'
            Codepage='$(var.codepage)'
-           Version="1.0.0" 
-           Manufacturer="AIST"
-           UpgradeCode="958ED570-5471-4E82-8378-01C6068F31C2">
+           Version="{% Product.Version %}" 
+           Manufacturer="{% Product.Manufacturer %}"
+           UpgradeCode="{% Product.UpgradeCode %}">
     <Package Id="*" 
              Keywords="Installer"
-             Description="OpenRTM-aist-Pyton Installer"
-             InstallerVersion="300"
+             Description="{% Package.Description %}"
+             InstallerVersion="{% Package.InstallerVersion %}"
              Languages='$(var.language)'
-             Compressed="yes"
+             Compressed="{% Package.Compressed %}"
              SummaryCodepage='$(var.codepage)' />
 
-    <!-- プロパティ -->
+    <!-- Property -->
     <Property Id='USERPROFILEDIR' Value='%USERPROFILE%' />
 
     <!-- RTSE Property-->
     <Property Id="RTSE_FILEEXISTS">
-      <DirectorySearch Id="CheckFileDir" Path="C:\Program Files">
+      <DirectorySearch Id="CheckFileDir" Path="C:\Program Files\OpenRTM-aist\{% Product.ShortVersion %}">
         <DirectorySearch Id="CheckFileDir2" Path ="OpenRTP">
-          <DirectorySearch Id="CheckFileDir3" Path ="RTSystemEditor">
+          <DirectorySearch Id="CheckFileDir3" Path ="{% Product.ShortVersion %}\RTSystemEditor">
             <FileSearch Id="CheckFile" Name="RTSystemEditorRCP.exe" />
           </DirectorySearch>
         </DirectorySearch>
@@ -60,8 +60,7 @@
     <SetProperty Id="PYTHON26DIR" After="AppSearch" Value="[PYTHON26]">
     </SetProperty>
 
-    <!-- アップグレード -->
-    <Upgrade Id="958ED570-5471-4E82-8378-01C6068F31C2">
+    <Upgrade Id="{% Product.UpgradeCode %}">
       <UpgradeVersion OnlyDetect="yes"
                       Minimum="1.0.0"
                       Maximum="1.1.0"
@@ -69,7 +68,7 @@
                       IncludeMinimum="no" /> 
       <UpgradeVersion OnlyDetect="no"
                       Minimum="1.0.0"
-                      Maximum="1.0.0.1"
+                      Maximum="1.1.0.1"
                       Property="OLDERVERSIONBEINGUPGRADED"
                       IncludeMaximum="no" /> 
       <UpgradeVersion OnlyDetect='no' Property='PREVIOUSFOUND'
@@ -80,7 +79,6 @@
     <InstallExecuteSequence>
       <RemoveExistingProducts Before="InstallInitialize"/>
 
-      <!-- インストール完了時のIDLコンパイル実行 -->
       <Custom Action="IDLCOMPILE_PY24" After='InstallFinalize'>
 	NOT Installed AND PYTHON24
       </Custom>
@@ -91,7 +89,6 @@
 	NOT Installed AND PYTHON26
       </Custom>
 
-      <!-- アンインストール時のフォルダー削除(IDLコンパイル分) -->
       <Custom Action="REMOVEFOLDER_PY24" Before='InstallInitialize'>
 	Installed AND PYTHON24
       </Custom>
@@ -102,18 +99,15 @@
 	Installed AND PYTHON26
       </Custom>
 
-      <!-- アンインストール時のフォルダー削除(examples/Python) -->
       <Custom Action="REMOVEFOLDER_RTM" Before='InstallInitialize'>Installed</Custom>
 
     </InstallExecuteSequence>
 
-    <!-- メディア -->
     <Media Id="1" Cabinet="OpenRTMpython.cab" EmbedCab="yes"/>
 
-    <!-- 常にAll Users へ登録する場合は下記を有効にする -->
+    <!-- enable this value when you want register to ALL User -->
     <!-- <Property Id="ALLUSERS" Value="1" /> -->
 
-    <!-- インストール条件判定 -->
     <Condition Message="[ProductName] requires python 2.4, 2.5 or 2.6">
       <![CDATA[Installed OR (PYTHON24 <> "" OR PYTHON25 <> "" OR PYTHON26 <> "")]]>
     </Condition>
@@ -460,10 +454,12 @@
       </Directory>
 
 
-      <!-- Program Files フォルダ -->
+      <!-- Program Files -->
       <Directory Id="ProgramFilesFolder" SourceName="PFILE">
-        <Directory Id="INSTALLLOCATION" Name="OpenRTM-aist">
-          <Directory Id="Version" Name="1.0">
+        <Directory Id="INSTALLLOCATION"
+				   Name="{% Product.Name %}">
+		  <Directory Id="Version"
+					 Name="{% Product.ShortVersion %}">
 
             <!-- bin -->
             <Directory Id="bin" Name="bin">
@@ -861,21 +857,21 @@
             <!-- end of examples -->
             </Directory>
 
+			<!-- rtmtools components -->
+			<?if $(env.INCLUDE_OPENRTP) = YES ?>
+			<?include OpenRTP_inc.wxs ?>
+			<?endif ?>
+			<!-- end of rtmtools -->
+
           </Directory>
         </Directory>
 
-	<!-- rtmtools components -->
-	<?if $(env.INCLUDE_OPENRTP) = YES ?>
-	<?include OpenRTP_inc.wxs ?>
-	<?endif ?>
-	<!-- end of rtmtools -->
-
-      <!-- end of Program Files フォルダ -->
+      <!-- end of Program Files Folder -->
       </Directory>
 
-      <!-- プログラムフォルダ -->
       <Directory Id="ProgramMenuFolder">
-        <Directory Id="AppMenuFolder" Name="OpenRTM-aist">
+        <Directory Id="AppMenuFolder"
+				   Name="{% Product.Name %} {% Product.ShortVersion %}">
           <Directory Id="PythonMenuFolder" Name="Python">
             <Directory Id="ToolsMenuFolder" Name="tools">
             </Directory>
@@ -892,7 +888,7 @@
     <!-- end of SourceDir -->
     </Directory>
 
-    <!-- 機能定義 omniORBpy24 -->
+    <!-- Function definition omniORBpy24 -->
     <Feature Id="omniORBpy24" Level="1" Title="OpenRTM-aist for Python 2.4"
              ConfigurableDirectory="PYTHON24DIR">
       <Condition Level="1"><![CDATA[ NOT PYTHON24 =  ""]]></Condition>
@@ -1010,7 +1006,7 @@
       </Feature>
     </Feature>
 
-    <!-- 機能定義 omniORBpy25 -->
+    <!-- Function definition omniORBpy25 -->
     <Feature Id="omniORBpy25" Level="1" Title="OpenRTM-aist for Python 2.5"
              ConfigurableDirectory="PYTHON25DIR">
       <Condition Level="1"><![CDATA[ NOT PYTHON25 =  ""]]></Condition>
@@ -1128,7 +1124,7 @@
       </Feature>
     </Feature>
 
-    <!-- 機能定義 omniORBpy26 -->
+    <!-- Function definition omniORBpy26 -->
     <Feature Id="omniORBpy26" Level="1" Title="OpenRTM-aist for Python 2.6"
              ConfigurableDirectory="PYTHON26DIR">
       <Condition Level="1"><![CDATA[ NOT PYTHON26 =  ""]]></Condition>
@@ -1235,7 +1231,8 @@
       </Feature>
 
       <!-- OpenRTM_aist -->
-      <Feature Id="Py26_OpenRTM_aist" Level="1" Title="OpenRTM-aist (Python)">
+      <Feature Id="Py26_OpenRTM_aist" Level="1" Title="OpenRTM-aist (Python)"
+			   ConfigurableDirectory="INSTALLLOCATION">
         <ComponentRef Id="Py26_RtmOpenrtm_aistUtilsRtcprof"/>
         <ComponentRef Id="Py26_RtmOpenrtm_aistUtilsRtcd"/>
         <ComponentRef Id="Py26_RtmOpenrtm_aistRoot"/>
@@ -1246,7 +1243,7 @@
       </Feature>
     </Feature>
 
-    <!-- 機能定義 OpenRTM-aist -->
+    <!-- Function definition OpenRTM-aist -->
     <Feature Id="ProductFeature" Level="1" Title="OpenRTM-aist (Python) common files"
              ConfigurableDirectory="INSTALLLOCATION">
 
@@ -1291,17 +1288,13 @@
 
       <!-- rtse rcp -->
       <Feature Id="RTSystemEditor" Level="1" Title="RTSystemEditor">
-	<ComponentRef Id="RTSystemEditor" />
-	<ComponentRef Id="configuration" />
-	<ComponentRef Id="plugins" />
-	<ComponentRef Id="org.eclipse.core.runtime.compatibility.registry_3.2.1.R32x_v20060907" />
+	<ComponentRef Id="Openrtp" />
+	<ComponentRef Id="OpenrtpConfiguration" />
+	<ComponentRef Id="OpenrtpPlugins" />
+	<ComponentRef Id="org.eclipse.core.runtime.compatibility.registry_3.2.200.v20080610" />
 	<ComponentRef Id="META_INF" />
-	<ComponentRef Id="org.eclipse.jdt.junit.runtime.nl1_3.2.1.v200609270227" />
-	<ComponentRef Id="META_INF_1" />
-	<ComponentRef Id="org.eclipse.jdt.junit.runtime_3.2.1.r321_v20060721" />
+	<ComponentRef Id="org.eclipse.equinox.launcher.win32.win32.x86_1.0.101.R34x_v20080731" />
 	<ComponentRef Id="META_INF_2" />
-	<ComponentRef Id="org.junit_3.8.1" />
-	<ComponentRef Id="META_INF_3" />
       </Feature>
     </Feature>
     <?endif ?>
@@ -1309,14 +1302,13 @@
     <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
     <WixVariable Id="WixUIBannerBmp" Value="Bitmaps/bannrbmp.bmp" />
     <WixVariable Id="WixUIDialogBmp" Value="Bitmaps/dlgbmp.bmp" />
+    <WixVariable Id="WixUICostingPopupOptOut" Value="1" Overridable="no" />
 
     <!-- <UIRef Id="WixUI_Mondo" /> -->
-    <!-- WixUI_Mondo にインストールの種類を選択するダイアログを追加したもの -->
     <UIRef Id="WixUI_Mondo_RTM" />
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
 
-    <!-- インストール完了時のIDLコンパイル実行 -->
     <CustomAction Id='IDLCOMPILE_PY24' Directory="PYTHON24DIR"
                   ExeCommand='"[bin]idlcompile.bat" "[bin]idlcompile.py" 2.4 "[Version]examples\Python"' 
                   Return='asyncWait' />
@@ -1329,7 +1321,6 @@
                   ExeCommand='"[bin]idlcompile.bat" "[bin]idlcompile.py" 2.6 "[Version]examples\Python"' 
                   Return='asyncWait' />
 
-    <!-- アンインストール時のフォルダー削除(IDLコンパイル分) -->
     <CustomAction Id='REMOVEFOLDER_PY24' Directory="PYTHON24DIR"
                   ExeCommand='cmd.exe /C RMDIR /Q /S Lib\\site-packages\\OpenRTM_aist' Return='ignore' />
     <CustomAction Id='REMOVEFOLDER_PY25' Directory="PYTHON25DIR"
@@ -1337,9 +1328,8 @@
     <CustomAction Id='REMOVEFOLDER_PY26' Directory="PYTHON26DIR"
                   ExeCommand='cmd.exe /C RMDIR /Q /S Lib\\site-packages\\OpenRTM_aist' Return='ignore' />
 
-      <!-- アンインストール時のフォルダー削除(examples/Python) -->
     <CustomAction Id='REMOVEFOLDER_RTM' Directory="INSTALLLOCATION"
-                  ExeCommand='cmd.exe /C RMDIR /Q /S 1.0\\examples\\Python' Return='ignore' />
+                  ExeCommand='cmd.exe /C RMDIR /Q /S {% Product.ShortVersion %}\\examples\\Python' Return='ignore' />
 
   </Product>
 </Wix>

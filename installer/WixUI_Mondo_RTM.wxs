@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
-    <!-- WixUI_Mondo にインストールの種類を選択するダイアログを追加したもの -->
     <Fragment>
         <Property Id='USERNAME' Value='[LogonUser]' />
         <Property Id="WixAppFolder" Value="WixPerMachineFolder" />
