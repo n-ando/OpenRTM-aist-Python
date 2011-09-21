@@ -160,8 +160,6 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
   # @endif
   #
   def __del__(self):
-    self.onDisconnect()
-    self.disconnect()
     return
 
 
@@ -255,6 +253,7 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
   # virtual ReturnCode disconnect();
   def disconnect(self):
     self._rtcout.RTC_TRACE("disconnect()")
+    self.onDisconnect()
     # delete consumer
     if self._provider:
       cfactory = OpenRTM_aist.InPortProviderFactory.instance()

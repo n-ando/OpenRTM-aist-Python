@@ -1028,6 +1028,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
       if id == self._connectors[idx].id():
         # Connector's dtor must call disconnect()
         self._connectors[idx].deactivate()
+        self._connectors[idx].disconnect()
         del self._connectors[idx]
         self._rtcout.RTC_TRACE("delete connector: %s", id)
         return

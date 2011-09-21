@@ -188,8 +188,6 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
   # @endif
   #
   def __del__(self):
-    self.onDisconnect()
-    self.disconnect()
     return
 
   ##
@@ -265,6 +263,7 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
   # virtual ReturnCode disconnect();
   def disconnect(self):
     self._rtcout.RTC_TRACE("disconnect()")
+    self.onDisconnect()
     # delete publisher
     if self._publisher:
       self._rtcout.RTC_DEBUG("delete publisher")
