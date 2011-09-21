@@ -159,8 +159,6 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
   # @endif
   #
   def __del__(self):
-    self.onDisConnect()
-    self.disconnect()
     return
 
 
@@ -212,6 +210,7 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
   # virtual ReturnCode disconnect();
   def disconnect(self):
     self._rtcout.RTC_TRACE("disconnect()")
+    self.onDisConnect()
     # delete provider
     if self._provider:
       OpenRTM_aist.OutPortProviderFactory.instance().deleteObject(self._provider)
