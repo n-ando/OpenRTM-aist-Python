@@ -162,8 +162,8 @@ def toConfigurationSet(conf, prop):
 #
 # @endif
 class Configuration_impl(SDOPackage__POA.Configuration):
-
-
+  """
+  """
 
   ##
   # @if jp
@@ -173,12 +173,19 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # コンストラクタ
   #
   # @param self
-  # @param configsets ConfigurationSetList
+  # @param configAdmin ConfigurationSetList
+  # @param sdoServiceAdmin SdoServiceAdmin
   # 
   # @else
+  # @brief class constructor
+  # @param self
+  # @param configAdmin ConfigurationSetList
+  # @param sdoServiceAdmin SdoServiceAdmin
   #
   # @endif
-  def __init__(self, configsets):
+  # Configuration_impl(RTC::ConfigAdmin& configAdmin,
+  #                    RTC::SdoServiceAdmin& sdoServiceAdmin);
+  def __init__(self, configAdmin, sdoServiceAdmin):
     """
      \var self._deviceProfile SDO DeviceProfile with mutex lock
     """
@@ -194,8 +201,10 @@ class Configuration_impl(SDOPackage__POA.Configuration):
     self._parameters = []
     self._params_mutex = threading.RLock()
 
-    self._configsets = configsets
+    self._configsets = configAdmin
     self._config_mutex = threading.RLock()
+
+    self._sdoservice = sdoServiceAdmin
 
     """
      \var self._organizations SDO OrganizationList
@@ -241,6 +250,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # have DeviceProfile, the operation will create a new DeviceProfile,
   # otherwise it will replace the existing DeviceProfile.
   #
+  # @param self
   # @param dProfile The device profile that is to be assigned to this SDO.
   #
   # @return If the operation was successfully completed.
@@ -262,7 +272,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       guard = OpenRTM_aist.ScopedLock(self._dprofile_mutex)
       self._deviceProfile = dProfile
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Unknown Error")
 
     return True
@@ -301,6 +311,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # null, the target SDO searches for ServiceProfile in it with the same id.
   # It adds the ServiceProfile if not exist, or overwrites if exist.
   #
+  # @param self
   # @param sProfile ServiceProfile to be added.
   #
   # @return If the operation was successfully completed.
@@ -319,24 +330,12 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       raise SDOPackage.InvalidParameter("sProfile is empty.")
 
     try:
-      if not sProfile.id:
-        prof = sProfile
-        prof.id = self.getUUID()
-        OpenRTM_aist.CORBA_SeqUtil.push_back(self._serviceProfiles, prof)
-        return True
-
-      index = OpenRTM_aist.CORBA_SeqUtil.find(self._serviceProfiles,
-                                              self.service_id(sProfile.id))
-      if index >= 0:
-        OpenRTM_aist.CORBA_SeqUtil.erase(self._serviceProfiles, index)
-
-      OpenRTM_aist.CORBA_SeqUtil.push_back(self._serviceProfiles, sProfile)
-      return True
+      return self._sdoservice.addSdoServiceConsumer(sProfile)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.add_service_profile")
 
-    return True
+    return False
 
 
   ##
@@ -362,6 +361,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   #
   # This operation adds reference of an Organization object.
   #
+  # @param self
   # @param org Organization to be added.
   #
   # @return If the operation was successfully completed.
@@ -370,7 +370,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   #                         is mapped to CORBA standard system exception
   #                         OBJECT_NOT_EXIST.)
   # @exception NotAvailable The target SDO is reachable but cannot respond.
-  # @exception InvalidParameter The argument “organization” is null.
+  # @exception InvalidParameter The argument "organization" is null.
   # @exception InternalError The target SDO cannot execute the operation
   #                          completely due to some internal error.
   # @endif
@@ -382,7 +382,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
     try:
       OpenRTM_aist.CORBA_SeqUtil.push_back(self._organizations, org)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.add_organization")
 
     return True
@@ -416,6 +416,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # Configuration interface. The ServiceProfile object to be removed is
   # specified by argument.
   #
+  # @param self
   # @param id_ serviceID of a ServiceProfile to be removed.
   #
   # @return If the operation was successfully completed.
@@ -435,12 +436,12 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       raise SDOPackage.InvalidParameter("id is empty.")
 
     try:
-      OpenRTM_aist.CORBA_SeqUtil.erase_if(self._serviceProfiles, self.service_id(id_))
+      return self._sdoservice.removeSdoServiceConsumer(id_)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.remove_service_profile")
 
-    return True
+    return False
 
 
   ##
@@ -468,6 +469,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   #
   # This operation removes the reference of an Organization object.
   #
+  # @param self
   # @param organization_id Unique id of the organization to be removed.
   #
   # @return If the operation was successfully completed.
@@ -492,7 +494,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       OpenRTM_aist.CORBA_SeqUtil.erase_if(self._organizations,
                                           self.org_id(organization_id))
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.remove_organization")
 
     return True
@@ -521,6 +523,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # This operation returns a list of Parameters. An empty list is returned
   # if the SDO does not have any configurable parameter.
   #
+  # @param self
   # @return The list with definitions of parameters characterizing the
   #          configuration.
   #
@@ -538,7 +541,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       param = copy.copy(self._parameters)
       return param
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.get_configuration_parameters")
 
     return []
@@ -566,6 +569,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   #
   # This operation returns all configuration parameters and their values.
   #
+  # @param self
   # @return List of all configuration parameters and their values.
   #
   # @exception SDONotExists if the target SDO does not exist.(This exception 
@@ -608,6 +612,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # This operation returns a value of parameter that is specified by
   # argument "name."
   #
+  # @param self
   # @param Name of the parameter whose value is requested.
   #
   # @return The value of the specified parameter.
@@ -626,7 +631,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   def get_configuration_parameter_value(self, name):
     self._rtcout.RTC_TRACE("get_configuration_parameter_value(%s)", name)
     if not name:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InvalidParameter("Name is empty.")
 
     return None
@@ -660,6 +665,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # This operation sets a parameter to a value that is specified by argument
   # "value." The parameter to be modified is specified by argument " name."
   #
+  # @param self
   # @param name The name of parameter to be modified.
   # @param value New value of the specified parameter.
   #
@@ -708,6 +714,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # This operation returns a list of all ConfigurationSets of the SDO.
   # If no predefined ConfigurationSets exist, then empty list is returned.
   #
+  # @param self
   # @return The list of stored configuration with their current values.
   #
   # @exception SDONotExists if the target SDO does not exist.(This exception 
@@ -732,7 +739,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       return config_sets
 
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.get_configuration_sets")
 
     return []
@@ -763,6 +770,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # This operation returns the ConfigurationSet specified by the parameter
   # configurationSetID.
   #
+  # @param self
   # @param config_id Identifier of ConfigurationSet requested.
   #
   # @return The configuration set specified by the parameter config_id.
@@ -783,8 +791,14 @@ class Configuration_impl(SDOPackage__POA.Configuration):
 
     guard = OpenRTM_aist.ScopedLock(self._config_mutex)
 
-    if not self._configsets.haveConfig(config_id):
-      raise SDOPackage.InternalError("No such ConfigurationSet")
+    try:
+      if not self._configsets.haveConfig(config_id):
+        self._rtcout.RTC_ERROR("No such ConfigurationSet")
+        raise SDOPackage.InternalError("No such ConfigurationSet")
+    except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      raise SDOPackage.InternalError("Unknown exception")
+      
 
     configset = self._configsets.getConfigurationSet(config_id)
 
@@ -793,7 +807,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       toConfigurationSet(config, configset)
       return config
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration::get_configuration_set()")
 
     return SDOPackage.ConfigurationSet("","",[])
@@ -807,7 +821,6 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # このオペレーションは指定された id の ConfigurationSet を更新する。
   #
   # @param self
-  # @param config_id 変更する ConfigurationSet の ID。
   # @param configuration_set 変更する ConfigurationSet そのもの。
   #
   # @return ConfigurationSet が正常に更新できた場合は true。
@@ -826,8 +839,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   #
   # This operation modifies the specified ConfigurationSet of an SDO.
   #
-  # ※ パラメータの数が spec と IDL で異なる！！！
-  # @param configu_id The ID of ConfigurationSet to be modified.
+  # @param self
   # @param configuration_set ConfigurationSet to be replaced.
   #
   # @return A flag indicating if the ConfigurationSet was modified 
@@ -876,7 +888,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       #---------------------------------------------------------------------------
       return self._configsets.setConfigurationSetValues(conf)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration::set_configuration_set_values()")
 
     return True
@@ -922,6 +934,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   #
   # Empty ConfigurationSet is returned in these cases.
   #
+  # @param self
   # @return The active ConfigurationSet.
   #
   # @exception SDONotExists if the target SDO does not exist.(This exception 
@@ -942,7 +955,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       toConfigurationSet(config, self._configsets.getActiveConfigurationSet())
       return config
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.get_active_configuration_set()")
 
     return SDOPackage.ConfigurationSet("","",[])
@@ -973,6 +986,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   #
   # This operation adds a ConfigurationSet to the ConfigurationProfile.
   #
+  # @param self
   # @param configuration_set The ConfigurationSet that is added.
   #
   # @return If the operation was successfully completed.
@@ -1000,7 +1014,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       toProperties(config, configuration_set)
       return self._configsets.addConfigurationSet(config)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration::add_configuration_set()")
 
     return True
@@ -1030,6 +1044,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   #
   # This operation removes a ConfigurationSet from the ConfigurationProfile.
   #
+  # @param self
   # @param config_id The id of ConfigurationSet which is removed.
   #
   # @return If the operation was successfully completed.
@@ -1053,7 +1068,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       guard = OpenRTM_aist.ScopedLock(self._config_mutex)
       return self._configsets.removeConfigurationSet(config_id)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.remove_configuration_set()")
 
     return False
@@ -1095,6 +1110,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # In other words, values of the specified ConfigurationSet are now copied
   # to the active configuration.
   #
+  # @param self
   # @param Identifier of ConfigurationSet to be activated.
   #
   # @return If the operation was successfully completed.

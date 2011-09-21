@@ -14,6 +14,7 @@ from test_ECFactory import *
 from test_ExtTrigExecutionContext import *
 from test_Factory import *
 from test_InPort import *
+from test_InPortBase import *
 from test_InPortProvider import *
 from test_Listener import *
 from test_Manager import *
@@ -26,7 +27,7 @@ from test_ObjectManager import *
 from test_OutPort import *
 from test_OutPortBase import *
 from test_OutPortProvider import *
-#from test_PeriodicExecutionContext import *
+from test_PeriodicExecutionContext import *
 from test_PortAdmin import *
 from test_PortBase import *
 from test_Properties import *
@@ -34,7 +35,7 @@ from test_PublisherNew import *
 from test_PublisherPeriodic import *
 from test_RingBuffer import *
 from test_RTCUtil import *
-#from test_RTObject import *
+from test_RTObject import *
 from test_SdoConfiguration import *
 from test_SdoOrganization import *
 from test_SdoService import *
@@ -60,43 +61,43 @@ def test_main():
   test_support.run_unittest(
     TestNullBuffer,
     TestConfigAdmin,
-    TestCORBA_SeqUtil,
-    TestCorbaConsumer,
-    TestCorbaNaming,
-    TestCorbaPort,
-    TestECFactoryPython,
-    TestExtTrigExecutionContext,
-    TestFactoryPython,
-    TestInPort,
-    TestInPortProvider,
-    TestListener,
-    TestManager,
-    TestManagerConfig,
-    TestModuleManager,
-    TestNamingOnCorba,
-    TestDefaultNumberingPolicy,
-    TestNVUtil,
-    TestObjectManager,
-    TestOutPort,
-    TestOutPortBase,
-    TestOutPortProvider,
-#    TestPeriodicExecutionContext,
-    TestPortAdmin,
+    TestCORBA_SeqUtil, 
+    TestCorbaConsumer, 
+    TestCorbaNaming, 
+    TestCorbaPort, 
+    TestECFactoryPython, 
+    TestExtTrigExecutionContext, 
+    TestFactoryPython, 
+    TestInPort, 
+    TestInPortBase, 
+    TestInPortProvider, 
+    TestListener, 
+    TestManagerConfig, 
+    TestModuleManager, 
+    TestDefaultNumberingPolicy, 
+    TestNVUtil, 
+    TestObjectManager, 
+    TestOutPort, 
+    TestOutPortBase, 
+    TestOutPortProvider, 
+    TestPeriodicExecutionContext, 
+    TestPortAdmin, 
     TestPortBase,
     TestProperties,
-    TestPublisherNew,
-    TestPublisherPeriodic,
+    TestPublisherNew, 
+    TestPublisherPeriodic, 
     TestRingBuffer,
-    TestRTCUtil,
-#    TestRTObject_impl,
+    TestRTCUtil, 
+    TestRTObject_impl, 
     TestConfiguration_impl,
     TestOrganization_impl,
     TestSDOServiceProfile,
     TestStateMachine,
     TestStringUtil,
-    TestLogbuf,
+    TestLogger,
     TestTimer,
     TestTimeValue,
+    TestManager,
     )
 
 if __name__ == '__main__':

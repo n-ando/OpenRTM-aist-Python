@@ -4,7 +4,7 @@
 @rem   usually only %TARGET% might be changed
 @rem ------------------------------------------------------------
 @set PATH=%WIX%\bin;%PATH%
-@set VERSION=1.0.0
+@set VERSION=1.1.0
 @set TARGET=OpenRTM-aist-Python
 @set TARGET_WXS=%TARGET%.wxs
 @set TARGET_WIXOBJ=%TARGET%.wixobj
@@ -22,7 +22,7 @@
 @rem default distribution package folder
 @rem ------------------------------------------------------------
 @set DISTRIBUTION=C:\distribution
-@set OPENRTM_PY=%DISTRIBUTION%\OpenRTM-aist-Python-1.0.0
+@set OPENRTM_PY=%DISTRIBUTION%\OpenRTM-aist-Python-1.1.0
 @set OMNIORB_PY24=%DISTRIBUTION%\omniORBpy-3.0-Python2.4
 @set OMNIORB_PY25=%DISTRIBUTION%\omniORBpy-3.4-Python2.5
 @set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.4-Python2.6
@@ -33,7 +33,7 @@
 @rem   supported languages have to be specified
 @rem ------------------------------------------------------------
 set LANGUAGES=(ja-jp de-de es-es fr-fr hu-hu it-it ko-kr zh-tw)
-
+copy OpenRTM-aist-Python.wxs.yaml.in OpenRTM-aist-Python.wxs.yaml
 echo off
 @rem ------------------------------------------------------------
 @rem Checking WiX
@@ -82,12 +82,14 @@ set INCLUDE_OPENRTP=YES
 
 if not exist OpenRTP_inc.wxs (
    cd OpenRTP
-rem set TMP_PYTHONPATH=%PYTHONPATH%
-rem set PYTHONPATH=../../bin;%PYTHONPATH%
-rem echo Generating OpenRTP_inc.wxs......
-rem openrtpwxs.py
-rem set PYTHONPATH=%TMP_PYTHONPATH%
+   copy ..\makewxs.py .
+   copy ..\yat.py .
+   echo Generating OpenRTP_inc.wxs......
+@rem   openrtpwxs.py
+@rem   set PYTHONPATH=%TMP_PYTHONPATH%
    copy OpenRTP_inc.wxs ..
+   del makewxs.py yat.py
+   del *.yaml
    cd ..
 )
 
@@ -148,4 +150,6 @@ cscript WiLangId.vbs %TARGET_FULL%.msi Package %IDS%
 
 :END
 del *.yaml
+
+pause;
 

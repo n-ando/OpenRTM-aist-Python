@@ -59,8 +59,8 @@ def Delete(rtc):
 #
 # @endif
 class FactoryBase:
-
-
+  """
+  """
 
   ##
   # @if jp
@@ -201,8 +201,8 @@ class FactoryBase:
 #
 # @endif
 class FactoryPython(FactoryBase):
-
-
+  """
+  """
 
   ##
   # @if jp
@@ -285,6 +285,7 @@ class FactoryPython(FactoryBase):
 
       return rtobj
     except:
+      print OpenRTM_aist.Logger.print_exception()
       return None
 
 

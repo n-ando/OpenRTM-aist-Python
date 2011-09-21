@@ -44,6 +44,8 @@ import OpenRTM_aist
 # @endif
 #
 class PeriodicTask(OpenRTM_aist.Task):
+  """
+  """
 
   ##
   # @if jp
@@ -85,9 +87,10 @@ class PeriodicTask(OpenRTM_aist.Task):
   # @brief dtor
   # @endif
   #
-  def __del__(self):
+  def __del__(self, Task=OpenRTM_aist.Task):
     self.finalize()
     self.wait()
+    Task.__del__(self)
     return
   
     

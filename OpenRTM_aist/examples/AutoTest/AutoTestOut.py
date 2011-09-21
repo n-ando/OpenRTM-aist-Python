@@ -82,7 +82,12 @@ class AutoTestOut(OpenRTM_aist.DataFlowComponentBase):
     return RTC.RTC_OK
   
   def onActivated(self, ec_id):
-    self._file=open('original-data')
+    try:
+      self._file=open('original-data')
+    except:
+      print "Can not open 'original-data' file."
+      return RTC.RTC_ERROR
+
     return RTC.RTC_OK
   
   def onDeactivated(self, ec_id): 

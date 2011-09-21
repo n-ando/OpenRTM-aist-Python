@@ -32,15 +32,19 @@ def main():
     os.system("python Connector.py")
 
   else:
-    status,term=commands.getstatusoutput("which kterm")
+    status,term=commands.getstatusoutput("which xterm")
+    term += " -e"
     if status != 0:
-      status,term=commands.getstatusoutput("which xterm")
+      status,term=commands.getstatusoutput("which kterm")
+      term += " -e"
 
     if status != 0:
       status,term=commands.getstatusoutput("which uxterm")
+      term += " -e"
       
     if status != 0:
       status,term=commands.getstatusoutput("which gnome-terminal")
+      term += " -x"
 
     if status != 0:
       print "No terminal program (kterm/xterm/gnome-terminal) exists."
@@ -55,9 +59,9 @@ def main():
       print "rtm-naming directory not exist."
       sys.exit(0)
 
-    os.system('python %s/rtm-naming.py'%path)
-    os.system('%s -e python ConsoleIn.py &'%term)
-    os.system('%s -e python ConsoleOut.py &'%term)
+    os.system('python %s/rtm-naming.py &'%path)
+    os.system('%s python ConsoleIn.py &'%term)
+    os.system('%s python ConsoleOut.py &'%term)
     time.sleep(3)
     os.system("python Connector.py")
 

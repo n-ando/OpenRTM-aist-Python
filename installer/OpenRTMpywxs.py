@@ -39,6 +39,9 @@ data = [
     ("OpenRTM_aist/examples/TkLRFViewer",         "*.py *.conf"),
     ("OpenRTM_aist/examples/Templates",           "*.py *.xml"),
     ("OpenRTM_aist24",                            "*.py"),
+    ("OpenRTM_aist24/ext",                        "*.py"),
+    ("OpenRTM_aist24/ext/sdo",                    "*.py"),
+    ("OpenRTM_aist24/ext/sdo/observer",           "*.py *.idl rtc.conf setup.bat"),
     ("OpenRTM_aist24/utils/rtcd",                 "rtcd.py rtcd_python.bat rtcd_python.exe rtcd.conf"),
     ("OpenRTM_aist24/utils/rtcprof",              "rtcprof.py rtcprof_python.bat"),
     ("OpenRTM_aist24/utils/rtc-template",         "*.py"),
@@ -46,6 +49,9 @@ data = [
     ("OpenRTM_aist24/RTM_IDL/device_interfaces",  "*.py *.idl"),
     ("OpenRTM_aist24/root",                       "*.pth"),
     ("OpenRTM_aist25",                            "*.py"),
+    ("OpenRTM_aist25/ext",                        "*.py"),
+    ("OpenRTM_aist25/ext/sdo",                    "*.py"),
+    ("OpenRTM_aist25/ext/sdo/observer",           "*.py *.idl rtc.conf setup.bat"),
     ("OpenRTM_aist25/utils/rtcd",                 "rtcd.py rtcd_python.bat rtcd_python.exe rtcd.conf"),
     ("OpenRTM_aist25/utils/rtcprof",              "rtcprof.py rtcprof_python.bat"),
     ("OpenRTM_aist25/utils/rtc-template",         "*.py"),
@@ -53,6 +59,9 @@ data = [
     ("OpenRTM_aist25/RTM_IDL/device_interfaces",  "*.py *.idl"),
     ("OpenRTM_aist25/root",                       "*.pth"),
     ("OpenRTM_aist26",                            "*.py"),
+    ("OpenRTM_aist26/ext",                        "*.py"),
+    ("OpenRTM_aist26/ext/sdo",                    "*.py"),
+    ("OpenRTM_aist26/ext/sdo/observer",           "*.py *.idl rtc.conf setup.bat"),
     ("OpenRTM_aist26/utils/rtcd",                 "rtcd.py rtcd_python.bat rtcd_python.exe rtcd.conf"),
     ("OpenRTM_aist26/utils/rtcprof",              "rtcprof.py rtcprof_python.bat"),
     ("OpenRTM_aist26/utils/rtc-template",         "*.py"),
@@ -65,7 +74,7 @@ data = [
 ##
 base_dir = os.getenv("OPENRTM_PY")
 if base_dir == None:
-    base_dir = "C:\\distribution\\OpenRTM-aist-Python-1.0.0\\"
+    base_dir = "C:\\distribution\\OpenRTM-aist-Python-1.1.0\\"
 else:
     base_dir = base_dir.replace("\"", "")
     base_dir += "\\"

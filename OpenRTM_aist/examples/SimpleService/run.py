@@ -24,8 +24,8 @@ hostname= sysinfo[1]
 plat=sys.platform
 
 if plat == "win32":
-    os.system("rd /S /Q _GlobalIDL")
-    os.system("rd /S /Q _GlobalIDL__POA")
+    os.system("rd /S /Q SimpleService")
+    os.system("rd /S /Q SimpleService__POA")
     os.system("omniidl.exe -bpython MyService.idl")
     os.system("start python ..\\..\\..\\bin\\rtm-naming.py")
     os.system("start python MyServiceConsumer.py")
@@ -34,17 +34,21 @@ if plat == "win32":
     os.system("python Connector.py")
 
 else:
-    os.system('rm -rf _GlobalIDL*')
+    os.system('rm -rf SimpleService*')
     os.system('omniidl -bpython MyService.idl')
-    status,term=commands.getstatusoutput("which kterm")
+    status,term=commands.getstatusoutput("which xterm")
+    term += " -e"
     if status != 0:
-        status,term=commands.getstatusoutput("which xterm")
+        status,term=commands.getstatusoutput("which kterm")
+        term += " -e"
 
     if status != 0:
         status,term=commands.getstatusoutput("which uxterm")
+        term += " -e"
 
     if status != 0:
         status,term=commands.getstatusoutput("which gnome-terminal")
+        term += " -x"
 
     if status != 0:
         print "No terminal program (kterm/xterm/gnome-terminal) exists."
@@ -59,8 +63,8 @@ else:
         print "rtm-naming directory not exist."
         sys.exit(0)
 
-    os.system('python %s/rtm-naming.py'%path)
-    os.system('%s -e python MyServiceConsumer.py &'%term)
-    os.system('%s -e python MyServiceProvider.py &'%term)
+    os.system('python %s/rtm-naming.py &'%path)
+    os.system('%s python MyServiceConsumer.py &'%term)
+    os.system('%s python MyServiceProvider.py &'%term)
     time.sleep(3)
     os.system("python Connector.py")

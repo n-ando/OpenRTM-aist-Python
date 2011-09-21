@@ -39,8 +39,8 @@ import OpenRTM_aist
 #
 # @endif
 class NamingBase:
-
-
+  """
+  """
 
   ##
   # @if jp
@@ -115,8 +115,8 @@ class NamingBase:
 #
 # @endif
 class NamingOnCorba(NamingBase):
-
-
+  """
+  """
 
   ##
   # @if jp
@@ -158,7 +158,9 @@ class NamingOnCorba(NamingBase):
     try:
       self._cosnaming.rebindByString(name, rtobj.getObjRef(), True)
     except:
-      pass
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+
+    return
 
 
   ##
@@ -179,7 +181,9 @@ class NamingOnCorba(NamingBase):
     try:
       self._cosnaming.unbind(name)
     except:
-      traceback.print_exception(*sys.exc_info())
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+
+    return
 
 
   ##
@@ -405,8 +409,8 @@ class NamingManager:
       idx = (len_ - 1) - i
       self.unbindObject(self._compNames[idx].name)
 
-    len_ = len(self._mgrNames)
     guard = OpenRTM_aist.ScopedLock(self._mgrNamesMutex)
+    len_ = len(self._mgrNames)
     for i in range(len_):
       idx = (len_ - 1) - i
       self.unbindObject(self._mgrNames[idx].name)

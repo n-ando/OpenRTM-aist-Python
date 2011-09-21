@@ -60,8 +60,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   #
   # @endif
   class DFP:
-
-
+    """
+    """
 
     ##
     # @if jp
@@ -202,7 +202,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     # @brief RTコンポーネントがエラー状態の時に呼ばれる関数
     #
     # 管理対象のRTコンポーネントがエラー状態にいる間、 
-    # 管理対象コンポーネントの on_aborting を定期的に呼びだす。
+    # 管理対象コンポーネントの on_error を定期的に呼びだす。
     #
     # @param self
     # @param st 対象RTコンポーネントの現在の状態
@@ -361,37 +361,43 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
 
     self._worker = self.Worker()
 
-    if rate is None:
-      self._rate = 1000.0
-      rate_ = 0.0
-      self._usec = long(0)
-    else:
-      self._rate = rate
-      rate_ = rate
-      if rate == 0:
-        rate_ = 0.0000001
-      self._usec = long(1000000/rate_)
-      if self._usec == 0:
-        self._nowait = True
-    self._comps = []
-    self._profile = RTC.ExecutionContextProfile(RTC.PERIODIC, rate_, None, [], [])
-    self._ref = self._this()
+    global DEFAULT_PERIOD
 
+    if rate is None:
+      self._period = OpenRTM_aist.TimeValue(DEFAULT_PERIOD)
+    else:
+      if rate == 0:
+        rate = 1.0 / DEFAULT_PERIOD
+      self._period = OpenRTM_aist.TimeValue(1.0 / rate)
+
+      if self._period.sec() == 0  and self._period.usec() < 0.000001:
+        self._nowait = True
+
+    self._rtcout.RTC_DEBUG("Actual rate: %d [sec], %d [usec]",
+                           (self._period.sec(), self._period.usec()))    
+
+    self._comps = []
+    self._profile = RTC.ExecutionContextProfile(RTC.PERIODIC, (1.0/self._period.toDouble()), None, [], [])
+    self._ref = self._this()
+    self._mutex_del = threading.RLock()
     return
 
 
-  def __del__(self):
+  def __del__(self, Task=OpenRTM_aist.Task):
     self._rtcout.RTC_TRACE("~PeriodicExecutionContext()")
     self._worker._cond.acquire()
     self._worker._running = True
     self._worker._cond.notify()
     self._worker._cond.release()
     self._running = False
-    self.wait()
+    #self.wait()
 
     self._profile.owner = None
     self._profile.paarticipants = []
     self._profile.properties = []
+    guard = OpenRTM_aist.ScopedLock(self._mutex_del)
+    Task.__del__(self)
+    del guard
 
   ##
   # @if jp
@@ -429,11 +435,15 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   def svc(self):
     self._rtcout.RTC_TRACE("svc()")
     flag = True
-
+    count_ = 0
+    
+    guard = OpenRTM_aist.ScopedLock(self._mutex_del)
     while flag:
       self._worker._cond.acquire()
       while not self._worker._running:
         self._worker._cond.wait()
+
+      t0_ = OpenRTM_aist.Time()
 
       if self._worker._running:
         for comp in self._comps:
@@ -441,12 +451,30 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
 
       self._worker._cond.release()
 
-      sec_ = float(self._usec)/1000000.0
-      if not self._nowait:
-        time.sleep(sec_)
+      t1_ = OpenRTM_aist.Time()
 
+      if count_ > 1000:
+        exctm_ = (t1_ - t0_).getTime().toDouble()
+        slptm_ = self._period.toDouble() - exctm_
+        self._rtcout.RTC_PARANOID("Period:    %f [s]", self._period.toDouble())
+        self._rtcout.RTC_PARANOID("Execution: %f [s]", exctm_)
+        self._rtcout.RTC_PARANOID("Sleep:     %f [s]", slptm_)
+
+      t2_ = OpenRTM_aist.Time()
+
+      if not self._nowait and self._period.toDouble() > ((t1_ - t0_).getTime().toDouble()):
+        if count_ > 1000:
+          self._rtcout.RTC_PARANOID("sleeping...")
+        slptm_ = self._period.toDouble() - (t1_ - t0_).getTime().toDouble()
+        time.sleep(slptm_)
+
+      if count_ > 1000:
+        t3_ = OpenRTM_aist.Time()
+        self._rtcout.RTC_PARANOID("Slept:     %f [s]", (t3_ - t2_).getTime().toDouble())
+        count_ = 0
+      count_ += 1
       flag = self._running
-
+    del guard
     return 0
 
 
@@ -556,7 +584,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
       self._worker._running = False
       self._worker._cond.notify()
       self._worker._cond.release()
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
     return RTC.RTC_OK
 
@@ -600,7 +628,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     for comp in self._comps:
       comp._sm.on_shutdown()
 
-    self.wait()
+    #self.wait()
     return RTC.RTC_OK
 
 
@@ -656,8 +684,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._rtcout.RTC_TRACE("set_rate(%f)", rate)
     if rate > 0.0:
       self._profile.rate = rate
-      self._usec = long(1000000/rate)
-      if self._usec == 0:
+      self._period.set_time(1.0/rate)
+      if self._period.toDouble() == 0.0:
         self._nowait = True
 
       for comp in self._comps:
@@ -743,7 +771,22 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
         if not compIn._sm._sm.isIn(RTC.ACTIVE_STATE):
           return RTC.PRECONDITION_NOT_MET
         compIn._sm._sm.goTo(RTC.INACTIVE_STATE)
-        return RTC.RTC_OK
+        count_ = 0
+        usec_per_sec_ = 1.0e6
+        sleeptime_ = 10.0 * usec_per_sec_ / float(self.get_rate())
+        self._rtcout.RTC_PARANOID("Sleep time is %f [us]", sleeptime_)
+        while compIn._sm._sm.isIn(RTC.ACTIVE_STATE):
+          self._rtcout.RTC_TRACE("Waiting to be the INACTIVE state %d %f", (count_, float(time.time())))
+          time.sleep(sleeptime_/usec_per_sec_)
+          if count_ > 1000:
+            self._rtcout.RTC_ERROR("The component is not responding.")
+            break
+          count_ += 1
+        if compIn._sm._sm.isIn(RTC.INACTIVE_STATE):
+          self._rtcout.RTC_TRACE("The component has been properly deactivated.")
+          return RTC.RTC_OK
+        self._rtcout.RTC_ERROR("The component could not be deactivated.")
+        return RTC.RTC_ERROR
 
     return RTC.BAD_PARAMETER
 
@@ -882,7 +925,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
       self._profile.participants.append(rtc_)
       return RTC.RTC_OK
     except CORBA.Exception:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return RTC.BAD_PARAMETER
 
     return RTC.RTC_OK

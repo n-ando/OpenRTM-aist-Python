@@ -628,6 +628,10 @@ class CorbaPort(OpenRTM_aist.PortBase):
     return
 
 
+  def __del__(self, PortBase=OpenRTM_aist.PortBase):
+    PortBase.__del__(self)
+
+
   ##
   # @if jp
   # @brief プロパティの初期化
@@ -720,6 +724,7 @@ class CorbaPort(OpenRTM_aist.PortBase):
                                                       provider))
     except:
       self._rtcout.RTC_ERROR("appending provider interface failed")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return False
 
     
@@ -1396,11 +1401,6 @@ class CorbaPort(OpenRTM_aist.PortBase):
       _mgr = OpenRTM_aist.Manager.instance()
       self._oid = _mgr.getPOA().servant_to_id(self._servant)
 
-      try:
-        _mgr.getPOA().activate_object_with_id(self._oid, self._servant)
-      except:
-        print sys.exc_info()[0]
-        
       obj = _mgr.getPOA().id_to_reference(self._oid)
       self._ior = _mgr.getORB().object_to_string(obj)
       self.deactivate()
@@ -1430,7 +1430,7 @@ class CorbaPort(OpenRTM_aist.PortBase):
       try:
         OpenRTM_aist.Manager.instance().getPOA().activate_object_with_id(self._oid, self._servant)
       except:
-        print sys.exc_info()[0]
+        print OpenRTM_aist.Logger.print_exception()
       return
 
     # void deactivate()
@@ -1438,7 +1438,7 @@ class CorbaPort(OpenRTM_aist.PortBase):
       try:
         OpenRTM_aist.Manager.instance().getPOA().deactivate_object(self._oid)
       except:
-        print sys.exc_info()[0]
+        print OpenRTM_aist.Logger.print_exception()
       return
     
 
@@ -1528,7 +1528,7 @@ class CorbaPort(OpenRTM_aist.PortBase):
             obj = any.from_any(nv.value, keep_structs=True)
             self._cons[i].setObject(obj)
           except:
-            traceback.print_exception(*sys.exc_info())
+            print OpenRTM_aist.Logger.print_exception()
 
 
 

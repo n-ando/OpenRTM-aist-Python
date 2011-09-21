@@ -142,6 +142,7 @@ class Logger:
     logging.addLevelName(logging.TRACE,     "TRACE")
     logging.addLevelName(logging.FATAL,     "FATAL")
 
+    """
     logging.root.setLevel([logging.NOTSET,
                            logging.PARANOID,
                            logging.VERBOSE,
@@ -152,6 +153,7 @@ class Logger:
                            logging.ERROR,
                            logging.FATAL,
                            logging.CRITICAL])
+    """
 
     
     formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
@@ -326,6 +328,9 @@ class LogStream:
 
 
   def __del__(self):
+    return
+
+  def shutdown(self):
     logging.shutdown()
     return
 

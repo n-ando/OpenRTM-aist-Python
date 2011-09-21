@@ -26,6 +26,8 @@ import SDOPackage
 
 
 class ManagerServant(RTM__POA.Manager):
+  """
+  """
 
   ##
   # @if jp
@@ -62,7 +64,7 @@ class ManagerServant(RTM__POA.Manager):
         return
         
       self._isMaster = True
-      self._rtcout.RTC_WARN("Manager CORBA servant was successfully created.")
+      self._rtcout.RTC_TRACE("Manager CORBA servant was successfully created.")
       return
     else:
       # this is slave manager
@@ -82,6 +84,7 @@ class ManagerServant(RTM__POA.Manager):
         return
       except:
         self._rtcout.RTC_ERROR("Unknown exception cought.")
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
         
         
     return
@@ -371,9 +374,10 @@ class ManagerServant(RTM__POA.Manager):
       return rtobj
     except CORBA.SystemException:
       self._rtcout.RTC_DEBUG("Exception was caught while creating component.")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return RTC.RTObject._nil
     except:
-      self._rtcout.RTC_DEBUG(sys.exc_info()[0])
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
 
     return RTC.RTObject._nil
 
@@ -901,7 +905,7 @@ class ManagerServant(RTM__POA.Manager):
       mgrobj = poa.id_to_reference(id)
       self._objref = mgrobj._narrow(RTM.Manager)
     except:
-      self._rtcout.RTC_DEBUG(sys.exc_info()[0])
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
       return False
 
     return True
@@ -931,11 +935,11 @@ class ManagerServant(RTM__POA.Manager):
       return mgr
 
     except CORBA.SystemException:
-      self._rtcout.RTC_DEBUG(sys.exc_info()[0])
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
       
     except:
       self._rtcout.RTC_ERROR("Unknown exception cought.")
-      self._rtcout.RTC_DEBUG(sys.exc_info()[0])
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
 
     return RTM.Manager._nil
 

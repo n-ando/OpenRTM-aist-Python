@@ -26,7 +26,6 @@ from types import IntType, ListType
 import OpenRTM_aist
 import RTC
 import SDOPackage
-import copy
 
 
 #------------------------------------------------------------
@@ -110,6 +109,9 @@ class Manager:
     self._terminate = self.Term()
     self._ecs = []
     self._timer = None
+    self._orb = None
+    self._poa = None
+    self._poaManager = None 
     self._finalized = self.Finalized()
     signal.signal(signal.SIGINT, handler)
     
@@ -273,6 +275,9 @@ class Manager:
       self.join()
 
     self.shutdownLogger()
+    global manager
+    if manager:
+      manager = None
 
 
   ##
@@ -367,6 +372,7 @@ class Manager:
       self._rtcout.RTC_TRACE("POA Manager activated.")
     except:
       self._rtcout.RTC_ERROR("Exception: POA Manager activation failed.")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return False
 
     mods = [s.strip() for s in self._config.getProperty("manager.modules.preload").split(",")]
@@ -385,6 +391,7 @@ class Manager:
       try:
         self._module.load(mods[i], basename)
       except:
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
         self.__try_direct_load(basename)
 
     if self._initProc:
@@ -443,9 +450,13 @@ class Manager:
       self._runner = self.OrbRunner(self._orb)
     else:
       self._rtcout.RTC_TRACE("Manager.runManager(): blocking mode")
-      self._orb.run()
-      self._rtcout.RTC_TRACE("Manager.runManager(): ORB was terminated")
-      self.join()
+      try:
+        self._orb.run()
+        self._rtcout.RTC_TRACE("Manager.runManager(): ORB was terminated")
+        self.join()
+      except:
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+
     return
 
 
@@ -605,7 +616,7 @@ class Manager:
       self._factory.registerObject(factory)
       return True
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return False
 
     return
@@ -663,7 +674,7 @@ class Manager:
       self._ecfactory.registerObject(OpenRTM_aist.ECFactoryPython(name, new_func, delete_func))
       return True
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return False
 
     return False
@@ -781,7 +792,8 @@ class Manager:
 
     factory = self._factory.find(comp_id)
     if factory is None:
-      self._rtcout.RTC_ERROR("createComponent: Factory not found: %s", comp_id.getProperty("implementation_id"))
+      self._rtcout.RTC_ERROR("createComponent: Factory not found: %s",
+                             comp_id.getProperty("implementation_id"))
 
       # automatic module loading
       mp = self._module.getLoadableModules()
@@ -814,9 +826,19 @@ class Manager:
 
 
     # get default configuration of component.
-    prop = copy.copy(factory.profile())
+    prop = factory.profile()
 
-    inherit_prop = ["exec_cxt.periodic.type",
+    inherit_prop = ["config.version",
+                    "openrtm.name",
+                    "openrtm.version",
+                    "os.name",
+                    "os.release",
+                    "os.version",
+                    "os.arch",
+                    "os.hostname",
+                    "corba.endpoint",
+                    "corba.id",
+                    "exec_cxt.periodic.type",
                     "exec_cxt.periodic.rate",
                     "exec_cxt.evdriven.type",
                     "logger.enable",
@@ -831,11 +853,14 @@ class Manager:
     comp = factory.create(self)
 
     if comp is None:
-      self._rtcout.RTC_ERROR("createComponent: RTC creation failed: %s", comp_id.getProperty("implementation_id"))
+      self._rtcout.RTC_ERROR("createComponent: RTC creation failed: %s",
+                             comp_id.getProperty("implementation_id"))
       return None
     self._rtcout.RTC_TRACE("RTC Created: %s", comp_id.getProperty("implementation_id"))
 
     # The property specified by the parameter of createComponent() is merged.
+    # The property("instance_name") specified by the parameter of createComponent()
+    # must be merged here.
     prop.mergeProperties(comp_prop)
 
     #------------------------------------------------------------
@@ -847,16 +872,20 @@ class Manager:
     self.configureComponent(comp,prop)
 
     # The property specified by the parameter of createComponent() is set.
-    # comp.setProperties(comp_prop)
+    # The property("exported_ports") specified by the parameter of createComponent()
+    # must be set here.
+    #comp.setProperties(comp_prop)
 
     # Component initialization
     if comp.initialize() != RTC.RTC_OK:
-      self._rtcout.RTC_TRACE("RTC initialization failed: %s", comp_id.getProperty("implementation_id"))
+      self._rtcout.RTC_TRACE("RTC initialization failed: %s",
+                             comp_id.getProperty("implementation_id"))
       comp.exit()
       self._rtcout.RTC_TRACE("%s was finalized", comp_id.getProperty("implementation_id"))
       return None
       
-    self._rtcout.RTC_TRACE("RTC initialization succeeded: %s", comp_id.getProperty("implementation_id"))
+    self._rtcout.RTC_TRACE("RTC initialization succeeded: %s",
+                           comp_id.getProperty("implementation_id"))
     self.registerComponent(comp)
     return comp
 
@@ -1121,7 +1150,8 @@ class Manager:
     config = OpenRTM_aist.ManagerConfig(argv)
     self._config = OpenRTM_aist.Properties()
     config.configure(self._config)
-    self._config.setProperty("logger.file_name",self.formatString(self._config.getProperty("logger.file_name"), self._config))
+    self._config.setProperty("logger.file_name",self.formatString(self._config.getProperty("logger.file_name"), 
+                                                                  self._config))
     self._module = OpenRTM_aist.ModuleManager(self._config)
     self._terminator = self.Terminator(self)
     guard = OpenRTM_aist.ScopedLock(self._terminate.mutex)
@@ -1133,14 +1163,23 @@ class Manager:
       tick = self._config.getProperty("timer.tick")
       if tick != "":
         tm = tm.set_time(float(tick))
+        if self._timer:
+          self._timer.stop()
+          self._timer.join()
         self._timer = OpenRTM_aist.Timer(tm)
         self._timer.start()
 
     if OpenRTM_aist.toBool(self._config.getProperty("manager.shutdown_auto"),
                            "YES", "NO", True) and \
-                           not OpenRTM_aist.toBool(self._config.getProperty("manager.is_master"), "YES", "NO", False):
+                           not OpenRTM_aist.toBool(self._config.getProperty("manager.is_master"),
+                                                   "YES", "NO", False):
+      tm = OpenRTM_aist.TimeValue(10, 0)
+      if self._config.findNode("manager.auto_shutdown_duration"):
+        duration = float(self._config.getProperty("manager.auto_shutdown_duration"))
+        if duration:
+          tm.set_time(duration)
+
       if self._timer:
-        tm = OpenRTM_aist.TimeValue(10, 0)
         self._timer.registerListenerObj(self,
                                         OpenRTM_aist.Manager.shutdownOnNoRtcs,
                                         tm)
@@ -1171,6 +1210,7 @@ class Manager:
     if self._timer:
       self._timer.stop()
       self._timer.join()
+      self._timer = None
 
     return
 
@@ -1286,6 +1326,7 @@ class Manager:
   # @endif
   def shutdownLogger(self):
     self._rtcout.RTC_TRACE("Manager.shutdownLogger()")
+    self._rtcout.shutdown()
     return
 
 
@@ -1323,6 +1364,7 @@ class Manager:
 
     except:
       self._rtcout.RTC_ERROR("Exception: Caught unknown exception in initORB().")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return False
 
     return True
@@ -1481,8 +1523,7 @@ class Manager:
 
       self._rtcout.RTC_DEBUG("No pending works of ORB. Shutting down POA and ORB.")
     except:
-      #traceback.print_exception(*sys.exc_info())
-      self._rtcout.RTC_TRACE(sys.exc_info()[0])
+      self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
       pass
 
     if not CORBA.is_nil(self._poa):
@@ -1495,8 +1536,10 @@ class Manager:
         self._rtcout.RTC_DEBUG("POA was destroyed.")
       except CORBA.SystemException, ex:
         self._rtcout.RTC_ERROR("Caught SystemException during root POA destruction")
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       except:
         self._rtcout.RTC_ERROR("Caught unknown exception during destruction")
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
     if self._orb:
       try:
@@ -1505,8 +1548,10 @@ class Manager:
         self._orb = CORBA.Object._nil
       except CORBA.SystemException, ex:
         self._rtcout.RTC_ERROR("Caught CORBA::SystemException during ORB shutdown.")
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       except:
         self._rtcout.RTC_ERROR("Caught unknown exception during ORB shutdown.")
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
 
   #============================================================
@@ -1705,7 +1750,7 @@ class Manager:
       try:
         reffile = file(self._config.getProperty("manager.refstring_path"),'w')
       except:
-        self._rtcout.RTC_ERROR(sys.exc_info()[0])
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
         return False
       else:
         reffile.write(self._orb.object_to_string(self._mgrservant.getObjRef()))
@@ -1734,16 +1779,14 @@ class Manager:
         p = OpenRTM_aist.Properties(key=comp.getInstanceName())
         p.mergeProperties(comp.getProperties())
       except:
-        #traceback.print_exception(*sys.exc_info())
-        self._rtcout.RTC_TRACE(sys.exc_info()[0])
+        self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
         pass
 
     for ec in self._ecs:
       try:
         self._poa.deactivate_object(self._poa.servant_to_id(ec))
       except:
-        #traceback.print_exception(*sys.exc_info())
-        self._rtcout.RTC_TRACE(sys.exc_info()[0])
+        self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
         pass
 
 
@@ -1761,7 +1804,7 @@ class Manager:
   #
   # @endif
   def cleanupComponent(self, comp):
-    self._rtcout.RTC_TRACE("Manager.cleanupComponents")
+    self._rtcout.RTC_TRACE("Manager.cleanupComponent()")
     self.unregisterComponent(comp)
 
     return
@@ -1930,16 +1973,24 @@ class Manager:
         conff = open(self._config.getProperty(name_conf))
       except:
         print "Not found. : %s" % self._config.getProperty(name_conf)
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       else:
         name_prop.load(conff)
+
+    if self._config.findNode(category + "." + inst_name):
+      name_prop.mergeProperties(self._config.getNode(category + "." + inst_name))
 
     if self._config.getProperty(type_conf) != "":
       try:
         conff = open(self._config.getProperty(type_conf))
       except:
         print "Not found. : %s" % self._config.getProperty(type_conf)
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       else:
         type_prop.load(conff)
+
+    if self._config.findNode(category + "." + type_name):
+      type_prop.mergeProperties(self._config.getNode(category + "." + type_name))
 
     comp.setProperties(prop)
     type_prop.mergeProperties(name_prop)
@@ -1985,6 +2036,7 @@ class Manager:
         conff = open(file_name)
       except:
         print "Not found. : %s" % file_name
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       else:
         prop.load(conff)
         conff.close()
@@ -2143,6 +2195,7 @@ class Manager:
                              OpenRTM_aist.Delete)
     except:
       self._rtcout.RTC_ERROR("Module load error: %s", file_name)
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       
     return
 
@@ -2160,8 +2213,8 @@ class Manager:
   #
   # @endif
   class InstanceName:
-
-
+    """
+    """
 
     ##
     # @if jp
@@ -2323,8 +2376,8 @@ class Manager:
   # @brief OrbRunner class
   # @endif
   class OrbRunner:
-
-
+    """
+    """
 
     ##
     # @if jp
@@ -2343,11 +2396,12 @@ class Manager:
       self._orb = orb
       self._th = threading.Thread(target=self.run)
       self._th.start()
-      self._evt = threading.Event()
 
 
     def __del__(self):
       self._th.join()
+      self._th = None
+      return
 
 
     ##
@@ -2365,11 +2419,9 @@ class Manager:
       try:
         self._orb.run()
         #Manager.instance().shutdown()
-        self._evt.set()
       except:
-        traceback.print_exception(*sys.exc_info())
+        print OpenRTM_aist.Logger.print_exception()
         pass
-      self._evt.set()
       return
 
 
@@ -2385,7 +2437,7 @@ class Manager:
     #
     # @endif
     def wait(self):
-      self._evt.wait()
+      return
 
     ##
     # @if jp
@@ -2421,8 +2473,8 @@ class Manager:
   #
   # @endif
   class Terminator:
-
-
+    """
+    """
 
     ##
     # @if jp

@@ -100,6 +100,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
       self._task.finalize()
 
       OpenRTM_aist.PeriodicTaskFactory.instance().deleteObject(self._task)
+      del self._task
       self._rtcout.RTC_PARANOID("task deleted.")
 
     # "consumer" should be deleted in the Connector
@@ -631,6 +632,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
 
       return self.PORT_OK
     except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
     return self.PORT_ERROR
@@ -658,6 +660,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
         
       return self.PORT_OK
     except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
     return self.PORT_ERROR
@@ -705,6 +708,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
       return ret
 
     except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
     return self.PORT_ERROR
@@ -734,6 +738,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
       return self.PORT_OK
 
     except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
     return self.PORT_ERROR

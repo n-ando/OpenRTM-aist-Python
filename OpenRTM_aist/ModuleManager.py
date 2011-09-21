@@ -81,7 +81,7 @@ class ModuleManager:
       tmp = [self._configPath[i]]
       OpenRTM_aist.eraseHeadBlank(tmp)
       self._configPath[i] = tmp[0]
-    self._loadPath = prop.getProperty(MOD_LOADPTH).split(",")
+    self._loadPath = prop.getProperty(MOD_LOADPTH,"./").split(",")
     for i in range(len(self._loadPath)):
       tmp = [self._loadPath[i]]
       OpenRTM_aist.eraseHeadBlank(tmp)
@@ -97,7 +97,7 @@ class ModuleManager:
     self._initFuncPrefix = prop.getProperty(INITFUNC_PFX)
     self._modules = OpenRTM_aist.ObjectManager(self.DLLPred)
     self._rtcout = None
-
+    self._mgr = OpenRTM_aist.Manager.instance()
 
   ##
   # @if jp
@@ -244,7 +244,7 @@ class ModuleManager:
   #                                 const std::string& init_func)
   def load(self, file_name, init_func=None):
     if not self._rtcout:
-      self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("ModuleManager")
+      self._rtcout = self._mgr.getLogbuf("ModuleManager")
 
     self._rtcout.RTC_TRACE("load(fname = %s)", file_name)
     if file_name == "":
@@ -258,6 +258,7 @@ class ModuleManager:
 
     import_name = os.path.split(file_name)[-1]
     pathChanged=False
+    file_path = None
     if OpenRTM_aist.isAbsolutePath(file_name):
       if not self._absoluteAllowed:
         raise ModuleManager.NotAllowedOperation, "Absolute path is not allowed"
@@ -267,13 +268,19 @@ class ModuleManager:
         sys.path.append(splitted_name[0])
         pathChanged = True
         import_name = splitted_name[-1]
+        file_path = file_name
 
     else:
-      if not self.findFile(file_name, self._loadPath):
+      file_path = self.findFile(file_name, self._loadPath)
+      if not file_path:
         raise ModuleManager.InvalidArguments, "Invalid file name."
 
-    if not self.fileExist(file_name):
-      raise ModuleManager.FileNotFound, file_path
+    if not self.fileExist(file_path):
+      raise ModuleManager.FileNotFound, file_name
+
+    if not pathChanged:
+      splitted_name = os.path.split(file_path)
+      sys.path.append(splitted_name[0])
 
     ext_pos = import_name.find(".py")
     if ext_pos > 0:
@@ -284,14 +291,14 @@ class ModuleManager:
       sys.path = save_path
 
     dll = self.DLLEntity(mo,OpenRTM_aist.Properties())
-    dll.properties.setProperty("file_path",file_name)
+    dll.properties.setProperty("file_path",file_path)
     self._modules.registerObject(dll)
 
 
     if init_func is None:
       return file_name
 
-    self.symbol(file_name,init_func)(OpenRTM_aist.Manager.instance())
+    self.symbol(file_path,init_func)(self._mgr)
 
     return file_name
 
@@ -450,9 +457,8 @@ class ModuleManager:
     classname  = basename.split(".")[0].lower()
 
     # loaded profile = old profiles - new profiles
-    mgr = OpenRTM_aist.Manager.instance()
     # for old
-    oldp = mgr.getFactoryProfiles()
+    oldp = self._mgr.getFactoryProfiles()
 
     # for new
     comp_spec_name = classname+"_spec"
@@ -509,7 +515,7 @@ class ModuleManager:
       if path == "":
         continue
 
-      flist = glob.glob(path+"/"+'*.py')
+      flist = glob.glob(path + os.sep + '*.py')
       for file in flist:
         if file.find("__init__.py") == -1:
           modules_.append(file)
@@ -522,7 +528,7 @@ class ModuleManager:
         prop.setProperty("module_file_name",os.path.basename(mod_))
         prop.setProperty("module_file_path", mod_)
         props.append(prop)
-    
+
     return props
 
 
@@ -606,14 +612,13 @@ class ModuleManager:
   # @endif
   def findFile(self, fname, load_path):
     file_name = fname
-
     for path in load_path:
       if fname.find(".py") == -1:
-        f = str(path)+"/"+str(file_name)+".py"
+        f = str(path) + os.sep + str(file_name)+".py"
       else:
-        f = str(path)+"/"+str(file_name)
+        f = str(path)+ os.sep + str(file_name)
       if self.fileExist(f):
-        return fname
+        return f
     return ""
 
 
@@ -635,13 +640,12 @@ class ModuleManager:
     fname = filename
     if fname.find(".py") == -1:
       fname = str(filename)+".py"
-    try:
-      infile = open(fname)
-    except:
-      return False
 
-    infile.close()
-    return True
+    if os.path.isfile(fname):
+      return True
+
+    return False
+
 
 
   ##

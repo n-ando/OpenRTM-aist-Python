@@ -22,16 +22,6 @@ from omniORB import any
 
 import OpenRTM_aist
 
-##
-# @if jp
-# @brief 時間単位変換用定数
-# @else
-# @endif
-TIMEVALUE_ONE_SECOND_IN_USECS = 1000000 # 1 [sec] = 1000000 [usec]
-
-
-import time
-
 
 ##
 # @if jp
@@ -57,50 +47,9 @@ import time
 # void setTimestamp(DataType& data)
 def setTimestamp(data):
   # set timestamp
-  tm = Time()
+  tm = OpenRTM_aist.Time()
   data.tm.sec  = tm.sec
   data.tm.nsec = tm.usec * 1000
-
-
-##
-# @if jp
-# @class Time
-# @brief 時間管理用クラス
-# 
-# 指定した時間値を保持するためのクラス。
-# 
-# @since 0.4.1
-# 
-# @else
-# 
-# @endif
-class Time:
-
-
-
-  ##
-  # @if jp
-  # @brief コンストラクタ
-  #
-  # コンストラクタ。
-  #
-  # @param self
-  #
-  # @else
-  # @brief Constructor.
-  #
-  # Constructor.
-  #
-  # @param self
-  #
-  # @endif
-  def __init__(self):
-    global TIMEVALUE_ONE_SECOND_IN_USECS
-    tm = time.time()
-    tm_f       = tm - int(tm)     # 小数部の取り出し
-    self.sec   = int(tm - tm_f)   # 整数部の取り出し
-    self.usec  = int(tm_f * TIMEVALUE_ONE_SECOND_IN_USECS) # sec -> usec (micro second)
-
 
 
 ##
@@ -154,6 +103,9 @@ class OutPort(OpenRTM_aist.OutPortBase):
     #self._OnDisconnect   = None
     
 
+  def __del__(self, OutPortBase=OpenRTM_aist.OutPortBase):
+    OutPortBase.__del__(self)
+    return
 
   ##
   # @if jp
@@ -200,7 +152,6 @@ class OutPort(OpenRTM_aist.OutPortBase):
   # @endif
   # bool operator<<(DataType& value)
   def write(self, value=None):
-    global TIMEVALUE_ONE_SECOND_IN_USECS
     if not value:
       value=self._value
 

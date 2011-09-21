@@ -38,6 +38,20 @@ class DataListener(OpenRTM_aist.ConnectorDataListenerT):
     print "------------------------------"
 
 
+class ConnListener(OpenRTM_aist.ConnectorListener):
+  def __init__(self, name):
+    self._name = name
+
+  def __del__(self):
+    print "dtor of ", self._name
+
+  def __call__(self, info):
+    print "------------------------------"
+    print "Listener:       ", self._name
+    print "Profile::name:  ", info.name
+    print "Profile::id:    ", info.id
+    print "------------------------------"
+
 
 
 class ConsoleOut(OpenRTM_aist.DataFlowComponentBase):
@@ -81,6 +95,11 @@ class ConsoleOut(OpenRTM_aist.DataFlowComponentBase):
 
     self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_ERROR,
                                           DataListener("ON_RECEIVER_ERROR"))
+
+    self._inport.addConnectorListener(OpenRTM_aist.ConnectorListenerType.ON_CONNECT,
+                                      ConnListener("ON_CONNECT"))
+    self._inport.addConnectorListener(OpenRTM_aist.ConnectorListenerType.ON_DISCONNECT,
+                                      ConnListener("ON_DISCONNECT"))
 
     return RTC.RTC_OK
 

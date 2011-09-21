@@ -49,6 +49,8 @@ import OpenRTM
 # @endif
 #
 class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaConsumer):
+  """
+  """
 
   ##
   # @if jp
@@ -88,7 +90,9 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
   #
   # @endif
   #
-  def __del__(self):
+  def __del__(self, CorbaConsumer=OpenRTM_aist.CorbaConsumer):
+    self._rtcout.RTC_PARANOID("~OutPortCorbaCdrConsumer()")
+    CorbaConsumer.__del__(self)
     pass
 
 
@@ -192,7 +196,8 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
     self._rtcout.RTC_PARANOID("get()")
 
     try:
-      ret,cdr_data = self._ptr().get()
+      outportcdr = self.getObject()._narrow(OpenRTM.OutPortCdr)
+      ret,cdr_data = outportcdr.get()
       
       if ret == OpenRTM.PORT_OK:
         self._rtcout.RTC_DEBUG("get() successful")
@@ -214,6 +219,7 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
 
     except:
       self._rtcout.RTC_WARN("Exception caught from OutPort.get().")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
     self._rtcout.RTC_ERROR("get(): Never comes here.")
@@ -257,8 +263,7 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
       try:
         ior = any.from_any(properties[index].value, keep_structs=True)
       except:
-        # traceback.print_exception(*sys.exc_info())
-        self._rtcout.RTC_ERROR(sys.exc_info()[0])
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
             
       orb = OpenRTM_aist.Manager.instance().getORB()
       obj = orb.string_to_object(ior)
@@ -315,8 +320,7 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
         self._rtcout.RTC_ERROR("hmm. Inconsistent object reference.")
 
     except:
-      # traceback.print_exception(*sys.exc_info())
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
     return
 

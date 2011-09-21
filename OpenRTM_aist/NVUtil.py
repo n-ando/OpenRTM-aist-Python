@@ -121,7 +121,7 @@ def copyToProperties(prop, nvlist):
       val = str(any.from_any(nv.value, keep_structs=True))
       prop.setProperty(str(nv.name),val)
     except:
-      traceback.print_exception(*sys.exc_info())
+      print OpenRTM_aist.Logger.print_exception()
       pass
 
 
@@ -308,7 +308,11 @@ def isStringValue(nv, name, value):
 # @return string value named by name
 #
 # @endif
-def toString(nv, name):
+def toString(nv, name=None):
+  if not name:
+    str_ = [""]
+    return dump_to_stream(str_, nv)
+
   str_value = ""
   try:
     ret_value = find(nv, name)
@@ -316,7 +320,7 @@ def toString(nv, name):
     if type(val) == str:
       str_value = val
   except:
-    traceback.print_exception(*sys.exc_info())
+    print OpenRTM_aist.Logger.print_exception()
     pass
   
   return str_value
@@ -386,6 +390,24 @@ def append(dest, src):
 
 ##
 # @if jp
+# @brief NVList に設定されている内容を文字列として出力する。
+# @else
+# @brief Print information configured in NVList as a string type
+# @endif
+# std::ostream& dump_to_stream(std::ostream& out, const SDOPackage::NVList& nv)
+def dump_to_stream(out, nv):
+  for i in range(len(nv)):
+    val = any.from_any(nv[i].value, keep_structs=True)
+    if type(val) == str:
+	    out[0] += (nv[i].name + ": " + str(nv[i].value) + "\n")
+    else:
+	    out[0] += (nv[i].name + ": not a string value \n")
+
+  return out[0]
+
+
+##
+# @if jp
 #
 # @brief NVList に設定されている内容を文字列として出力する。
 #
@@ -399,8 +421,5 @@ def append(dest, src):
 #
 # @endif
 def dump(nv):
-  for i in range(len(nv)):
-    if type(nv[i].value) == str:
-      print nv[i].name, ": ", nv[i].value
-    else:
-      print nv[i].name, ": not a string value"
+  out = [""]
+  print dump_to_stream(out, nv)

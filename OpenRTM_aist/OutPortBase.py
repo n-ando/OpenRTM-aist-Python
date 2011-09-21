@@ -282,6 +282,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
     self._connector_mutex = threading.RLock()
 
     self._listeners = OpenRTM_aist.ConnectorListeners()
+    return
 
 
   ##
@@ -300,11 +301,13 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
   # Destructor
   #
   # @endif
-  def __del__(self):
+  def __del__(self, PortBase=OpenRTM_aist.PortBase):
     self._rtcout.RTC_TRACE("OutPortBase destructor")
     # connector のクリーンナップ
     OpenRTM_aist.CORBA_SeqUtil.for_each(self._connectors,
                                         self.connector_cleanup())
+    PortBase.__del__(self)
+    return
 
 
   ##
@@ -1233,6 +1236,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
 
     except:
       self._rtcout.RTC_ERROR("Exeption: OutPortPushConnector creation failed")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return 0
 
 

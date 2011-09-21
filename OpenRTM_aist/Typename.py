@@ -23,4 +23,4 @@ import OpenRTM_aist
 
 ## const char* toTypename(value)
 def toTypename(value):
-  return str(any.to_any(value).typecode().name())
+  return str(value._NP_RepositoryId)

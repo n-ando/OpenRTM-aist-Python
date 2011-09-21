@@ -14,6 +14,8 @@ from distutils import errors
 from distutils import version
 from distutils.command.build import build
 from distutils.command.sdist import sdist
+from distutils.command.install import install
+from distutils.command.install_data import install_data
 
 
 core.DEBUG = False
@@ -25,31 +27,20 @@ is_examples = False
 if os.sep == '/':
   g_os = "unix"
   if sys.version_info[0:3] >= (2, 6, 0):
-    dist_dir = os.path.join(sys.prefix,'lib','python'+sys.version[:3],'dist-packages')
-    if os.path.isdir(dist_dir):
-      sitedir = os.path.join("lib", "python" + sys.version[:3], "dist-packages")
-    else:
-      sitedir = os.path.join("lib", "python" + sys.version[:3], "site-packages")
     example_sitedir = os.path.join("share", "OpenRTM-aist", "examples", "python")
   elif sys.version_info[0:3] >= (2, 2, 0):
-    sitedir = os.path.join("lib", "python" + sys.version[:3], "site-packages")
     example_sitedir = os.path.join("share", "OpenRTM-aist", "examples", "python")
 elif os.sep == ':':
-  sitedir = os.path.join("lib", "site-packages")
   example_sitedir = os.path.join("lib", "site-packages")
 elif os.sep == '\\':
   print "os: win32"
   g_os = "win32"
-  sitedir = os.path.join("lib", "site-packages")
   example_sitedir = os.path.join("lib", "site-packages")
 else:
   if sys.version_info[0:3] >= (2, 2, 0):
-    sitedir = os.path.join("lib", "site-packages")
     example_sitedir = os.path.join("lib", "site-packages")
   else:
-    sitedir = "."
     example_sitedir = os.path.join("lib", "site-packages")
-
 
 def compile_idl(cmd, pars, files):
   """
@@ -249,6 +240,7 @@ class Build (build):
                   ('build_ext',     has_ext_modules),
                   ('build_scripts', has_scripts)]
 
+
 class OtherSetupForSdist(sdist):
 
   def initialize_options(self):
@@ -257,7 +249,6 @@ class OtherSetupForSdist(sdist):
     sdist.initialize_options(self)
     if is_examples:
       self.template = "MANIFEST_examples.in"
-      #self.manifest = "MANIFEST"
       self.use_defaults = 0
       self.force_manifest = 1
       stub_dirs = ["SimpleService","SimpleService__POA"]
@@ -276,7 +267,6 @@ class OtherSetupForSdist(sdist):
       for dir_ in stub_dirs:
         if not os.path.isdir(os.path.join(os.getcwd(),"OpenRTM_aist","RTM_IDL",dir_)):
           os.mkdir(os.path.join(os.getcwd(),"OpenRTM_aist","RTM_IDL",dir_))
-    
 
   def make_distribution (self):
     """Create the source distribution(s).  First, we create the release
@@ -316,6 +306,23 @@ class OtherSetupForSdist(sdist):
       dir_util.remove_tree(base_dir, dry_run=self.dry_run)
 
 
+install_data_dir = None
+
+class Install(install):
+  def run(self):
+    global install_data_dir
+    install_data_dir = self.install_purelib
+    install.run(self)
+
+class InstallData(install_data):
+  def run(self):
+    global install_data_dir
+    for i in range(len(self.data_files)):
+      dir = os.path.join(install_data_dir,self.data_files[i][0])
+      self.data_files[i] = (dir,self.data_files[i][1])
+    install_data.run(self)
+
+
 ############################### data for setup() ###########################################
 
 
@@ -330,6 +337,9 @@ unix_packages = ["OpenRTM_aist",
                  "OpenRTM_aist.RTM_IDL.SDOPackage",
                  "OpenRTM_aist.RTM_IDL.SDOPackage__POA",
                  "OpenRTM_aist.RTM_IDL.device_interfaces",
+                 "OpenRTM_aist.ext",
+                 "OpenRTM_aist.ext.sdo",
+                 "OpenRTM_aist.ext.sdo.observer",
                  "OpenRTM_aist.utils",
                  "OpenRTM_aist.utils.rtcd",
                  "OpenRTM_aist.utils.rtcprof",
@@ -440,13 +450,16 @@ win32_packages = ["OpenRTM_aist",
                   "OpenRTM_aist.examples.Templates",
                   "OpenRTM_aist.examples.TkJoyStick",
                   "OpenRTM_aist.examples.TkLRFViewer",
+                  "OpenRTM_aist.ext",
+                  "OpenRTM_aist.ext.sdo",
+                  "OpenRTM_aist.ext.sdo.observer",
                   "OpenRTM_aist.utils",
                   "OpenRTM_aist.utils.rtcd",
                   "OpenRTM_aist.utils.rtcprof",
                   "OpenRTM_aist.utils.rtc-template",
                   "OpenRTM_aist.utils.rtm-naming"]
 
-unix_data_files = [(sitedir,['OpenRTM-aist.pth'])]
+unix_data_files = [("",['OpenRTM-aist.pth'])]
 
 idl_files= glob.glob(os.path.join('OpenRTM_aist',
                                   'RTM_IDL',
@@ -457,28 +470,33 @@ device_if_idl_files= glob.glob(os.path.join('OpenRTM_aist',
                                             'device_interfaces',
                                             '*.idl'))
 
-unix_data_files.append((os.path.join(sitedir,'OpenRTM_aist', 'utils', 'rtcd'),
+unix_data_files.append((os.path.join('OpenRTM_aist', 'utils', 'rtcd'),
                         ['OpenRTM_aist/utils/rtcd/rtcd.conf']))
-unix_data_files.append((os.path.join(sitedir,'OpenRTM_aist', 'utils', 'rtcd'),
+unix_data_files.append((os.path.join('OpenRTM_aist', 'utils', 'rtcd'),
                         ['OpenRTM_aist/utils/rtcd/rtc.conf']))
+unix_data_files.append((os.path.join('OpenRTM_aist', 'ext', 'sdo', 'observer'),
+                        ['OpenRTM_aist/ext/sdo/observer/rtc.conf']))
 
 for idl in idl_files:
-  unix_data_files.append((os.path.join(sitedir, 'OpenRTM_aist', 'RTM_IDL'),
+  unix_data_files.append((os.path.join('OpenRTM_aist', 'RTM_IDL'),
                           [idl]))
 
 for device_idl in device_if_idl_files:
-  unix_data_files.append((os.path.join(sitedir, 'OpenRTM_aist', 'RTM_IDL',
+  unix_data_files.append((os.path.join('OpenRTM_aist', 'RTM_IDL',
                                        'device_interfaces'), [device_idl]))
 
+import copy
+win32_data_files = copy.deepcopy(unix_data_files)
 
-win32_data_files = unix_data_files
-
-win32_data_files.append((os.path.join(sitedir,'OpenRTM_aist', 'examples'),
+win32_data_files.append((os.path.join('OpenRTM_aist', 'examples'),
                          ['OpenRTM_aist/examples/rtc.conf.sample']))
-win32_data_files.append((os.path.join(sitedir,'OpenRTM_aist', 'examples'),
+win32_data_files.append((os.path.join('OpenRTM_aist', 'examples'),
                          ['OpenRTM_aist/examples/component.conf']))
-win32_data_files.append((os.path.join(sitedir,'OpenRTM_aist', 'utils', 'rtcd'),
-                         ['OpenRTM_aist/utils/rtcd/rtcd.conf']))
+win32_data_files.append((os.path.join('OpenRTM_aist', 'ext', 'sdo', 'observer'),
+                         ['OpenRTM_aist/ext/sdo/observer/setup.bat']))
+
+unix_data_files.append((os.path.join('OpenRTM_aist', 'ext', 'sdo', 'observer'),
+                        ['OpenRTM_aist/ext/sdo/observer/setup.sh']))
 
 templates_xml = glob.glob(os.path.join('OpenRTM_aist',
                                        'examples',
@@ -486,15 +504,15 @@ templates_xml = glob.glob(os.path.join('OpenRTM_aist',
                                        '*.xml'))
 
 for tmp_xml in templates_xml:
-  win32_data_files.append((os.path.join(sitedir,'OpenRTM_aist', 'examples', 'Templates'),
+  win32_data_files.append((os.path.join('OpenRTM_aist', 'examples', 'Templates'),
                            [tmp_xml]))
 
 
 ##############################################################################################
 
 pkg_name      = "OpenRTM-aist-Python"
-pkg_version   = "1.0.0"
-pkg_desc      = "Python modules for OpenRTM-aist-1.0"
+pkg_version   = "1.1.0"
+pkg_desc      = "Python modules for OpenRTM-aist-1.1"
 pkg_author    = "Shinji Kurihara and Noriaki Ando"
 pkg_email     = "n-ando@aist.go.jp"
 pkg_url       = "http://www.openrtm.org/"
@@ -506,14 +524,14 @@ Intelligent Systems Research Institute,
 National Institute of Advanced Industrial Science and Technology (AIST), Japan.
 Please see http://www.openrtm.org/ for more detail.
 """
-pkg_license   = "EPL"
+pkg_license   = "LGPL"
 
 examples_install = False
 
 cwd_ = os.getcwd()
 
-if cwd_.find("OpenRTM-aist-Python-example-1.0.0") != -1 or \
-      cwd_.find("openrtm-aist-python-example-1.0.0") != -1:
+if cwd_.find("OpenRTM-aist-Python-example-1.1.0") != -1 or \
+      cwd_.find("openrtm-aist-python-example-1.1.0") != -1:
 
   examples_install = True
 
@@ -530,10 +548,12 @@ try:
                  url              = pkg_url,
                  long_description = pkg_long_desc,
                  license          = pkg_license,
-                 cmdclass         = { "build":Build, "build_idl":Build_idl, "build_doc":Build_doc, "sdist":OtherSetupForSdist },
+                 cmdclass         = { "build":Build, "build_idl":Build_idl, "build_doc":Build_doc,
+                                      "sdist":OtherSetupForSdist, "install":Install, "install_data":InstallData },
                  packages         = unix_packages,
                  scripts= ['OpenRTM_aist/utils/rtcprof/rtcprof_python',
-                           'OpenRTM_aist/utils/rtcd/rtcd_python'],
+                           'OpenRTM_aist/utils/rtcd/rtcd_python',
+                           'OpenRTM_aist/ext/sdo/observer/setup.sh'],
                  data_files       = unix_data_files)
       
     # for RTM zip (sdist)
@@ -549,11 +569,12 @@ try:
                  url              = pkg_url,
                  long_description = pkg_long_desc,
                  license          = pkg_license,
-                 cmdclass         = { "build":Build, "build_idl":Build_idl, "build_doc":Build_doc, "sdist":OtherSetupForSdist  },
+                 cmdclass         = { "build":Build, "build_idl":Build_idl, "build_doc":Build_doc, "sdist":OtherSetupForSdist},
                  packages         = win32_packages,
                  scripts= ['OpenRTM_aist/utils/rtcprof/rtcprof_python.bat',
                            'OpenRTM_aist/utils/rtcd/rtcd_python.bat',
-                           'OpenRTM_aist/utils/rtcd/rtcd_python.exe'],
+                           'OpenRTM_aist/utils/rtcd/rtcd_python.exe',
+                           'OpenRTM_aist/ext/sdo/observer/setup.bat'],
                  data_files       = win32_data_files,
                  script_args      = ["sdist", "--format=zip"])
 
@@ -561,7 +582,7 @@ try:
       # for examples (sdist)
       g_qkc_option = "-u"
       pkg_name      = "OpenRTM-aist-Python-example"
-      pkg_desc      = "Python example components for OpenRTM-aist-1.0"
+      pkg_desc      = "Python example components for OpenRTM-aist-1.1"
       is_examples   = True
 
       core.setup(name             = pkg_name,
@@ -584,7 +605,7 @@ try:
         # for examples (build, install)
         g_qkc_option = "-u"
         pkg_name      = "OpenRTM-aist-Python-example"
-        pkg_desc      = "Python example components for OpenRTM-aist-1.0"
+        pkg_desc      = "Python example components for OpenRTM-aist-1.1"
 
         core.setup(name             = pkg_name,
                    version          = pkg_version,
@@ -609,11 +630,13 @@ try:
                url              = pkg_url,
                long_description = pkg_long_desc,
                license          = pkg_license,
-               cmdclass         = { "build":Build, "build_idl":Build_idl, "build_doc":Build_doc  },
+               cmdclass         = { "build":Build, "build_idl":Build_idl, "build_doc":Build_doc,
+                                    "install":Install, "install_data":InstallData },
                packages         = win32_packages,
                scripts= ['OpenRTM_aist/utils/rtcprof/rtcprof_python.bat',
                          'OpenRTM_aist/utils/rtcd/rtcd_python.bat',
-                         'OpenRTM_aist/utils/rtcd/rtcd_python.exe'],
+                         'OpenRTM_aist/utils/rtcd/rtcd_python.exe',
+                         'OpenRTM_aist/ext/sdo/observer/setup.bat'],
                data_files       = win32_data_files)
 #               script_args      = ["sdist", "--format=zip"])
 

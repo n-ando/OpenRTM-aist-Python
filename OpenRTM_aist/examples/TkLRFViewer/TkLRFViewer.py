@@ -50,26 +50,26 @@ lrfviewer_spec = ["implementation_id",     "LRFViewer",
 class LRFViewer(OpenRTM_aist.DataFlowComponentBase):
   def __init__(self, manager):
     OpenRTM_aist.DataFlowComponentBase.__init__(self, manager)
-        
+
     self.range_data = []
     self.start_point = 0
     self.end_point   = 768
+    self.angular_res = 0.0
     return
 
   def onInitialize(self):
-    self._d_range = RTC.TimedShortSeq(RTC.Time(0,0),[])
-    self._rangeIn = OpenRTM_aist.InPort("range_data", self._d_range)
-        
-    self._d_start = RTC.TimedShort(RTC.Time(0,0), 0)
-    self._startIn = OpenRTM_aist.InPort("start_point", self._d_start)
+    _pose3D = RTC.Pose3D(RTC.Point3D(0.0, 0.0, 0.0),
+                         RTC.Orientation3D(0.0, 0.0, 0.0))
+    _size3D = RTC.Size3D(0.0, 0.0, 0.0)
+    _geometry3D = RTC.Geometry3D(_pose3D, _size3D)
+    _rangerConfig = RTC.RangerConfig(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    self._d_rangeData = RTC.RangeData(RTC.Time(0,0),
+                                      [],
+                                      RTC.RangerGeometry(_geometry3D, []),
+                                      _rangerConfig)
 
-    self._d_end   = RTC.TimedShort(RTC.Time(0,0), 0)
-    self._endIn   = OpenRTM_aist.InPort("end_point", self._d_end)
-        
-    # Set InPort buffers
-    self.addInPort("range_data",  self._rangeIn)
-    self.addInPort("start_point", self._startIn)
-    self.addInPort("end_point",   self._endIn)
+    self._rangeDataIn = OpenRTM_aist.InPort("range_data", self._d_rangeData)
+    self.addInPort("range_data",  self._rangeDataIn)
 
     return RTC.RTC_OK
 
@@ -83,10 +83,12 @@ class LRFViewer(OpenRTM_aist.DataFlowComponentBase):
     return RTC.RTC_OK
 
   def onExecute(self, ec_id):
-    if self._rangeIn.isNew():
-      self.range_data = self._rangeIn.read().data
-      self.start_point = self._startIn.read().data
-      self.end_point = self._endIn.read().data
+    if self._rangeDataIn.isNew():
+      _rangeData = self._rangeDataIn.read()
+      self.range_data = _rangeData.ranges
+      self.start_point = _rangeData.config.minAngle
+      self.end_point = _rangeData.config.maxAngle
+      self.angular_res = _rangeData.config.angularRes
     time.sleep(0.01)
     return RTC.RTC_OK
 
@@ -98,6 +100,9 @@ class LRFViewer(OpenRTM_aist.DataFlowComponentBase):
 
   def get_end_point(self):
     return self.end_point
+
+  def get_angular_res(self):
+    return self.angular_res
 
 
 class ToggleItem:
@@ -175,7 +180,7 @@ class CanvasGrid(ToggleItem):
   def draw(self):
     if self.active == False: return
     self.delete()
-
+    
     x_start = int(self.x0 % self.pitch)
     x_num   = int((self.width - x_start) / self.pitch) + 1
     for x in range(x_num):
@@ -207,7 +212,9 @@ class CanvasGrid(ToggleItem):
     return
 
   def set_pitch(self, pitch):
-    self.pitch = pitch
+    if pitch != 0:
+      self.pitch = pitch
+
     self.draw()
     return
 
@@ -440,10 +447,11 @@ class LRFrange(ScaledObject):
             
       # n: step number
       # d: length data
-      deg = (n + self.offset_step) * self.angle_per_step + self.beg_angle
-      th = deg * math.pi / 180
-      x = d * math.cos(th) / 10
-      y = d * math.sin(th) / 10
+      #deg = (n + self.offset_step) * self.angle_per_step + self.beg_angle
+      #th = deg * math.pi / 180
+      th = (n + self.offset_step) * self.angle_per_step + self.beg_angle
+      x = d * math.cos(th)
+      y = d * math.sin(th)
       pos.append(self.translate(x, y, 0, 0, 0))
     self.pre_data = data
     return pos
@@ -458,6 +466,19 @@ class LRFrange(ScaledObject):
       rdata = self.source.get_range_data()
       if len(rdata) != 0:
         self.rdata = rdata
+
+      res = self.source.get_angular_res()
+      if res:
+        self.angle_per_step = res
+
+      beg_angle = self.source.get_start_point()
+      if beg_angle:
+        self.beg_angle = beg_angle
+
+      end_angle = self.source.get_end_point()
+      if end_angle:
+        self.end_angle = end_angle
+
     else:
       pass
     self.draw()

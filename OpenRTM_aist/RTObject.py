@@ -66,8 +66,8 @@ default_conf = [
 #
 # @endif
 class RTObject_impl(OpenRTM__POA.DataFlowComponent):
-
-
+  """
+  """
 
   ##
   # @if jp
@@ -109,8 +109,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._properties = OpenRTM_aist.Properties(defaults_str=default_conf)
     self._configsets = OpenRTM_aist.ConfigAdmin(self._properties.getNode("conf"))
     self._profile = RTC.ComponentProfile("","","","","","",[],None,[])
-    
-    self._SdoConfigImpl = OpenRTM_aist.Configuration_impl(self._configsets)
+
+    self._sdoservice = OpenRTM_aist.SdoServiceAdmin(self)
+    self._SdoConfigImpl = OpenRTM_aist.Configuration_impl(self._configsets,self._sdoservice)
     self._SdoConfig = self._SdoConfigImpl.getObjRef()
     self._execContexts = []
     self._objref = self._this()
@@ -128,6 +129,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._writeAllCompletion = False
     self._inports = []
     self._outports = []
+    self._actionListeners = OpenRTM_aist.ComponentActionListeners()
+    self._portconnListeners = OpenRTM_aist.PortConnectListeners()
     return
 
 
@@ -894,15 +897,17 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   def get_component_profile(self):
     self._rtcout.RTC_TRACE("get_component_profile()")
     try:
-      return RTC.ComponentProfile(self._properties.getProperty("instance_name"),
-                                  self._properties.getProperty("type_name"),
-                                  self._properties.getProperty("description"),
-                                  self._properties.getProperty("version"),
-                                  self._properties.getProperty("vendor"),
-                                  self._properties.getProperty("category"),
-                                  self._portAdmin.getPortProfileList(),
-                                  self._profile.parent,
-                                  self._profile.properties)
+      prop_ = RTC.ComponentProfile(self._properties.getProperty("instance_name"),
+                                   self._properties.getProperty("type_name"),
+                                   self._properties.getProperty("description"),
+                                   self._properties.getProperty("version"),
+                                   self._properties.getProperty("vendor"),
+                                   self._properties.getProperty("category"),
+                                   self._portAdmin.getPortProfileList(),
+                                   self._profile.parent,
+                                   self._profile.properties) 
+      OpenRTM_aist.NVUtil.copyFromProperties(self._profile.properties, self._properties)
+      return prop_
       # return RTC.ComponentProfile(self._profile.instance_name,
       #               self._profile.type_name,
       #               self._profile.description,
@@ -914,8 +919,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       #               self._profile.properties)
     
     except:
-      #traceback.print_exception(*sys.exc_info())
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
     assert(False)
     return None
@@ -947,8 +951,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._portAdmin.getPortServiceList()
     except:
-      #traceback.print_exception(*sys.exc_info())
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
     assert(False)
     return []
@@ -1003,12 +1006,15 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     for i in range(len(self._ecOther)):
       if CORBA.is_nil(self._ecOther[i]):
         self._ecOther[i] = ecs
-        return i + ECOTHER_OFFSET
+        ec_id = i + ECOTHER_OFFSET
+        self.onAttachExecutionContext(ec_id)
+        return ec_id
 
     # no space in the list, push back ec to the last.
     OpenRTM_aist.CORBA_SeqUtil.push_back(self._ecOther,ecs)
-    
-    return long(len(self._ecOther) - 1 + ECOTHER_OFFSET)
+    ec_id = long(len(self._ecOther) - 1 + ECOTHER_OFFSET)
+    self.onAttachExecutionContext(ec_id)
+    return ec_id
 
 
   # UniqueId bindContext(ExecutionContext_ptr exec_context);
@@ -1028,6 +1034,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     for i in range(len(self._ecMine)):
       if CORBA.is_nil(self._ecMine[i]):
         self._ecMine[i] = ecs
+        self.onAttachExecutionContext(i)
         return i
         #return i + ECOTHER_OFFSET
 
@@ -1100,7 +1107,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     
     #OpenRTM_aist.CORBA_SeqUtil.erase(self._ecOther, index)
     self._ecOther[index] = RTC.ExecutionContextService._nil
-
+    self.onDetachExecutionContext(ec_id)
     return RTC.RTC_OK
 
 
@@ -1132,19 +1139,21 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_initialize()")
     ret = RTC.RTC_ERROR
     try:
+      self.preOnInitialize(0)
       ret = self.onInitialize()
-      active_set = self._properties.getProperty("configuration.active_config",
-                                                "default")
-
-      if self._configsets.haveConfig(active_set):
-          self._configsets.update(active_set)
-      else:
-          self._configsets.update("default")
-
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
 
+    active_set = self._properties.getProperty("configuration.active_config",
+                                              "default")
+
+    if self._configsets.haveConfig(active_set):
+      self._configsets.update(active_set)
+    else:
+      self._configsets.update("default")
+
+    self.postOnInitialize(0,ret)
     return ret
 
 
@@ -1176,11 +1185,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_finalize()")
     ret = RTC.RTC_ERROR
     try:
+      self.preOnFinalize(0)
       ret = self.onFinalize()
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnFinalize(0, ret)
     return ret
 
 
@@ -1215,11 +1225,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_startup(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnStartup(ec_id)
       ret = self.onStartup(ec_id)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnStartup(ec_id, ret)
     return ret
 
 
@@ -1254,11 +1265,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_shutdown(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnShutdown(ec_id)
       ret = self.onShutdown(ec_id)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnShutdown(ec_id, ret)
     return ret
 
 
@@ -1291,13 +1303,14 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_activated(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnActivated(ec_id)
       self._configsets.update()
       ret = self.onActivated(ec_id)
       self._portAdmin.activatePorts()
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnActivated(ec_id, ret)
     return ret
 
 
@@ -1330,12 +1343,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_deactivated(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnDeactivated(ec_id)
       self._portAdmin.deactivatePorts()
       ret = self.onDeactivated(ec_id)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnDeactivated(ec_id, ret)
     return ret
 
 
@@ -1374,11 +1388,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_aborting(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnAborting(ec_id)
       ret = self.onAborting(ec_id)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnAborting(ec_id, ret)
     return ret
 
 
@@ -1428,12 +1443,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_error(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnError(ec_id)
       ret = self.onError(ec_id)
-      self._configsets.update()
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self._configsets.update()
+    self.postOnError(ec_id, ret)
     return ret
 
 
@@ -1473,11 +1489,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_reset(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnReset(ec_id)
       ret = self.onReset(ec_id)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnReset(ec_id, ret)
     return ret
 
 
@@ -1525,6 +1542,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_execute(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnExecute(ec_id)
       if self._readAll:
         self.readAll()
       
@@ -1534,9 +1552,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self.writeAll()
       
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnExecute(ec_id, ret)
     return ret
 
 
@@ -1584,12 +1602,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_state_update(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnStateUpdate(ec_id)
       ret = self.onStateUpdate(ec_id)
       self._configsets.update()
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnStateUpdate(ec_id, ret)
     return ret
 
 
@@ -1631,11 +1650,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("on_rate_changed(%d)", ec_id)
     ret = RTC.RTC_ERROR
     try:
+      self.preOnRateChanged(ec_id)
       ret = self.onRateChanged(ec_id)
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
-      return RTC.RTC_ERROR
-    
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      ret = RTC.RTC_ERROR
+    self.postOnRateChanged(ec_id, ret)
     return ret
 
 
@@ -1688,7 +1708,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._sdoOwnedOrganizations
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.NotAvailable("NotAvailable: get_owned_organizations")
 
     return []
@@ -1739,7 +1759,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._profile.instance_name
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_sdo_id()")
 
 
@@ -1784,7 +1804,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._profile.description
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_sdo_type()")
     return ""
 
@@ -1833,7 +1853,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._SdoConfigImpl.getDeviceProfile()
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_device_profile()")
 
     return SDOPackage.DeviceProfile("","","","",[])
@@ -1884,7 +1904,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._sdoSvcProfiles
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_service_profiles()")
 
     return []
@@ -1947,7 +1967,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
 
       return self._sdoSvcProfiles[index]
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_service_profile()")
 
     return SDOPackage.ServiceProfile("", "", [], None)
@@ -2015,7 +2035,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._sdoSvcProfiles[index].service
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_service()")
     return SDOPackage.SDOService._nil
 
@@ -2073,7 +2093,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._SdoConfig
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_configuration()")
     return SDOPackage.Configuration._nil
 
@@ -2172,7 +2192,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._sdoOrganizations
     except:
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_organizations()")
     return []
 
@@ -2215,6 +2235,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return self._sdoStatus
     except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_status_list()")
     return []
 
@@ -2265,6 +2286,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     try:
       return any.to_any(self._sdoStatus[index].value)
     except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_status()")
     return any.to_any("")
 
@@ -2656,10 +2678,11 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     elif isinstance(port, OpenRTM_aist.PortBase):
       self._rtcout.RTC_TRACE("addPort(PortBase)")
       port.setOwner(self.getObjRef())
+      port.setPortConnectListenerHolder(self._portconnListeners)
+      self.onAddPort(port.getPortProfile())
 
     elif isinstance(port, RTC._objref_PortService):
       self._rtcout.RTC_TRACE("addPort(PortService)")
-
     return self._portAdmin.addPort(port)
 
 
@@ -2789,7 +2812,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
           try:
             self._inports.remove(port)
           except:
-            self._rtcout.RTC_ERROR("Can not remove inport.")
+            self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
             
           return True
 
@@ -2828,7 +2851,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
           try:
             self._outports.remove(port)
           except:
-            self._rtcout.RTC_ERROR("Can not remove outport.")
+            self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
             
           return True
 
@@ -2864,6 +2887,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # new interface. since 1.0.0-RELEASE
   def removePort(self, port):
     self._rtcout.RTC_TRACE("removePort()")
+    if isinstance(port, OpenRTM_aist.PortBase) or isinstance(port, OpenRTM_aist.CorbaPort):
+      self.onRemovePort(port.getPortProfile())
     return self._portAdmin.removePort(port)
 
 
@@ -2884,6 +2909,424 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("deletePortByName(%s)", port_name)
     self._portAdmin.deletePortByName(port_name)
     return
+
+
+  ##
+  # @if jp
+  #
+  # @brief [local interface] 実行コンテキストを取得する
+  #
+  # get_context() と同じ機能のローカル版。違いはない。
+  # この関数は以下の関数内で呼ばれることを前提としている。
+  #
+  # - onStartup()
+  # - onShutdown()
+  # - onActivated()
+  # - onDeactivated()
+  # - onExecute()
+  # - onAborting()
+  # - onError()
+  # - onReset()
+  # - onStateUpdate()
+  # - onRateChanged()
+  # 
+  # この関数の引数はこれらの関数の引数 UniquieID exec_handle でなけ
+  # ればならない。
+  # 
+  # @param ec_id 上記関数の第1引数 exec_handle を渡す必要がある。
+  # 
+  # @else
+  # 
+  # @brief [local interface] Getting current execution context
+  # 
+  # This function is the local version of get_context(). completely
+  # same as get_context() function. This function is assumed to be
+  # called from the following functions.
+  # 
+  # - onStartup()
+  # - onShutdown()
+  # - onActivated()
+  # - onDeactivated()
+  # - onExecute()
+  # - onAborting()
+  # - onError()
+  # - onReset()
+  # - onStateUpdate()
+  # - onRateChanged()
+  # 
+  # The argument of this function should be the first argument
+  # (UniqueId ec_id) of the above functions.
+  # 
+  # @param ec_id The above functions' first argument "exec_handle."
+  # 
+  # @endif
+  #
+  # ExecutionContext_ptr getExecutionContext(RTC::UniqueId ec_id);
+  def getExecutionContext(self, ec_id):
+    return self.get_context(ec_id)
+
+  ##
+  # @if jp
+  # 
+  # @brief [local interface] 実行コンテキストの実行レートを取得する
+  #
+  # 現在実行中の実行コンテキストの実行レートを取得する。実行コンテキ
+  # ストのKindがPERIODIC以外の場合の動作は未定義である。この関数は以
+  # 下の関数内で呼ばれることを前提としている。
+  #
+  # - onStartup()
+  # - onShutdown()
+  # - onActivated()
+  # - onDeactivated()
+  # - onExecute()
+  # - onAborting()
+  # - onError()
+  # - onReset()
+  # - onStateUpdate()
+  # - onRateChanged()
+  #
+  # この関数の引数はこれらの関数の引数 UniquieID exec_handle でなけ
+  # ればならない。
+  #
+  # @param ec_id 上記関数の第1引数 exec_handle を渡す必要がある。
+  #
+  # @else
+  # 
+  # @brief [local interface] Getting current context' execution rate
+  #
+  # This function returns current execution rate in this
+  # context. If this context's kind is not PERIODC, behavior is not
+  # defined. This function is assumed to be called from the
+  # following functions.
+  #
+  # - onStartup()
+  # - onShutdown()
+  # - onActivated()
+  # - onDeactivated()
+  # - onExecute()
+  # - onAborting()
+  # - onError()
+  # - onReset()
+  # - onStateUpdate()
+  # - onRateChanged()
+  #
+  # The argument of this function should be the first argument
+  # (UniqueId ec_id) of the above functions.
+  #
+  # @param ec_id The above functions' first argument "exec_handle."
+  #
+  # @endif
+  #
+  # double getExecutionRate(RTC::UniqueId ec_id);
+  def getExecutionRate(self, ec_id):
+    ec = self.getExecutionContext(ec_id)
+    if CORBA.is_nil(ec):
+      return 0.0
+
+    return ec.get_rate()
+
+
+  ##
+  # @if jp
+  # 
+  # @brief [local interface] 実行コンテキストの実行レートを設定する
+  #
+  # 現在実行中の実行コンテキストの実行レートを設定する。実行コンテキ
+  # ストのKindがPERIODIC以外の場合の動作は未定義である。この関数は以
+  # 下の関数内で呼ばれることを前提としている。
+  #
+  # - onStartup()
+  # - onShutdown()
+  # - onActivated()
+  # - onDeactivated()
+  # - onExecute()
+  # - onAborting()
+  # - onError()
+  # - onReset()
+  # - onStateUpdate()
+  # - onRateChanged()
+  #
+  # この関数の引数はこれらの関数の引数 UniquieID exec_handle でなけ
+  # ればならない。
+  #
+  # @param ec_id 上記関数の第1引数 exec_handle を渡す必要がある。
+  # @param rate 実行レートを [Hz] で与える
+  #
+  # @else
+  # 
+  # @brief [local interface] Setting current context' execution rate
+  #
+  # This function sets a execution rate in the context. If this
+  # context's kind is not PERIODC, behavior is not defined. This
+  # function is assumed to be called from the following functions.
+  #
+  # - onStartup()
+  # - onShutdown()
+  # - onActivated()
+  # - onDeactivated()
+  # - onExecute()
+  # - onAborting()
+  # - onError()
+  # - onReset()
+  # - onStateUpdate()
+  # - onRateChanged()
+  #
+  # The argument of this function should be the first argument
+  # (UniqueId ec_id) of the above functions.
+  #
+  # @param ec_id The above functions' first argument "exec_handle."
+  # @param rate Execution rate in [Hz].
+  #
+  # @endif
+  #
+  # ReturnCode_t setExecutionRate(RTC::UniqueId ec_id, double rate);
+  def setExecutionRate(self, ec_id, rate):
+    ec = self.getExecutionContext(ec_id)
+    if CORBA.is_nil(ec):
+      return RTC.RTC_ERROR
+    ec.set_rate(rate)
+    return RTC.RTC_OK
+
+
+  ##
+  # @if jp
+  # 
+  # @brief [local interface] 実行コンテキストの所有権を調べる
+  #
+  # 現在実行中の実行コンテキストの所有権を調べる。この関数は以下の関
+  # 数内で呼ばれることを前提としている。
+  #
+  # - onStartup()
+  # - onShutdown()
+  # - onActivated()
+  # - onDeactivated()
+  # - onExecute()
+  # - onAborting()
+  # - onError()
+  # - onReset()
+  # - onStateUpdate()
+  # - onRateChanged()
+  #
+  # この関数の引数はこれらの関数の引数 UniquieID exec_handle でなけ
+  # ればならない。
+  #
+  # @param ec_id 上記関数の第1引数 exec_handle を渡す必要がある。
+  # @return true: 自身の実行コンテキスト、false: 他の実行コンテキスト
+  #
+  # @else
+  # 
+  # @brief [local interface] Checking if the current context is own context
+  #
+  # This function checks if the current context is own execution
+  # context. This function is assumed to be called from the
+  # following functions.
+  #
+  # - onStartup()
+  # - onShutdown()
+  # - onActivated()
+  # - onDeactivated()
+  # - onExecute()
+  # - onAborting()
+  # - onError()
+  # - onReset()
+  # - onStateUpdate()
+  # - onRateChanged()
+  #
+  # The argument of this function should be the first argument
+  # (UniqueId ec_id) of the above functions.
+  #
+  # @param ec_id The above functions' first argument "exec_handle."
+  # @return true: Own context, false: other's context
+  #
+  # @endif
+  #
+  # bool isOwnExecutionContext(RTC::UniqueId ec_id);
+  def isOwnExecutionContext(self, ec_id):
+    global ECOTHER_OFFSET
+    if ec_id < ECOTHER_OFFSET:
+      return True
+    return False
+
+
+  ##
+  # @if jp
+  # 
+  # @brief [local interface] 状態を Inactive に遷移させる
+  #
+  # 状態を Active から Inactive に遷移させる。この関数は以下の関
+  # 数内で呼ばれることを前提としている。
+  #
+  # - onActivated()
+  # - onExecute()
+  # - onStateUpdate()
+  #
+  # この関数の引数は上記の関数の引数 UniquieID exec_handle でなけ
+  # ればならない。
+  #
+  # @param ec_id 上記関数の第1引数 exec_handle を渡す必要がある。
+  # @return リターンコード
+  #
+  # @else
+  # 
+  # @brief [local interface] Make transition to Inactive state
+  #
+  # This function makes transition from Active to Inactive
+  # state. This function is assumed to be called from the following
+  # functions.
+  #
+  # - onActivated()
+  # - onExecute()
+  # - onStateUpdate()
+  #
+  # The argument of this function should be the first argument
+  # (UniqueId ec_id) of the above function.
+  #
+  # @param ec_id The above functions' first argument "exec_handle."
+  # @return Return code
+  #
+  # @endif
+  #
+  # ReturnCode_t deactivate(RTC::UniqueId ec_id);
+  def deactivate(self, ec_id):
+    ec = self.getExecutionContext(ec_id)
+    if CORBA.is_nil(ec):
+      return RTC.RTC_ERROR
+    return ec.deactivate_component(self.getObjRef())
+
+
+  ##
+  # @if jp
+  # 
+  # @brief [local interface] 状態を Active に遷移させる
+  #
+  # 状態を Inactive から Active に遷移させる。この関数は以下の関
+  # 数内で呼ばれることを前提としている。
+  #
+  # - onStartup()
+  # - onDeactivated()
+  #
+  # この関数の引数は上記の関数の引数 UniquieID exec_handle でなけ
+  # ればならない。
+  #
+  # @param ec_id 上記関数の第1引数 exec_handle を渡す必要がある。
+  # @return リターンコード
+  #
+  # @else
+  # 
+  # @brief [local interface] Make transition to Active state
+  #
+  # This function makes transition from Inactive to Active
+  # state. This function is assumed to be called from the following
+  # functions.
+  #
+  # - onStartup()
+  # - onDeactivated()
+  #
+  # The argument of this function should be the first argument
+  # (UniqueId ec_id) of the above function.
+  #
+  # @param ec_id The above functions' first argument "exec_handle."
+  # @return Return code
+  #
+  # @endif
+  #
+  # ReturnCode_t activate(RTC::UniqueId ec_id);
+  def activate(self, ec_id):
+    ec = self.getExecutionContext(ec_id)
+    if CORBA.is_nil(ec):
+      return RTC.RTC_ERROR
+    return ec.activate_component(self.getObjRef())
+
+
+  ##
+  # @if jp
+  # 
+  # @brief [local interface] 状態をリセットし Inactive に遷移させる
+  #
+  # 状態を Error から Inactive に遷移させる。この関数は以下の関
+  # 数内で呼ばれることを前提としている。
+  #
+  # - onError()
+  #
+  # この関数の引数は上記の関数の引数 UniquieID exec_handle でなけ
+  # ればならない。
+  #
+  # @param ec_id 上記関数の第1引数 exec_handle を渡す必要がある。
+  # @return リターンコード
+  #
+  # @else
+  # 
+  # @brief [local interface] Resetting and go to Inactive state
+  #
+  # This function reset RTC and makes transition from Error to Inactive
+  # state. This function is assumed to be called from the following
+  # functions.
+  #
+  # - onError()
+  #
+  # The argument of this function should be the first argument
+  # (UniqueId ec_id) of the above function.
+  #
+  # @param ec_id The above functions' first argument "exec_handle."
+  # @return Return code
+  #
+  # @endif
+  #
+  # ReturnCode_t reset(RTC::UniqueId ec_id);
+  def reset(self, ec_id):
+    ec = self.getExecutionContext(ec_id)
+    if CORBA.is_nil(ec):
+      return RTC.RTC_ERROR
+    return ec.reset_component(self.getObjRef())
+    
+
+  ##
+  # @if jp
+  # @brief [local interface] SDO service provider をセットする
+  # @else
+  # @brief [local interface] Set a SDO service provider
+  # @endif
+  #
+  # bool addSdoServiceProvider(const SDOPackage::ServiceProfile& prof,
+  #                            SdoServiceProviderBase* provider);
+  def addSdoServiceProvider(self, prof, provider):
+    return self._sdoservice.addSdoServiceProvider(prof, provider)
+
+
+  ##
+  # @if jp
+  # @brief [local interface] SDO service provider を削除する
+  # @else
+  # @brief [local interface] Remove a SDO service provider
+  # @endif
+  #
+  # bool removeSdoServiceProvider(const char* id);
+  def removeSdoServiceProvider(self, id):
+    return self._sdoservice.removeSdoServiceProvider(id)
+
+
+  ##
+  # @if jp
+  # @brief [local interface] SDO service consumer をセットする
+  # @else
+  # @brief [local interface] Set a SDO service consumer
+  # @endif
+  #
+  # bool addSdoServiceConsumer(const SDOPackage::ServiceProfile& prof);
+  def addSdoServiceConsumer(self, prof):
+    return self._sdoservice.addSdoServiceConsumer(prof)
+
+
+  ##
+  # @if jp
+  # @brief [local interface] SDO service consumer を削除する
+  # @else
+  # @brief [local interface] Remove a SDO service consumer
+  # @endif
+  #
+  # bool removeSdoServiceConsumer(const char* id);
+  def removeSdoServiceConsumer(self, id):
+    return self._sdoservice.removeSdoServiceConsumer(id)
 
 
   ##
@@ -3061,12 +3504,917 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     for i in range(len_):
       idx = (len_ - 1) - i
       self._eclist[idx].stop()
-      self._poa.deactivate_object(self._poa.servant_to_id(self._eclist[idx]))
-      #self._default_POA().deactivate_object(self._default_POA().servant_to_id(self._eclist[idx]))
+      try:
+        self._poa.deactivate_object(self._poa.servant_to_id(self._eclist[idx]))
+      except:
+        self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
       del self._eclist[idx]
 
     if self._eclist:
       self._eclist = []
+    return
+
+
+  ##
+  # @if jp
+  # @brief PreComponentActionListener リスナを追加する
+  #
+  # ComponentAction 実装関数の呼び出し直前のイベントに関連する各種リ
+  # スナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - PRE_ON_INITIALIZE:    onInitialize 直前
+  # - PRE_ON_FINALIZE:      onFinalize 直前
+  # - PRE_ON_STARTUP:       onStartup 直前
+  # - PRE_ON_SHUTDOWN:      onShutdown 直前
+  # - PRE_ON_ACTIVATED:     onActivated 直前
+  # - PRE_ON_DEACTIVATED:   onDeactivated 直前
+  # - PRE_ON_ABORTING:       onAborted 直前
+  # - PRE_ON_ERROR:         onError 直前
+  # - PRE_ON_RESET:         onReset 直前
+  # - PRE_ON_EXECUTE:       onExecute 直前
+  # - PRE_ON_STATE_UPDATE:  onStateUpdate 直前
+  #
+  # リスナは PreComponentActionListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # PreComponentActionListener::operator()(UniqueId ec_id)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removePreComponentActionListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param memfunc 関数オブジェクト
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding PreComponentAction type listener
+  #
+  # This operation adds certain listeners related to ComponentActions
+  # pre events.
+  # The following listener types are available.
+  #
+  # - PRE_ON_INITIALIZE:    before onInitialize
+  # - PRE_ON_FINALIZE:      before onFinalize
+  # - PRE_ON_STARTUP:       before onStartup
+  # - PRE_ON_SHUTDOWN:      before onShutdown
+  # - PRE_ON_ACTIVATED:     before onActivated
+  # - PRE_ON_DEACTIVATED:   before onDeactivated
+  # - PRE_ON_ABORTING:       before onAborted
+  # - PRE_ON_ERROR:         before onError
+  # - PRE_ON_RESET:         before onReset
+  # - PRE_ON_EXECUTE:       before onExecute
+  # - PRE_ON_STATE_UPDATE:  before onStateUpdate
+  #
+  # Listeners should have the following function operator().
+  #
+  # PreComponentActionListener::operator()(UniqueId ec_id)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removePreComponentActionListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param memfunc  member function object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  # template <class Listener>
+  # PreComponentActionListener*
+  # addPreComponentActionListener(PreCompActionListenerType listener_type,
+  #                               void (Listener::*memfunc)(UniqueId ec_id),
+  #                               bool autoclean = true)
+  def addPreComponentActionListener(self, listener_type,
+                                    memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.PreComponentActionListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+
+      def __call__(self, ec_id):
+        self._memfunc(ec_id)
+        return
+
+    listener = Noname(memfunc)
+    self._actionListeners.preaction_[listener_type].addListener(listener, autoclean)
+    return listener
+
+
+  ##
+  # @if jp
+  # @brief PreComponentActionListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing PreComponentAction type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  #
+  # void 
+  # removePreComponentActionListener(PreComponentActionListenerType listener_type,
+  #                                  PreComponentActionListener* listener);
+  def removePreComponentActionListener(self, listener_type, listener):
+    self._actionListeners.preaction_[listener_type].removeListener(listener)
+    return
+
+
+  ##
+  # @if jp
+  # @brief PostComponentActionListener リスナを追加する
+  #
+  # ComponentAction 実装関数の呼び出し直後のイベントに関連する各種リ
+  # スナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - POST_ON_INITIALIZE:    onInitialize 直後
+  # - POST_ON_FINALIZE:      onFinalize 直後
+  # - POST_ON_STARTUP:       onStartup 直後
+  # - POST_ON_SHUTDOWN:      onShutdown 直後
+  # - POST_ON_ACTIVATED:     onActivated 直後
+  # - POST_ON_DEACTIVATED:   onDeactivated 直後
+  # - POST_ON_ABORTING:       onAborted 直後
+  # - POST_ON_ERROR:         onError 直後
+  # - POST_ON_RESET:         onReset 直後
+  # - POST_ON_EXECUTE:       onExecute 直後
+  # - POST_ON_STATE_UPDATE:  onStateUpdate 直後
+  #
+  # リスナは PostComponentActionListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # PostComponentActionListener::operator()(UniqueId ec_id, ReturnCode_t ret)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removePostComponentActionListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param memfunc 関数オブジェクト
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding PostComponentAction type listener
+  #
+  # This operation adds certain listeners related to ComponentActions
+  # post events.
+  # The following listener types are available.
+  #
+  # - POST_ON_INITIALIZE:    after onInitialize
+  # - POST_ON_FINALIZE:      after onFinalize
+  # - POST_ON_STARTUP:       after onStartup
+  # - POST_ON_SHUTDOWN:      after onShutdown
+  # - POST_ON_ACTIVATED:     after onActivated
+  # - POST_ON_DEACTIVATED:   after onDeactivated
+  # - POST_ON_ABORTING:       after onAborted
+  # - POST_ON_ERROR:         after onError
+  # - POST_ON_RESET:         after onReset
+  # - POST_ON_EXECUTE:       after onExecute
+  # - POST_ON_STATE_UPDATE:  after onStateUpdate
+  #
+  # Listeners should have the following function operator().
+  #
+  # PostComponentActionListener::operator()(UniqueId ec_id, ReturnCode_t ret)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removePostComponentActionListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param memfunc  member function object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  # template <class Listener>
+  # PostComponentActionListener*
+  # addPostComponentActionListener(PostCompActionListenerType listener_type,
+  #                                void (Listener::*memfunc)(UniqueId ec_id,
+  #                                                          ReturnCode_t ret),
+  #                                bool autoclean = true)
+  def addPostComponentActionListener(self, listener_type,
+                                     memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.PostComponentActionListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+      def __call__(self, ec_id, ret):
+        self._memfunc(ec_id, ret)
+        return
+      
+    listener = Noname(memfunc)
+    self._actionListeners.postaction_[listener_type].addListener(listener, autoclean)
+    return listener
+
+
+  ##
+  # @if jp
+  # @brief PostComponentActionListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing PostComponentAction type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  ##
+  # void 
+  # removePostComponentActionListener(PostComponentActionListenerType listener_type,
+  #                                   PostComponentActionListener* listener);
+  def removePostComponentActionListener(self, listener_type, listener):
+    self._actionListeners.postaction_[listener_type].removeListener(listener)
+    return
+
+
+  ##
+  # @if jp
+  # @brief PortActionListener リスナを追加する
+  #
+  # Portの追加、削除時にコールバックされる各種リスナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - ADD_PORT:    Port追加時
+  # - REMOVE_PORT: Port削除時
+  #
+  # リスナは PortActionListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # PortActionListener::operator()(PortProfile& pprof)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removePortActionListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param memfunc 関数オブジェクト
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding PortAction type listener
+  #
+  # This operation adds certain listeners related to ComponentActions
+  # post events.
+  # The following listener types are available.
+  #
+  # - ADD_PORT:    At adding Port
+  # - REMOVE_PORT: At removing Port
+  #
+  # Listeners should have the following function operator().
+  #
+  # PortActionListener::operator()(RTC::PortProfile pprof)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removePortActionListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param memfunc  member function object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  # template <class Listener>
+  # PortActionListener*
+  # addPortActionListener(PortActionListenerType listener_type,
+  #                       void (Listener::*memfunc)(const RTC::PortProfile&),
+  #                       bool autoclean=true)
+  def addPortActionListener(self, listener_type,
+                            memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.PortActionListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, pprofile):
+        self._memfunc(pprofile)
+        return
+
+    listener = Noname(memfunc)
+    self._actionListeners.portaction_[listener_type].addListener(listener, autoclean)
+    return listener
+
+
+  ##
+  # @if jp
+  # @brief PortActionListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing PortAction type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  # void 
+  # removePortActionListener(PortActionListenerType listener_type,
+  #                          PortActionListener* listener);
+  def removePortActionListener(self, listener_type, listener):
+    self._actionListeners.portaction_[listener_type].removeListener(listener)
+    return
+
+
+  ##
+  # @if jp
+  # @brief ExecutionContextActionListener リスナを追加する
+  #
+  # ExecutionContextの追加、削除時にコールバックされる各種リスナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - ATTACH_EC:    ExecutionContext アタッチ時
+  # - DETACH_EC:    ExecutionContext デタッチ時
+  #
+  # リスナは ExecutionContextActionListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # ExecutionContextActionListener::operator()(UniqueId　ec_id)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removeExecutionContextActionListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param memfunc 関数オブジェクト
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding ExecutionContextAction type listener
+  #
+  # This operation adds certain listeners related to ComponentActions
+  # post events.
+  # The following listener types are available.
+  #
+  # - ADD_PORT:    At adding ExecutionContext
+  # - REMOVE_PORT: At removing ExecutionContext
+  #
+  # Listeners should have the following function operator().
+  #
+  # ExecutionContextActionListener::operator()(UniqueId ec_id)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removeExecutionContextActionListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param memfunc  member function object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  # template <class Listener>
+  # ECActionListener*
+  # addExecutionContextActionListener(ECActionListenerType listener_type,
+  #                                   void (Listener::*memfunc)(UniqueId),
+  #                                   bool autoclean = true);
+  def addExecutionContextActionListener(self, listener_type,
+                                        memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.ExecutionContextActionListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, ec_id):
+        self._memfunc(ec_id)
+        return
+
+    listener = Noname(memfunc)
+    self._actionListeners.ecaction_[listener_type].addListener(listener, autoclean)
+    return listener
+    
+
+  ##
+  # @if jp
+  # @brief ExecutionContextActionListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing ExecutionContextAction type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  #
+  # void 
+  # removeExecutionContextActionListener(ECActionListenerType listener_type,
+  #                                      ECActionListener* listener);
+  def removeExecutionContextActionListener(self, listener_type, listener):
+    self._actionListeners.ecaction_[listener_type].removeListener(listener)
+    return
+
+
+  ##
+  # @if jp
+  # @brief PortConnectListener リスナを追加する
+  #
+  # Portの接続時や接続解除時に呼び出される各種リスナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - ON_NOTIFY_CONNECT: notify_connect() 関数内呼び出し直後
+  # - ON_NOTIFY_DISCONNECT: notify_disconnect() 呼び出し直後
+  # - ON_UNSUBSCRIBE_INTERFACES: notify_disconnect() 内のIF購読解除時
+  #
+  # リスナは PortConnectListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # PortConnectListener::operator()(const char*, ConnectorProfile)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removePortConnectListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param memfunc 関数オブジェクト
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding PortConnect type listener
+  #
+  # This operation adds certain listeners related to Port's connect actions.
+  # The following listener types are available.
+  #
+  # - ON_NOTIFY_CONNECT: right after entering into notify_connect()
+  # - ON_NOTIFY_DISCONNECT: right after entering into notify_disconnect()
+  # - ON_UNSUBSCRIBE_INTERFACES: unsubscribing IF in notify_disconnect()
+  #
+  # Listeners should have the following function operator().
+  #
+  # PortConnectListener::operator()(const char*, ConnectorProfile)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removePortConnectListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param memfunc  member function object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  # template <class Listener>
+  # PortConnectListener*
+  # addPortConnectListener(PortConnectListenerType listener_type,
+  #                        void (Listener::*memfunc)(const char*,
+  #                                                  ConnectorProfile&),
+  #                        bool autoclean = true)
+  def addPortConnectListener(self, listener_type,
+                             memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.PortConnectListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, portname, cprofile):
+        self._memfunc(portname, cprofile)
+        return
+
+    listener = Noname(memfunc)
+    self._portconnListeners.portconnect_[listener_type].addListener(listener, autoclean)
+    return listener
+    
+
+  ##
+  # @if jp
+  # @brief PortConnectListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing PortConnect type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  #
+  # void 
+  # removePortConnectListener(PortConnectListenerType listener_type,
+  #                           PortConnectListener* listener);
+  def removePortConnectListener(self, listener_type, listener):
+    self._portconnListeners.portconnect_[listener_type].removeListener(listener)
+    return
+
+
+  ##
+  # @if jp
+  # @brief PortConnectRetListener リスナを追加する
+  #
+  # Portの接続時や接続解除時に呼び出される各種リスナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - ON_CONNECT_NEXTPORT: notify_connect() 中のカスケード呼び出し直後
+  # - ON_SUBSCRIBE_INTERFACES: notify_connect() 中のインターフェース購読直後
+  # - ON_CONNECTED: nofity_connect() 接続処理完了時に呼び出される
+  # - ON_DISCONNECT_NEXT: notify_disconnect() 中にカスケード呼び出し直後
+  # - ON_DISCONNECTED: notify_disconnect() リターン時
+  #
+  # リスナは PortConnectRetListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # PortConnectRetListener::operator()(const char*, ConnectorProfile)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removePortConnectRetListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param memfunc 関数オブジェクト
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding PortConnectRet type listener
+  #
+  # This operation adds certain listeners related to Port's connect actions.
+  # The following listener types are available.
+  #
+  # - ON_CONNECT_NEXTPORT: after cascade-call in notify_connect()
+  # - ON_SUBSCRIBE_INTERFACES: after IF subscribing in notify_connect()
+  # - ON_CONNECTED: completed nofity_connect() connection process
+  # - ON_DISCONNECT_NEXT: after cascade-call in notify_disconnect()
+  # - ON_DISCONNECTED: completed notify_disconnect() disconnection process
+  #
+  # Listeners should have the following function operator().
+  #
+  # PortConnectRetListener::operator()(const char*, ConnectorProfile)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removePortConnectRetListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param memfunc  member function object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  # template <class Listener>
+  # PortConnectRetListener*
+  # addPortConnectRetListener(PortConnectRetListenerType listener_type,
+  #                           void (Listener::*memfunc)(const char*,
+  #                                                     ConnectorProfile&,
+  #                                                     ReturnCode_t))
+  def addPortConnectRetListener(self, listener_type,
+                                memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.PortConnectRetListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, portname, cprofile, ret):
+        self._memfunc(portname, cprofile, ret)
+        return
+
+    listener = Noname(memfunc)
+    self._portconnListeners.portconnret_[listener_type].addListener(listener, autoclean)
+    return listener
+    
+
+  ##
+  # @if jp
+  # @brief PortConnectRetListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing PortConnectRet type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  #
+  # void 
+  # removePortConnectRetListener(PortConnectRetListenerType listener_type,
+  #                              PortConnectRetListener* listener);
+  def removePortConnectRetListener(self, listener_type, listener):
+    self._portconnListeners.portconnret_[listener_type].removeListener(listener)
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationParamListener を追加する
+  #
+  # update(const char* config_set, const char* config_param) が呼ばれた際に
+  # コールされるリスナ ConfigurationParamListener を追加する。
+  # type には現在のところ ON_UPDATE_CONFIG_PARAM のみが入る。
+  #
+  # @param type ConfigurationParamListenerType型の値。
+  #             ON_UPDATE_CONFIG_PARAM がある。
+  #
+  # @param memfunc 関数オブジェクト
+  # @param autoclean リスナオブジェクトを自動で削除するかどうかのフラグ
+  # 
+  # @else
+  #
+  # @brief Adding ConfigurationParamListener 
+  # 
+  # This function adds a listener object which is called when
+  # update(const char* config_set, const char* config_param) is
+  # called. In the type argument, currently only
+  # ON_UPDATE_CONFIG_PARAM is allowed.
+  #
+  # @param type ConfigurationParamListenerType value
+  #             ON_UPDATE_CONFIG_PARAM is only allowed.
+  #
+  # @param memfunc  member function object
+  # @param autoclean a flag whether if the listener object autocleaned.
+  #
+  # @endif
+  #
+  # template <class Listener>
+  # ConfigurationParamListener*
+  # addConfigurationParamListener(ConfigurationParamListenerType listener_type,
+  #                               void (Listener::*memfunc)(const char*,
+  #                                                         const char*),
+  #                               bool autoclean = true)
+  def addConfigurationParamListener(self, type,
+                                    memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.ConfigurationParamListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, config_set_name, config_param_name):
+        self._memfunc(config_set_name, config_param_name)
+        return
+
+    listener = Noname(memfunc)
+    self._configsets.addConfigurationParamListener(type, listener, autoclean)
+    return listener
+
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationParamListener を削除する
+  #
+  # addConfigurationParamListener で追加されたリスナオブジェクトを削除する。
+  #
+  # @param type ConfigurationParamListenerType型の値。
+  #             ON_UPDATE_CONFIG_PARAM がある。
+  # @param listener 与えたリスナオブジェクトへのポインタ
+  # 
+  # @else
+  #
+  # @brief Removing ConfigurationParamListener 
+  # 
+  # This function removes a listener object which is added by
+  # addConfigurationParamListener() function.
+  #
+  # @param type ConfigurationParamListenerType value
+  #             ON_UPDATE_CONFIG_PARAM is only allowed.
+  # @param listener a pointer to ConfigurationParamListener listener object.
+  #
+  # @endif
+  #
+  # void removeConfigurationParamListener(ConfigurationParamListenerType type,
+  #                                       ConfigurationParamListener* listener);
+  def removeConfigurationParamListener(self, type, listener):
+    self._configsets.removeConfigurationParamListener(type, listener)
+    return
+    
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationSetListener を追加する
+  #
+  # ConfigurationSet が更新されたときなどに呼ばれるリスナ
+  # ConfigurationSetListener を追加する。設定可能なイベントは以下の
+  # 2種類がある。
+  #
+  # - ON_SET_CONFIG_SET: setConfigurationSetValues() で
+  #                      ConfigurationSet に値が設定された場合。
+  # - ON_ADD_CONFIG_SET: addConfigurationSet() で新しい
+  #                      ConfigurationSet が追加された場合。
+  #
+  # @param type ConfigurationSetListenerType型の値。
+  # @param memfunc 関数オブジェクト
+  # @param autoclean リスナオブジェクトを自動で削除するかどうかのフラグ
+  # 
+  # @else
+  #
+  # @brief Adding ConfigurationSetListener 
+  # 
+  # This function add a listener object which is called when
+  # ConfigurationSet is updated. Available events are the followings.
+  #
+  # @param type ConfigurationSetListenerType value
+  # @param memfunc  member function object
+  # @param autoclean a flag whether if the listener object autocleaned.
+  #
+  # @endif
+  #
+  # template <class Listener>
+  # ConfigurationSetListener*
+  # addConfigurationSetListener(ConfigurationSetListenerType listener_type,
+  #                             void (Listener::*memfunc)
+  #                             (const coil::Properties& config_set))
+  def addConfigurationSetListener(self, listener_type,
+                                  memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.ConfigurationSetListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, config_set):
+        self._memfunc(config_set)
+        return
+
+    listener = Noname(memfunc)
+    self._configsets.addConfigurationSetListener(listener_type, listener, autoclean)
+    return listener
+
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationSetListener を削除する
+  #
+  # addConfigurationSetListener で追加されたリスナオブジェクトを削除する。
+  #
+  # @param type ConfigurationSetListenerType型の値。
+  # @param listener 与えたリスナオブジェクトへのポインタ
+  # 
+  # @else
+  #
+  # @brief Removing ConfigurationSetListener 
+  # 
+  # This function removes a listener object which is added by
+  # addConfigurationSetListener() function.
+  #
+  # @param type ConfigurationSetListenerType value
+  # @param listener a pointer to ConfigurationSetListener listener object.
+  #
+  # @endif
+  #
+  # void removeConfigurationSetListener(ConfigurationSetListenerType type,
+  #                                     ConfigurationSetListener* listener);
+  def removeConfigurationSetListener(self, type, listener):
+    self._configsets.removeConfigurationSetListener(type, listener)
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationSetNameListener を追加する
+  #
+  # ConfigurationSetName が更新されたときなどに呼ばれるリスナ
+  # ConfigurationSetNameListener を追加する。設定可能なイベントは以下の
+  # 3種類がある。
+  #
+  # - ON_UPDATE_CONFIG_SET: ある ConfigurationSet がアップデートされた
+  # - ON_REMOVE_CONFIG_SET: ある ConfigurationSet が削除された
+  # - ON_ACTIVATE_CONFIG_SET: ある ConfigurationSet がアクティブ化された
+  #
+  # @param type ConfigurationSetNameListenerType型の値。
+  # @param memfunc 関数オブジェクト
+  # @param autoclean リスナオブジェクトを自動で削除するかどうかのフラグ
+  # 
+  # @else
+  #
+  # @brief Adding ConfigurationSetNameListener 
+  # 
+  # This function add a listener object which is called when
+  # ConfigurationSetName is updated. Available events are the followings.
+  #
+  # - ON_UPDATE_CONFIG_SET: A ConfigurationSet has been updated.
+  # - ON_REMOVE_CONFIG_SET: A ConfigurationSet has been deleted.
+  # - ON_ACTIVATE_CONFIG_SET: A ConfigurationSet has been activated.
+  #
+  # @param type ConfigurationSetNameListenerType value
+  # @param memfunc  member function object
+  # @param autoclean a flag whether if the listener object autocleaned.
+  #
+  # @endif
+  #
+  # template <class Listener>
+  # ConfigurationSetNameListener*
+  # addConfigurationSetNameListener(ConfigurationSetNameListenerType type,
+  #                                 void (Listener::*memfunc)(const char*))
+  def addConfigurationSetNameListener(self, type, memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.ConfigurationSetNameListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, config_set_name):
+        self._memfunc(config_set_name)
+        return
+
+    listener = Noname(memfunc)
+    self._configsets.addConfigurationSetNameListener(type, listener, autoclean)
+    return listener
+
+
+  ##
+  # @if jp
+  #
+  # @brief ConfigurationSetNameListener を削除する
+  #
+  # addConfigurationSetNameListener で追加されたリスナオブジェクトを
+  # 削除する。
+  #
+  # @param type ConfigurationSetNameListenerType型の値。
+  #             ON_UPDATE_CONFIG_PARAM がある。
+  # @param listener 与えたリスナオブジェクトへのポインタ
+  # 
+  # @else
+  #
+  # @brief Removing ConfigurationSetNameListener 
+  # 
+  # This function removes a listener object which is added by
+  # addConfigurationSetNameListener() function.
+  #
+  # @param type ConfigurationSetNameListenerType value
+  #             ON_UPDATE_CONFIG_PARAM is only allowed.
+  # @param listener a pointer to ConfigurationSetNameListener
+  #             listener object.
+  #
+  # @endif
+  # void
+  # removeConfigurationSetNameListener(ConfigurationSetNameListenerType type,
+  #                                    ConfigurationSetNameListener* listener);
+  def removeConfigurationSetNameListener(self, type, listener):
+    self._configsets.removeConfigurationSetNameListener(type, listener)
+    return
 
 
   ##
@@ -3091,17 +4439,172 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       self._poa.deactivate_object(self._poa.servant_to_id(self._SdoConfigImpl))
       self._poa.deactivate_object(self._poa.servant_to_id(self))
     except:
-      #traceback.print_exception(*sys.exc_info())
-      self._rtcout.RTC_ERROR(sys.exc_info()[0])
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
     if self._manager:
       self._rtcout.RTC_DEBUG("Cleanup on Manager")
       self._manager.notifyFinalized(self)
-      
+
     return
 
+  # inline void preOnInitialize(UniqueId ec_id)
+  def preOnInitialize(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_INITIALIZE].notify(ec_id)
+    return
 
+  # inline void preOnFinalize(UniqueId ec_id)
+  def preOnFinalize(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_FINALIZE].notify(ec_id)
+    return
 
+  # inline void preOnStartup(UniqueId ec_id)
+  def preOnStartup(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_STARTUP].notify(ec_id)
+    return
+
+  # inline void preOnShutdown(UniqueId ec_id)
+  def preOnShutdown(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_SHUTDOWN].notify(ec_id)
+    return
+
+  # inline void preOnActivated(UniqueId ec_id)
+  def preOnActivated(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_ACTIVATED].notify(ec_id)
+    return
+
+  # inline void preOnDeactivated(UniqueId ec_id)
+  def preOnDeactivated(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_DEACTIVATED].notify(ec_id)
+    return
+
+  # inline void preOnAborting(UniqueId ec_id)
+  def preOnAborting(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_ABORTING].notify(ec_id)
+    return
+
+  # inline void preOnError(UniqueId ec_id)
+  def preOnError(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_ERROR].notify(ec_id)
+    return
+
+  # inline void preOnReset(UniqueId ec_id)
+  def preOnReset(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_RESET].notify(ec_id)
+    return
+
+  # inline void preOnExecute(UniqueId ec_id)
+  def preOnExecute(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_EXECUTE].notify(ec_id)
+    return
+
+  # inline void preOnStateUpdate(UniqueId ec_id)
+  def preOnStateUpdate(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_STATE_UPDATE].notify(ec_id)
+    return
+    
+
+  # inline void preOnRateChanged(UniqueId ec_id)
+  def preOnRateChanged(self, ec_id):
+    self._actionListeners.preaction_[OpenRTM_aist.PreComponentActionListenerType.PRE_ON_RATE_CHANGED].notify(ec_id)
+    return
+    
+
+  # inline void postOnInitialize(UniqueId ec_id, ReturnCode_t ret)
+  def postOnInitialize(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_INITIALIZE].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnFinalize(UniqueId ec_id, ReturnCode_t ret)
+  def postOnFinalize(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_FINALIZE].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnStartup(UniqueId ec_id, ReturnCode_t ret)
+  def postOnStartup(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_STARTUP].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnShutdown(UniqueId ec_id, ReturnCode_t ret)
+  def postOnShutdown(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_SHUTDOWN].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnActivated(UniqueId ec_id, ReturnCode_t ret)
+  def postOnActivated(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_ACTIVATED].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnDeactivated(UniqueId ec_id, ReturnCode_t ret)
+  def postOnDeactivated(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_DEACTIVATED].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnAborting(UniqueId ec_id, ReturnCode_t ret)
+  def postOnAborting(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_ABORTING].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnError(UniqueId ec_id, ReturnCode_t ret)
+  def postOnError(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_ERROR].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnReset(UniqueId ec_id, ReturnCode_t ret)
+  def postOnReset(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_RESET].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnExecute(UniqueId ec_id, ReturnCode_t ret)
+  def postOnExecute(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_EXECUTE].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnStateUpdate(UniqueId ec_id, ReturnCode_t ret)
+  def postOnStateUpdate(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_STATE_UPDATE].notify(ec_id, ret)
+    return
+    
+
+  # inline void postOnRateChanged(UniqueId ec_id, ReturnCode_t ret)
+  def postOnRateChanged(self, ec_id, ret):
+    self._actionListeners.postaction_[OpenRTM_aist.PostComponentActionListenerType.POST_ON_RATE_CHANGED].notify(ec_id, ret)
+    return
+    
+
+  # inline void onAddPort(const PortProfile& pprof)
+  def onAddPort(self, pprof):
+    self._actionListeners.portaction_[OpenRTM_aist.PortActionListenerType.ADD_PORT].notify(pprof)
+    return
+    
+    
+  # inline void onRemovePort(const PortProfile& pprof)
+  def onRemovePort(self, pprof):
+    self._actionListeners.portaction_[OpenRTM_aist.PortActionListenerType.REMOVE_PORT].notify(pprof)
+    return
+    
+    
+  # inline void onAttachExecutionContext(UniqueId ec_id)
+  def onAttachExecutionContext(self, ec_id):
+    self._actionListeners.ecaction_[OpenRTM_aist.ExecutionContextActionListenerType.EC_ATTACHED].notify(ec_id)
+    return
+    
+    
+  # inline void onDetachExecutionContext(UniqueId ec_id)
+  def onDetachExecutionContext(self, ec_id):
+    self._actionListeners.ecaction_[OpenRTM_aist.ExecutionContextActionListenerType.EC_DETACHED].notify(ec_id)
+    return
+
+    
   ##
   # @if jp
   # @class svc_name
@@ -3154,6 +4657,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
           ec = ecs._narrow(RTC.ExecutionContext)
           return self._ec._is_equivalent(ec)
       except:
+        print OpenRTM_aist.Logger.print_exception()
         return False
 
       return False
@@ -3190,8 +4694,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       try:
         if not CORBA.is_nil(ec) and not ec._non_existent():
           ec.deactivate_component(self._comp)
+          ec.stop()
       except:
-        pass
+        print OpenRTM_aist.Logger.print_exception()
 
 
 # RtcBase = RTObject_impl

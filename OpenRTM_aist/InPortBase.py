@@ -56,6 +56,8 @@ import RTC
 # @endif
 #
 class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
+  """
+  """
 
   ##
   # @if jp
@@ -118,7 +120,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
   #
   # @endif
   #
-  def __del__(self):
+  def __del__(self, PortBase=OpenRTM_aist.PortBase):
     self._rtcout.RTC_TRACE("InPortBase destructor")
 
     if len(self._connectors) != 0:
@@ -132,6 +134,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
       if not self._singlebuffer:
         self._rtcout.RTC_ERROR("Although singlebuffer flag is true, the buffer != 0")
 
+    PortBase.__del__(self)
     return
 
 
@@ -727,7 +730,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
   # void addConnectorListener(ConnectorListenerType type,
   #                           ConnectorListener* listener,
   #                           bool autoclean)
-  def addConnectorListener(self, listener_type, listener, autoclean):
+  def addConnectorListener(self, listener_type, listener, autoclean = True):
     self._rtcout.RTC_TRACE("addConnectorListener()")
 
     if listener_type < OpenRTM_aist.ConnectorListenerType.CONNECTOR_LISTENER_NUM:
@@ -1218,6 +1221,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
       return connector
     except:
       self._rtcout.RTC_ERROR("InPortPushConnector creation failed")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return 0
 
     self._rtcout.RTC_FATAL("never comes here: createConnector()")

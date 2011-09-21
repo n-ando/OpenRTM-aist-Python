@@ -166,8 +166,27 @@ class PortBase(RTC__POA.PortService):
     self._onDisconnected = None
     self._onConnectionLost = None
     self._connectionLimit   = -1
+    self._portconnListeners = None
+    return
 
-
+  
+  ##
+  # @if jp
+  #
+  # @brief デストラクタ
+  #
+  # デストラクタでは、PortService CORBA オブジェクトの deactivate を
+  # 行う。deactivateに際して例外を投げることはない。
+  #
+  # @else
+  #
+  # @brief Destructor
+  #
+  # In the destructor, PortService CORBA object is deactivated.
+  # This function never throws exception.
+  #
+  # @endif
+  #
   def __del__(self):
     self._rtcout.RTC_TRACE("PortBase.__del__()")
     try:
@@ -175,7 +194,7 @@ class PortBase(RTC__POA.PortService):
       oid = mgr.servant_to_id(self)
       mgr.deactivate_object(oid)
     except:
-      self._rtcout.RTC_ERROR("Unknown exception caught.")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
     
 
   ##
@@ -208,10 +227,10 @@ class PortBase(RTC__POA.PortService):
   # PortProfile struct has the following members,
   #
   # - name              [string ] The name of the Port.
-  # - interfaces        [PortInterfaceProfileList 型] The sequence of 
+  # - interfaces        [PortInterfaceProfileList] The sequence of 
   #                     PortInterfaceProfile owned by the Port
   # - port_ref          [Port Object] The object reference of the Port.
-  # - connector_profile [ConnectorProfileList 型] The sequence of 
+  # - connector_profile [ConnectorProfileList] The sequence of 
   #                     ConnectorProfile owned by the Port.
   # - owner             [RTObject Object] The object reference of 
   #                     RTObject that is owner of the Port.
@@ -544,6 +563,7 @@ class PortBase(RTC__POA.PortService):
       return (retval, connector_profile)
       #return connector_profile.ports[0].notify_connect(connector_profile)
     except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return (RTC.BAD_PARAMETER, connector_profile)
 
     return (RTC.RTC_ERROR, connector_profile)
@@ -673,10 +693,12 @@ class PortBase(RTC__POA.PortService):
     # publish owned interface information to the ConnectorProfile
     retval = [RTC.RTC_OK for i in range(3)]
 
+    self.onNotifyConnect(self.getName(),connector_profile)
     retval[0] = self.publishInterfaces(connector_profile)
     if retval[0] != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("publishInterfaces() in notify_connect() failed.")
 
+    self.onPublishInterfaces(self.getName(), connector_profile, retval[0])
     if self._onPublishInterfaces:
       self._onPublishInterfaces(connector_profile)
 
@@ -685,13 +707,17 @@ class PortBase(RTC__POA.PortService):
     if retval[1] != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("connectNext() in notify_connect() failed.")
 
+    self.onConnectNextport(self.getName(), connector_profile, retval[1])
     # subscribe interface from the ConnectorProfile's information
     if self._onSubscribeInterfaces:
       self._onSubscribeInterfaces(connector_profile)
+
     retval[2] = self.subscribeInterfaces(connector_profile)
     if retval[2] != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("subscribeInterfaces() in notify_connect() failed.")
       #self.notify_disconnect(connector_profile.connector_id)
+
+    self.onSubscribeInterfaces(self.getName(), connector_profile, retval[2])
 
     self._rtcout.RTC_PARANOID("%d connectors are existing",
                               len(self._profile.connector_profiles))
@@ -710,12 +736,13 @@ class PortBase(RTC__POA.PortService):
 
     for ret in retval:
       if ret != RTC.RTC_OK:
+        self.onConnected(self.getName(), connector_profile, ret)
         return (ret, connector_profile)
 
     # connection established without errors
     if self._onConnected:
       self._onConnected(connector_profile)
-
+    self.onConnected(self.getName(), connector_profile, RTC.RTC_OK)
     return (RTC.RTC_OK, connector_profile)
 
 
@@ -808,7 +835,7 @@ class PortBase(RTC__POA.PortService):
       try:
         return p.notify_disconnect(connector_id)
       except:
-        self._rtcout.RTC_WARN("Unknown exception caught.")
+        self._rtcout.RTC_WARN(OpenRTM_aist.Logger.print_exception())
         continue
 
     self._rtcout.RTC_ERROR("notify_disconnect() for all ports failed.")
@@ -926,11 +953,14 @@ class PortBase(RTC__POA.PortService):
                                 self._profile.connector_profiles[index].connector_id,
                                 self._profile.connector_profiles[index].ports,
                                 self._profile.connector_profiles[index].properties)
+    self.onNotifyDisconnect(self.getName(), prof)
 
     retval = self.disconnectNext(prof)
+    self.onDisconnectNextport(self.getName(), prof, retval)
 
     if self._onUnsubscribeInterfaces:
       self._onUnsubscribeInterfaces(prof)
+    self.onUnsubscribeInterfaces(self.getName(), prof)
     self.unsubscribeInterfaces(prof)
 
     if self._onDisconnected:
@@ -938,6 +968,7 @@ class PortBase(RTC__POA.PortService):
 
     OpenRTM_aist.CORBA_SeqUtil.erase(self._profile.connector_profiles, index)
     
+    self.onDisconnected(self.getName(), prof, retval)
     return retval
 
 
@@ -1135,6 +1166,9 @@ class PortBase(RTC__POA.PortService):
 
     guard = OpenRTM_aist.ScopedLock(self._profile_mutex)
     plist = self._profile.name.split(".")
+    if not self._ownerInstanceName:
+      self._rtcout.RTC_ERROR("Owner is not set.")
+      self._rtcout.RTC_ERROR("addXXXPort() should be called in onInitialize().")
     portname = self._ownerInstanceName+"."+plist[-1]
 
     self._profile.owner = owner
@@ -1193,6 +1227,7 @@ class PortBase(RTC__POA.PortService):
   def setOnPublishInterfaces(self, on_publish):
     self._onPublishInterfaces = on_publish
     return
+
 
   ##
   # @if jp
@@ -1405,6 +1440,33 @@ class PortBase(RTC__POA.PortService):
     self._onConnectionLost = on_connection_lost
     return
 
+
+  ##
+  # @if jp
+  # @brief PortConnectListeners のホルダをセットする
+  #
+  # ポートの接続に関するリスナ群を保持するホルダクラスへのポインタを
+  # セットする。この関数は通常親のRTObjectから呼ばれ、RTObjectが持つ
+  # ホルダクラスへのポインタがセットされる。
+  #
+  # @param portconnListeners PortConnectListeners オブジェクトのポインタ
+  #
+  # @else
+  # @brief Setting PortConnectListener holder
+  #
+  # This operation sets a functor that is called when connection
+  # of this port does lost. 
+  #
+  # @param on_connection_lost a pointer to ConnectionCallback's subclasses
+  #
+  # @endif
+  #
+  # void setPortConnectListenerHolder(PortConnectListeners* portconnListeners);
+  def setPortConnectListenerHolder(self, portconnListeners):
+    self._portconnListeners = portconnListeners
+    return
+
+
   ##
   # @if jp
   #
@@ -1561,7 +1623,7 @@ class PortBase(RTC__POA.PortService):
       try:
         return p.notify_disconnect(connector_profile.connector_id)
       except:
-        self._rtcout.RTC_WARN("Unknown exception caught.")
+        self._rtcout.RTC_WARN(OpenRTM_aist.Logger.print_exception())
         continue
 
     return RTC.RTC_ERROR
@@ -2201,9 +2263,97 @@ class PortBase(RTC__POA.PortService):
           self._rtcout.RTC_WARN("Dead Port reference detected.")
           return False
       except:
+        self._rtcout.RTC_WARN(OpenRTM_aist.Logger.print_exception())
         return False
 
     return True
+
+
+  #inline void onNotifyConnect(const char* portname,
+  #                            RTC::ConnectorProfile& profile)
+  def onNotifyConnect(self, portname, profile):
+    if self._portconnListeners != None:
+      type = OpenRTM_aist.PortConnectListenerType.ON_NOTIFY_CONNECT
+      self._portconnListeners.portconnect_[type].notify(portname, profile)
+    return
+
+
+  #inline void onNotifyDisconnect(const char* portname,
+  #                               RTC::ConnectorProfile& profile)
+  def onNotifyDisconnect(self, portname, profile):
+    if self._portconnListeners != None:
+      type = OpenRTM_aist.PortConnectListenerType.ON_NOTIFY_DISCONNECT
+      self._portconnListeners.portconnect_[type].notify(portname, profile)
+    return
+
+
+  #inline void onUnsubscribeInterfaces(const char* portname,
+  #                                    RTC::ConnectorProfile& profile)
+  def onUnsubscribeInterfaces(self, portname, profile):
+    if self._portconnListeners != None:
+      type = OpenRTM_aist.PortConnectListenerType.ON_UNSUBSCRIBE_INTERFACES
+      self._portconnListeners.portconnect_[type].notify(portname, profile)
+    return
+
+
+  #inline void onPublishInterfaces(const char* portname,
+  #                                RTC::ConnectorProfile& profile,
+  #                                ReturnCode_t ret)
+  def onPublishInterfaces(self, portname, profile, ret):
+    if self._portconnListeners != None:
+      type = OpenRTM_aist.PortConnectRetListenerType.ON_PUBLISH_INTERFACES
+      self._portconnListeners.portconnret_[type].notify(portname, profile, ret)
+    return
+
+
+  #inline void onConnectNextport(const char* portname,
+  #                              RTC::ConnectorProfile& profile,
+  #                              ReturnCode_t ret)
+  def onConnectNextport(self, portname, profile, ret):
+    if self._portconnListeners != None:
+      type = OpenRTM_aist.PortConnectRetListenerType.ON_CONNECT_NEXTPORT
+      self._portconnListeners.portconnret_[type].notify(portname, profile, ret)
+    return
+
+
+  #inline void onSubscribeInterfaces(const char* portname,
+  #                                  RTC::ConnectorProfile& profile,
+  #                                  ReturnCode_t ret)
+  def onSubscribeInterfaces(self, portname, profile, ret):
+    if self._portconnListeners != None:
+      type = OpenRTM_aist.PortConnectRetListenerType.ON_SUBSCRIBE_INTERFACES
+      self._portconnListeners.portconnret_[type].notify(portname, profile, ret)
+    return
+
+
+  #inline void onConnected(const char* portname,
+  #                        RTC::ConnectorProfile& profile,
+  #                        ReturnCode_t ret)
+  def onConnected(self, portname, profile, ret):
+    if self._portconnListeners != None:
+      type = OpenRTM_aist.PortConnectRetListenerType.ON_CONNECTED
+      self._portconnListeners.portconnret_[type].notify(portname, profile, ret)
+    return
+
+
+  #inline void onDisconnectNextport(const char* portname,
+  #                                 RTC::ConnectorProfile& profile,
+  #                                 ReturnCode_t ret)
+  def onDisconnectNextport(self, portname, profile, ret):
+    if self._portconnListeners != None:
+      type = OpenRTM_aist.PortConnectRetListenerType.ON_DISCONNECT_NEXT
+      self._portconnListeners.portconnret_[type].notify(portname, profile, ret)
+    return
+
+
+  #inline void onDisconnected(const char* portname,
+  #                           RTC::ConnectorProfile& profile,
+  #                           ReturnCode_t ret)
+  def onDisconnected(self, portname, profile, ret):
+    if self._portconnListeners != None:
+      type = OpenRTM_aist.PortConnectRetListenerType.ON_DISCONNECTED
+      self._portconnListeners.portconnret_[type].notify(portname, profile, ret)
+    return
 
 
 

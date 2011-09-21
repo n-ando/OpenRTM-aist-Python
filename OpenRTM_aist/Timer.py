@@ -32,12 +32,18 @@ import OpenRTM_aist
 #
 # @else
 #
+# @class Timer
+# @brief Timer class
+# 
+# Invoke the callback function of registered listener periodically
+# at the set cycle.
+#
+# @since 0.4.0
+#
 # @endif
 class Timer:
   """
   """
-
-
 
   ##
   # @if jp
@@ -50,6 +56,12 @@ class Timer:
   #
   # @else
   #
+  # @brief Constructor
+  # 
+  # Constructor
+  #
+  # @param interval The interval of timer
+  #
   # @endif
   def __init__(self, interval):
     self._interval = interval
@@ -58,31 +70,54 @@ class Timer:
     self._tasks = []
     self._taskMutex = threading.RLock()
     self._thread = threading.Thread(target=self.run)
+    return
 
-
+  ##
+  # @if jp
+  # @brief デストラクタ
+  # 
+  # デストラクタ
+  #
+  # @else
+  # @brief Destructor
+  # 
+  # Destructor
+  #
+  # @endif
+  #
   def __del__(self):
-    #guard = OpenRTM_aist.ScopedLock(self._runningMutex)
     self._running = False
     try:
-      self._thread.join()
+      self.join()
     except:
       pass
+    self._thread = None
 
   def join(self):
     try:
       self._thread.join()
+      self._thread = threading.Thread(target=self.run)
     except:
       pass
 
+    return
+
   ##
   # @if jp
-  # @brief Timer タスク実行
+  # @brief Timer 用のスレッド実行関数
   #
-  # Timer 用新規スレッドから定期的に登録されたリスナーのメソッドを呼び出す。
+  # Timer 用のスレッド実行関数。
+  # 登録されたリスナーのコールバック関数を呼び出す。
   #
-  # @param self
+  # @return 実行結果
   #
   # @else
+  # @brief Thread execution function for Timer
+  #
+  # Thread execution function for Timer.
+  # Invoke the callback function of registered listener.
+  #
+  # @return Execution result
   #
   # @endif
   def run(self):
@@ -90,7 +125,8 @@ class Timer:
       self.invoke()
       if self._interval.tv_sec != 0:
         time.sleep(self._interval.tv_sec)
-      time.sleep(self._interval.tv_usec/1000000.0)
+      elif self._interval.tv_usec:
+        time.sleep(self._interval.tv_usec/1000000.0)
     return 0
 
 
@@ -102,6 +138,10 @@ class Timer:
   #
   # @param self
   #
+  # @brief Start Timer task
+  #
+  # Create a new theread for Timer and start processing.
+  #
   # @else
   #
   # @endif
@@ -110,6 +150,7 @@ class Timer:
     if not self._running:
       self._running = True
       self._thread.start()
+    return
 
 
   ##
@@ -122,10 +163,17 @@ class Timer:
   #
   # @else
   #
+  # @brief Stop Timer task
+  #
+  # Stop Timer task.
+  #
   # @endif
   def stop(self):
     guard = OpenRTM_aist.ScopedLock(self._runningMutex)
-    self._running = False
+    if self._running:
+      self._running = False
+      self.join()
+    return
 
 
   ##
@@ -140,14 +188,23 @@ class Timer:
   #
   # @else
   #
+  # @brief Invoke Timer task
+  #
+  # Subtract the interval of timer from the waiting time for invocation
+  # of each registered listener.
+  # If the listener whose waiting time reached 0 exists, invoke the
+  # callback function.
+  #
   # @endif
   def invoke(self):
+    guard = OpenRTM_aist.ScopedLock(self._taskMutex)
     for i in range(len(self._tasks)):
       self._tasks[i].remains = self._tasks[i].remains - self._interval
       if self._tasks[i].remains.sign() <= 0.0:
-        self._tasks[i].listener.invoke()
         self._tasks[i].remains = self._tasks[i].period
-
+        self._tasks[i].listener.invoke()
+    del guard
+    return
 
   ##
   # @if jp
@@ -165,6 +222,19 @@ class Timer:
   # @return 登録リスナー
   #
   # @else
+  #
+  # @brief Register listener
+  #
+  # Register the listener of callback function invoked from this Timer by
+  # specifying the interval.
+  # If the same listener has already been regiseterd, the value specified
+  # the invocation interval of listener will be updated.
+  # 
+  #
+  # @param listener Listener for the registration
+  # @param tm The invocation interval of listener
+  #
+  # @return ID of the registerd listener
   #
   # @endif
   # ListenerId registerListener(ListenerBase* listener, TimeValue tm);
@@ -195,6 +265,18 @@ class Timer:
   #
   # @else
   #
+  # @brief Register listener
+  #
+  # Register listener by specifying the object for callback, the method
+  # for callback and the invocation interval.
+  #
+  # @param obj Target object for callback
+  # @param cbf Target method for callback
+  # @param tm The invocation interval of listener
+  #
+  # @return ID of the registerd listener
+  #
+  #
   # @endif
   #  template <class ListenerClass>
   #  ListenerId registerListenerObj(ListenerClass* obj,
@@ -218,6 +300,16 @@ class Timer:
   #
   # @else
   #
+  # @brief Register listener
+  #
+  # Register listener by specifying the method for callback and the
+  # invocation interval.
+  #
+  # @param cbf Target method for callback
+  # @param tm The invocation interval of listener
+  #
+  # @return ID of the registerd listener
+  #
   # @endif
   # ListenerId registerListenerFunc(void (*cbf)(), TimeValue tm)
   def registerListenerFunc(self, cbf, tm):
@@ -237,6 +329,15 @@ class Timer:
   # @return 登録解除結果
   #
   # @else
+  #
+  # @brief Unregister listener
+  #
+  # Unregister the listener specified by ID.
+  # If the listener specified by ID is not registerd, false will be returned.
+  #
+  # @param id ID of the unregisterd listener
+  #
+  # @return Unregistration result
   #
   # @endif
   # bool unregisterListener(ListenerId id);
@@ -263,3 +364,4 @@ class Timer:
       self.listener = lb
       self.period = tm
       self.remains = tm
+      return
