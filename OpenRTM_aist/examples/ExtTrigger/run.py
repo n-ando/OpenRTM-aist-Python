@@ -27,7 +27,7 @@ if plat == "win32":
     os.system("start python ..\\..\\..\\bin\\rtm-naming.py")
     os.system("start python ConsoleIn.py")
     os.system("start python Consoleout.py")
-    time.sleep(1)
+    time.sleep(2)
     os.system("python Connector.py")
 
 else:
