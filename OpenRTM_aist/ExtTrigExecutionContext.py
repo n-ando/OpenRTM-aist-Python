@@ -96,7 +96,7 @@ class ExtTrigExecutionContext(OpenRTM_aist.PeriodicExecutionContext):
     flag = True
 
     while flag:
-      sec_ = float(self._usec)/1000000.0
+      sec_ = float(self._period.usec())/1000000.0
       self._worker._cond.acquire()
       while not self._worker._called and self._running:
         self._worker._cond.wait()
