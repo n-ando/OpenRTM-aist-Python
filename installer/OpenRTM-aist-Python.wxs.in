@@ -139,10 +139,17 @@
           {% for file in RtmOpenrtm_aist24UtilsRtcd.Files %}
           <File Id="{% file.Id %}" Name="{% file.Name %}"
                 DiskId="1" Source="{% file.Source %}">
+            {% if file.Name is rtcd.py %}
             <Shortcut Id="{% file.Id %}" Directory="ToolsMenuFolder"
                       Name="Start RTC daemon"
                       Arguments=' -d -f "[Version]examples\Python\rtcd.conf"'
                       Show="normal" WorkingDirectory="bin"/>
+            {% endif %}
+            {% if file.Name is rtcd.conf %}
+            <Shortcut Id="{% file.Id %}" Directory="ToolsMenuFolder"
+                      Name="rtc.conf for RTC daemon"
+                      Show="normal" WorkingDirectory="bin"/>
+            {% endif %}
           </File>
           {% endfor %}
         </Component>
@@ -291,10 +298,17 @@
           {% for file in RtmOpenrtm_aist25UtilsRtcd.Files %}
           <File Id="{% file.Id %}" Name="{% file.Name %}"
                 DiskId="1" Source="{% file.Source %}">
+            {% if file.Name is rtcd.py %}
             <Shortcut Id="{% file.Id %}" Directory="ToolsMenuFolder"
                       Name="Start RTC daemon"
                       Arguments=' -d -f "[Version]examples\Python\rtcd.conf"'
                       Show="normal" WorkingDirectory="bin"/>
+            {% endif %}
+            {% if file.Name is rtcd.conf %}
+            <Shortcut Id="{% file.Id %}" Directory="ToolsMenuFolder"
+                      Name="rtc.conf for RTC daemon"
+                      Show="normal" WorkingDirectory="bin"/>
+            {% endif %}
           </File>
           {% endfor %}
         </Component>
@@ -443,10 +457,17 @@
           {% for file in RtmOpenrtm_aist26UtilsRtcd.Files %}
           <File Id="{% file.Id %}" Name="{% file.Name %}"
                 DiskId="1" Source="{% file.Source %}">
+            {% if file.Name is rtcd.py %}
             <Shortcut Id="{% file.Id %}" Directory="ToolsMenuFolder"
                       Name="Start RTC daemon"
                       Arguments=' -d -f "[Version]examples\Python\rtcd.conf"'
                       Show="normal" WorkingDirectory="bin"/>
+			{% endif %}
+            {% if file.Name is rtcd.conf %}
+            <Shortcut Id="{% file.Id %}" Directory="ToolsMenuFolder"
+                      Name="rtc.conf for RTC daemon"
+                      Show="normal" WorkingDirectory="bin"/>
+			{% endif %}
           </File>
           {% endfor %}
         </Component>
