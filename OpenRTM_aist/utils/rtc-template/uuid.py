@@ -46,7 +46,7 @@ Typical usage:
 This module works with Python 2.3 or higher."""
 
 __author__ = 'Ka-Ping Yee <ping@zesty.ca>'
-__date__ = '$Date: 2007/07/20 16:16:21 $'.split()[1].replace('/', '-')
+__date__ = '$Date: 2007-07-20 16:16:21 $'.split()[1].replace('/', '-')
 __version__ = '$Revision: 1.1.2.1 $'.split()[1]
 
 RESERVED_NCS, RFC_4122, RESERVED_MICROSOFT, RESERVED_FUTURE = [
