@@ -1,116 +1,241 @@
 #!/usr/bin/env python
-# -*- python -*-
+# -*- Python -*-
 #
 #  @file rtc-template
 #  @brief rtc-template RTComponent source code generator tool
-#  @date $Date: 2007/07/23 08:06:27 $
+#  @date $Date: 2007-10-09 07:19:15 $
 #  @author Noriaki Ando <n-ando@aist.go.jp>
 # 
-#  Copyright (C) 2004-2007
+#  Copyright (C) 2004-2008
 #      Task-intelligence Research Group,
 #      Intelligent Systems Research Institute,
 #      National Institute of
 #          Advanced Industrial Science and Technology (AIST), Japan
 #      All rights reserved.
 # 
-#  $Id: rtc-template,v 1.8.2.2 2007/07/23 08:06:27 n-ando Exp $
-#
-
-#
-#  $Log: rtc-template,v $
-#  Revision 1.8.2.2  2007/07/23 08:06:27  n-ando
-#  Modified for win32 porting about rtm-config.
-#
-#  Revision 1.8.2.1  2007/07/20 17:29:03  n-ando
-#  A fix for win32 porting.
-#
-#  Revision 1.8  2007/04/27 00:56:35  n-ando
-#  Example shown in help message was modified for new version.
-#
-#  Revision 1.7  2007/04/23 07:31:28  n-ando
-#  Now "--conf" option can accept scope resolution operator of C++.
-#
-#  Revision 1.6  2007/04/23 01:41:21  n-ando
-#  New option "--config" and configuration template code were added.
-#
-#  Revision 1.5  2007/01/11 07:42:25  n-ando
-#  Modified for OMG RTC specificatin and OpenRTM-aist-0.4.0
-#  - Some command option was chaged and removed.
-#  - Now empty Struct class is used instead of *Profile classes for ezt dict.
-#  - Some bugs were fixed.
-#
-#  Revision 1.4  2005/09/08 09:24:18  n-ando
-#  - A bug fix for merge function.
-#
-#  Revision 1.3  2005/09/06 14:37:40  n-ando
-#  rtc-template's command options and data structure for ezt (Easy Template)
-#  are changed for RTComponent's service features.
-#  Now rtc-template can generate services' skeletons, stubs and
-#  implementation files.
-#  The implementation code generation uses omniidl's IDL parser.
-#
-#  Revision 1.2  2005/08/26 11:32:26  n-ando
-#  "rtc-template" was completely rewritten to use ezt (Easy Template) module.
-#  "ezt" module is originally included in "Subversion".
-#
-#  Now template code generator modules, which are named xxx_gen.py, are
-#  automatically imported from rtc-template, and command options and help
-#  menu are automatically generated.
-#
-#  New template code generator has to inherit base_gen class in
-#  "base_gen.py" module to utilize this framework.
-#
-#  Revision 1.1.1.1  2005/05/12 09:06:18  n-ando
-#  Public release.
-#
+#  $Id: rtc-template 1815 2010-01-27 20:26:57Z n-ando $
 #
 
 import getopt, sys
+import time
 import re
 import os
+import yaml
+import copy
 
-platform = sys.platform
+from distutils.sysconfig import get_python_lib
+
+default_profile="""
+rtcProfile: 
+  version: "1.0"
+  id: # RTC:SampleVendor.SampleCategory.SampleComponent:1.0.0
+  basicInfo:
+    name: ""
+    description: ""
+    version: 1.0.0
+    vendor: SampleVendor
+    category: ""
+    componentType: STATIC
+    activityType: PERIODIC
+    componentKind: DataFlowComponent
+    maxInstances: 1
+    abstract: ""
+    executionRate: 1000.0
+    executionType: PeriodicExecutionContext
+    creationDate:
+      day: ""
+      hour: ""
+      minute: ""
+      month: ""
+      second: ""
+      year: ""
+    updateDate:
+      day: 17
+      hour: 14
+      minute: 0
+      month: 4
+      second: 0
+      year: 2008
+    "rtcDoc::doc":
+      algorithm: ""
+      creator: ""
+      description: ""
+      inout: ""
+      license: ""
+      reference: ""
+    "rtcExt::versionUpLog": 
+      - "2008/04/18 14:00:00:Ver1.0"
+      - "2008/04/18 17:00:00:Ver1.1"
+  language: 
+    java: 
+      library: 
+        - library1
+  actions: 
+    onAborting:
+      "rtcDoc::doc":
+        description: on_aborting description
+        postCondition: on_aborting Post_condition
+        preCondition: on_aborting Pre_condition
+      implemented: true
+    onActivated:
+      "rtcDoc::doc":
+        description: on_activated description
+        postCondition: on_activated Post_condition
+        preCondition: on_activated Pre_condition
+      implemented: true
+    onDeactivated:
+      "rtcDoc::doc":
+        description: on_deactivated description
+        postCondition: on_deactivated Post_condition
+        preCondition: on_deactivated Pre_condition
+    onError:
+      "rtcDoc::doc":
+        description: on_error description
+        postCondition: on_error Post_condition
+        preCondition: on_error Pre_condition
+    onExecute:
+      "rtcDoc::doc":
+        description: on_execute description
+        postCondition: on_execute Post_condition
+        preCondition: on_execute Pre_condition
+    onFinalize:
+      "rtcDoc::doc":
+        description: on_finalize description
+        postCondition: on_finalize Post_condition
+        preCondition: on_finalize Pre_condition
+    onInitialize:
+      "rtcDoc::doc":
+        description: on_initialize description
+        postCondition: on_initialize Post_condition
+        preCondition: on_initialize Pre_condition
+      implemented: true
+    onRateChanged:
+      "rtcDoc::doc":
+        description: on_rate_changed description
+        postCondition: on_rate_changed Post_condition
+        preCondition: on_rate_changed Pre_condition
+    onReset:
+      "rtcDoc::doc":
+        description: on_reset description
+        postCondition: on_reset Post_condition
+        preCondition: on_reset Pre_condition
+    onShutdown:
+      "rtcDoc::doc":
+        description: on_shutdown description
+        postCondition: on_shutdown Post_condition
+        preCondition: on_shutdown Pre_condition
+      implemented: true
+    onStartup:
+      "rtcDoc::doc":
+        description: on_startup description
+        postCondition: on_startup Post_condition
+        preCondition: on_startup Pre_condition
+    onStateUpdate:
+      "rtcDoc::doc":
+        description: on_state_update description
+        postCondition: on_state_update Post_condition
+        preCondition: on_state_update Pre_condition
+  dataPorts: 
+    -
+      name: inport1
+      portType: DataInPort
+      type: "RTC::TimedLong"
+      interfaceType: CorbaPort
+      dataflowType: "Push,Pull"
+      subscriprionType: "Periodic,New,Flush"
+      idlFile: DataPort1.idl
+      "rtcDoc::doc":
+        type: In1Type
+        description: In1Description
+        number: In1Number
+        occerrence: In1Occerrence
+        operation: In1Operation
+        semantics: In1Semantics
+        unit: In1Unit
+      "rtcExt::position": LEFT
+      "rtcExt::varname": In1Var
+  servicePorts: 
+    -
+      name: SrvPort1
+      "rtcDoc::doc":
+        description: ServicePort1 description
+        ifdescription: ServicePort1 I/F description
+      "rtcExt::position": LEFT
+      serviceInterface: 
+        -
+          direction: Provided
+          "rtcDoc::doc":
+            description: if1 Description
+            docArgument: if1 Argument
+            docException: if1 Exception
+            docPostCondition: if1 PostCond
+            docPreCondition: if1 PreCond
+            docReturn: if1 Return
+          idlFile: IF1Idlfile.idl
+          instanceName: IF1Instance
+          name: S1IF1
+          path: IF1SearchPath
+          type: IF1Type
+          varname: IF1VarName
+  configurationSet: 
+    configuration: 
+      - 
+        name: config1
+        type: int
+        varname: var1
+        defaultValue: ""
+        "rtcDoc::doc":
+          constraint: config_constraint1
+          dataname: dataname1
+          defaultValue: default1
+          description: config_Desc1
+          range: config_range1
+          unit: config_unit1
+  parameters: 
+    -
+      defaultValue: param_def1
+      name: param1
+    -
+      defaultValue: param_def2
+      name: param2
+
+"""
+
 
 class Struct:
   def __init__(self):
     return
 
-conf_path = ['']
+plib = get_python_lib()
 
-if platform == "win32":
-  python_path = os.environ['PYTHONPATH'].split(";")
-  pyhelper_path = python_path[0] + "\\OpenRTM_aist\\utils\\rtc-template"
+if sys.platform == "win32":
+  pyhelper_path = os.path.join(plib,"OpenRTM_aist\\rtc-template")
 else:
-  conf_path = os.popen("which rtm-config", "r").read().split("\n")
-  if conf_path[0] != '':
-    libdir_path = os.popen("rtm-config --libdir", "r").read().split("\n")
-    pyhelper_path = libdir_path[0] + "/py_helper"
-  else:
-    python_path = os.environ['PYTHONPATH'].split(":")
-    pyhelper_path = python_path[0] + "/OpenRTM_aist/utils/rtc-template"
+  pyhelper_path = os.path.join(plib,"/OpenRTM_aist/utils/rtc-template")
+
 sys.path.append(pyhelper_path)
 
 # Option format
 opt_args_fmt = ["help",
-    "module-name=",
-    "module-type=",
-    "module-desc=",
-    "module-version=",
-    "module-vendor=",
-    "module-category=",
-    "module-comp-type=",
-    "module-act-type=",
-    "module-max-inst=",
-    "module-lang=",
+                "module-name=",
+                "module-type=",
+                "module-desc=",
+                "module-version=",
+                "module-vendor=",
+                "module-category=",
+                "module-comp-type=",
+                "module-act-type=",
+                "module-max-inst=",
+                "module-lang=",
                 "config=",
-    "inport=",
-    "outport=",
-    "service=",
-    "service-idl=",
-    "consumer=",
-    "consumer-idl=",
-    "idl-include=",
-    "backend="]
+                "inport=",
+                "outport=",
+                "service=",
+                "service-idl=",
+                "consumer=",
+                "consumer-idl=",
+                "idl-include=",
+                "backend="]
 
 
 def usage_short():
@@ -144,6 +269,7 @@ Options:
     [--idl-include=[path]]                Search path for IDL compile
 
 """
+
 def usage_long():
   """
   Help message
@@ -151,7 +277,7 @@ def usage_long():
   print """
     --output[=output_file]:
         Specify base name of output file. If 'XXX' is specified,
-        C++ source codes XXX.cpp, XXX.h, XXXComp.cpp Makefile.XXX is generated.
+        Python source codes XXX.py is generated.
 
     --module-name[=name]:
         Your component's base name. This string is used as module's
@@ -174,7 +300,7 @@ def usage_long():
 
     --module-comp-type[=component_type]:
         Specify component type.
-      'STATIC', 'UNIQUE', 'COMMUTATIVE' are acceptable.
+            'STATIC', 'UNIQUE', 'COMMUTATIVE' are acceptable.
 
     --module-act-type[=activity_type]:
         Specify component activity's type.
@@ -188,11 +314,6 @@ def usage_long():
         configuration value identifier. This character string is also used as
         variable name in the source code. The 'Type' is type of configuration
         value. The type that can be converted to character string is allowed.
-        In C++ language, the type should have operators '<<' and '>>' that
-        are defined as
-        'istream& operator<<(Type)'
-        and
-        'ostream& operator>>(Type)'.
 
     --inport=[PortName:Type]:
         Specify InPort's name and type. 'PortName' is used as this InPort's
@@ -207,7 +328,7 @@ def usage_long():
         'Type' is OutPort's variable type. The acceptable types are,
         Timed[ Short | Long | UShort | ULong | Float | Double | Char | Boolean
         | Octet | String ] and its sequence types.
-    
+                
     --service=[PortName:Name:Type]:
         Specify service name, type and port name.
         PortName: The name of Port to which the interface belongs.
@@ -221,7 +342,7 @@ def usage_long():
         Specify IDL file of service interface.
         For simplicity, please define one interface in one IDL file, although
         this IDL file can include two or more interface definition,
-    
+                
     --consumer=[PortName:Name:Type]:
         Specify consumer name, type and port name.
         PortName: The name of Port to which the consumer belongs.
@@ -235,18 +356,18 @@ def usage_long():
         Specify IDL file of service consumer.
         For simplicity, please define one interface in one IDL file, although
         this IDL file can include two or more interface definition,
-  
+        
 
 Example:
-    rtc-template -bcxx \\
+    rtc-template -bpython \\
     --module-name=Sample --module-desc='Sample component' \\
     --module-version=0.1 --module-vendor=AIST --module-category=Generic \\
     --module-comp-type=DataFlowComponent --module-act-type=SPORADIC \\
     --module-max-inst=10  \\
     --config=int_param0:int:0 --config=int_param1:int:1 \\
     --config=double_param0:double:3.14 --config=double_param1:double:9.99 \\
-    --config="str_param0:std::string:hoge" \\
-    --config="str_param1:std::string:foo" \\
+    --config="str_param0:string:hoge" \\
+    --config="str_param1:string:foo" \\
     --inport=Ref:TimedFloat --inport=Sens:TimedFloat \\
     --outport=Ctrl:TimedDouble --outport=Monitor:TimedShort \\
     --service=MySvcPort:myservice0:MyService \\
@@ -260,108 +381,142 @@ def usage():
   usage_short()
   usage_long()
   return
+                
 
-class ModuleProfile:
-  """
-  ModuleProfile class
-
-  This class create RTM module profile for ezt.
-  """
-  
-  def __init__(self, name="", desc="", type="", version="", vendor="",
-         category="", comp_type="", act_type="",
-         max_inst="", lang=""):
-
-    self.name = name
-    self.desc = desc
-    self.type = type
-    self.version = version
-    self.vendor = vendor
-    self.category = category
-    self.comp_type = comp_type
-    self.act_type = act_type
-    self.max_inst = max_inst
-    self.lang = lang
-    return
-  
-
-  def setValue(self, member, value):
-    member = member.replace("-", "_")
-    if hasattr(self, member):
-      setattr(self, member, value)
-    else:
-      print "Invalid option: --module-" + member + " " + value
-    return
-  
-  def setName(self, name):
-    self.name = name
-    return
-  
-  def setDesc(self, desc):
-    self.desc = desc
-    return
-  
-  def setVersion(self, version):
-    self.version = version
-    return
-  
-  def setVendor(self, vendor):
-    self.vendor = vendor
-    return
-  
-  def setCategory(self, vategory):
-    self.category = category
-    return
-
-  def setCompType(self, comp_type):
-    self.comp_type = comp_type
-    return
-
-  def setActType(self, act):
-    self.act_type = act_type
-    return
-
-  def setMaxInst(self, max_inst):
-    self.max_inst = max_inst
-    return
-
-  def printProfile(self):
-    print "----- Module Profile -----"
-    print "Name           ", self.name
-    print "Description    ", self.desc
-    print "Version        ", self.version
-    print "Vendor         ", self.vendor
-    print "Category       ", self.category
-    print "Component Type ", self.comp_type
-    print "Activity Type  ", self.act_type
-    print "Max Instancese ", self.max_inst
-    print "Language       ", self.lang
-    return
-    
-    
-
-def MakeModuleProfile(opts):
+def CreateBasicInfo(opts):
   """
   MakeModuleProfile
 
   Create ModuleProfile list from command options
   """
-  prof = ModuleProfile()
+  mapping = {
+    'name': 'name',
+    'desc': 'description',
+    'version': 'version',
+    'vendor': 'vendor',
+    'category': 'category',
+    'comp-type': 'componentType',
+    'act-type': 'activityType',
+    'type': 'componentKind',
+    'max-inst': 'maxInstances'
+    }
+
+  # default "basicInfo"
+  prof = {
+    "name": "",
+    "description": "",
+    "version": "1.0.0",
+    "vendor": "",
+    "category": "",
+    "componentType": "STATIC",
+    "activityType": "PERIODIC",
+    "componentKind": "DataFlowComponent",
+    "maxInstances": "1",
+    "abstract": "",
+    "executionRate": "1000.0",
+    "executionType": "PeriodicExecutionContext",
+    "creationDate":
+      {
+      "day": "",
+      "hour": "",
+      "minute": "",
+      "month": "",
+      "second": "",
+      "year": ""
+      },
+    "updateDate":
+      {
+      "year": "",
+      "month": "",
+      "day": "",
+      "hour": "",
+      "minute": "",
+      "second": "",
+      },
+    "rtcDoc::doc":
+      {
+      "algorithm": "",
+      "creator": "",
+      "description": "",
+      "inout": "",
+      "license": "",
+      "reference": ""
+      },
+    "rtcExt::versionUpLog": []
+    }
+
+  # obtain --module-xxx options' values
   for opt, arg in opts:
     if opt.find("--module-") == 0:
       var = opt.replace("--module-","")
-      prof.setValue(var, arg)
+      if prof.has_key(mapping[var]):
+        prof[mapping[var]] = arg
+  # set creationDate
+  cDate = time.localtime()
+  i = 0
+  cDateKey = ['year', 'month', 'day', 'hour', 'minute', 'second']
+  for key in cDateKey:
+    prof["creationDate"][key] = cDate[i]
+    i += 1
+  # check empty values
+    empty = []
+    for key in prof.keys():
+      if prof[key] == "":
+        empty.append(key)
+
   return prof
 
+def CreateActions(opts):
+  actnames = [
+    "onInitialize",
+    "onFinalize",
+    "onActivated",
+    "onDeactivated",
+    "onAborting",
+    "onError",
+    "onReset",
+    "onExecute",
+    "onStateUpdate",
+    "onShutdown",
+    "onStartup",
+    "onRateChanged",
+    ]
 
-def MakeConfig(opts):
+  actions = {}
+  for a in actnames:
+    actions[a] = {
+      "rtcDoc::doc": {
+        "description": a + " description",
+        "postCondition": a + " Post_condition",
+        "preCondition": a + " Pre_condition"
+        },
+      "implemented": True
+      }
+  return actions
+
+def CreateConfigurationSet(opts):
   """
   MakeConfigurationParameters
-
+  
   Create Configuration list from command options
   """
   prof_list = []
-  cnt = 0
+  prof = {
+    "name": "",
+    "type": "",
+    "varname": "",
+    "defaultValue": "",
+    "rtcDoc::doc":
+      {
+      "type": "type", # type
+      "constraint": "constraint",
+      "dataname": "dataname",
+      "defaultValue": "default",
+      "description": "description",
+      "range": "range",
+      "unit": "unit"
+      }
+    }
   for opt, arg in opts:
     if opt == ("--config"):
       try:
@@ -372,132 +527,216 @@ def MakeConfig(opts):
         type    = re.sub("@@", "::", type)
         default = re.sub("@@", "::", default)
       except:
-        sys.stderr("Invalid option: " \
-             + opt \
-             + "=" \
-             + arg)
-      prof = Struct()
-      prof.name = name
-      prof.l_name = name.lower()
-      prof.u_name = name.upper()
-      prof.type = type
-      prof.default  = default
-      prof_list.append(prof)
-      cnt += 1
-  return prof_list
+        sys.stderr.write("Invalid option: " \
+                           + opt \
+                           + "=" \
+                           + arg)
+      tmp = copy.deepcopy(prof)
+      tmp["name"] = name
+      tmp["varname"] = name
+      tmp["l_name"] = name.lower()
+      tmp["u_name"] = name.upper()
+      tmp["type"] = type
+      tmp["defaultValue"] = default
+      tmp["rtcDoc::doc"]["defaultValue"] = default
+      prof_list.append(tmp)
+  return {'configuration': prof_list}
 
 
-def MakeDataPort(opts, port_type):
+def CreateDataPorts(opts):
   """
   MakePortProfile
 
   Create PortProfile list from command options
   """
   prof_list = []
+  prof = {
+    "name": "",
+    "portType": "",
+    "type": "",
+    "interfaceType": "CorbaPort",
+    "dataflowType": "Push,Pull",
+    "subscriptionType": "Periodic,New,Flush",
+    "idlFile": "",
+    "rtcDoc::doc":
+      {
+      "type": "",
+      "description": "",
+      "number": "",
+      "occerrence": "",
+      "operation": "",
+      "semantics": "",
+      "unit": ""
+      },
+    "rtcExt::position": "",
+    "rtcExt::varname": ""
+    }
   cnt = 0
+  portType = {"--inport": "DataInPort", "--outport": "DataOutPort"}
+  position = {"--inport": "LEFT", "--outport": "RIGHT"}
   for opt, arg in opts:
-    if opt == ("--" + port_type):
+    if opt == "--inport" or opt == "--outport":
       try:
+        arg = re.sub("::", "@@", arg)
         name, type = arg.split(":")
+        name    = re.sub("@@", "::", name)
+        type    = re.sub("@@", "::", type)
       except:
-        sys.stderr("Invalid option: " \
-             + opt \
-             + "=" \
-             + arg)
-      prof = Struct()
-      prof.name = name
-      prof.type = type
-      prof.num  = cnt
-      prof_list.append(prof)
+        sys.stderr.write("Invalid option: " \
+                           + opt \
+                           + "=" \
+                           + arg)
+      tmp = copy.deepcopy(prof)
+      tmp["name"] = name
+      tmp["portType"] = portType[opt]
+      tmp["type"] = type
+      tmp["num"]  = cnt
+      tmp["rtcDoc::doc"]["type"] = type
+      tmp["rtcDoc::doc"]["number"] = cnt
+      tmp["rtcExt::varname"] = name
+      tmp["rtcExt::position"] = position[opt]
+      prof_list.append(tmp)
       cnt += 1
+
   return prof_list
 
 
-def MakePortInterface(opts, port_type):
+def CreateServicePorts(opts):
   """
   MakePortInterface
-
+  
   Create Port interface profile list from command options
   """
   prof_list = []
+
+  prof = {
+    "name": "",
+    "rtcDoc::doc":
+      {
+      "description": "",
+      "ifdescription": "",
+      },
+    "rtcExt::position": "LEFT",
+    "serviceInterface": []
+    }
+  ifprof = {
+    "name": "",
+    "type": "",
+    "direction": "",
+    "varname": "",
+    "instanceName": "",
+    "idlFile": "",
+    "path": "",
+    "rtcDoc::doc":
+      {
+      "description": "",
+      "docArgument": "",
+      "docException": "",
+      "docPostCondition": "",
+      "docPreCondition": "",
+      "docReturn": ""
+      }
+    }
+
+  def findport(prof_list, port_name):
+    for p in prof_list:
+      if p["name"] == port_name:
+        return p
+    return None
+  def lr(port):
+    cnt = {"Provided": 0, "Required": 0}
+    for ifprof in port["serviceInterface"]:
+      cnt[ifprof["direction"]] += 1
+    if cnt["Provided"] < cnt["Required"]:
+      return "LEFT"
+    else:
+      return "RIGHT"
+
   cnt = 0
+  ifType = {"--service": "Provided", "--consumer": "Required"}
   for opt, arg in opts:
-    if opt == "--" + port_type:
+    if opt == "--service" or opt == "--consumer":
       try:
-        port, name, type = arg.split(":")
+        arg = re.sub("::", "@@", arg)
+        portname, name, type = arg.split(":")
+        portname = re.sub("@@", "::", portname)
+        name     = re.sub("@@", "::", name)
+        type     = re.sub("@@", "::", type)
       except:
         sys.stderr.write("Invalid option: " \
-             + opt \
-             + "=" \
-             + arg)
-      prof = Struct()
-      prof.port = port
-      prof.name = name
-      prof.type = type
-      prof.num  = cnt
-      prof_list.append(prof)
+                           + opt \
+                           + "=" \
+                           + arg)
+      port = findport(prof_list, portname)
+      if port == None:
+        port = copy.deepcopy(prof)
+        port["name"] = portname
+        prof_list.append(port)
+          
+      tmp = copy.deepcopy(ifprof)
+      tmp["name"] = name
+      tmp["type"] = type
+      tmp["direction"] = ifType[opt]
+      tmp["varname"] = name
+      tmp["instanceName"] = name
+      idlfname = FindIdlFile(opts, type)
+      if idlfname == None:
+        print "Error:"
+        print "IDL file not found for a interface: ", type
+        sys.exit(1)
+      tmp["idlFile"] = idlfname
+      port["serviceInterface"].append(tmp)
+      port["rtcExt::position"] = lr(port)
       cnt += 1
   return prof_list
 
-def MakeCorbaPort(opts):
-  """
-  MakeCorbaPort
 
-  Create Corba Port profile list from command options
-  """
-  prof_list = []
-  cnt = 0
+def FindIdlFile(opts, ifname):
+  _re_text = "interface\s+" + ifname
   for opt, arg in opts:
-    if opt == ("--" + "service") or opt == ("--" + "consumer"):
-      try:
-        port, name, type = arg.split(":")
-      except:
-        sys.stderr.write("Invalid option: " \
-             + opt \
-             + "=" \
-             + arg)
-      dup = False
-      for p in prof_list:
-        if p.name == port:
-          dup = True
-      if dup == False:
-        prof = Struct()
-        prof.name = port
-        prof.num  = cnt
-        prof_list.append(prof)
-        cnt += 1
-  return prof_list
+    if opt == "--service-idl" or opt == "--consumer-idl":
+      fname = arg
+      fd = open(fname, "r")
+      if fd == None:
+        print "IDL file not found: ", arg
+        sys.exit(1)
+      t = fd.read()
+      if None != re.compile(_re_text).search(t):
+        fd.close()
+        return fname
+      fd.close()
+  return None
 
+def PickupIDLFiles(dict):
+  svcidls = {}
+  cnsidls = {}
+  for svc in dict["servicePorts"]:
+    for sif in svc["serviceInterface"]:
+      if sif["direction"] == "Provided":
+        svcidls[sif["idlFile"]] = ""
+      elif sif["direction"] == "Required":
+        if not svcidls.has_key(sif["idlFile"]):
+          cnsidls[sif["idlFile"]] = ""
+  dict["service_idl"] = []
+  dict["consumer_idl"] = []
+  for f in svcidls.keys():
+    idl = {}
+    idl["idl_fname"] = f
+    idl["idl_basename"] = f.split(".")[0]
+    dict["service_idl"].append(idl)
+  for f in cnsidls.keys():
+    idl = {}
+    idl["idl_fname"] = f
+    idl["idl_basename"] = f.split(".")[0]
+    dict["consumer_idl"].append(idl)
+  return
 
-
-def MakeServiceIDL(opts):
-  """
-  MakeServiceIDL
-
-  Create ServiceIDL list from command options
-  """
-  idl_list = []
-
-  for opt, arg in opts:
-    if opt.find("--service-idl") == 0:
-      svc_idl = Struct()
-      svc_idl.idl_fname = arg
-      svc_idl.idl_basename, dummy = arg.split(".")
-      idl_list.append(svc_idl)
-  return idl_list
-
-
-def MakeConsumerIDL(opts):
-  idl_list = []
-  for opt, arg in opts:
-    if opt == "--consumer-idl":
-      svc_idl = Struct()
-      svc_idl.idl_fname = arg
-      svc_idl.idl_basename, dummy = arg.split(".")
-      idl_list.append(svc_idl)
-  return idl_list
-
-
+def CreateId(dict):
+  dict["id"] = "RTC:" + \
+      dict["basicInfo"]["vendor"] + "." + \
+      dict["basicInfo"]["category"] + "." + \
+      dict["basicInfo"]["name"] + ":" + \
+      dict["basicInfo"]["version"]
 
 def find_opt(opts, value, default):
   for opt, arg in opts:
@@ -505,7 +744,6 @@ def find_opt(opts, value, default):
       return arg
 
   return default
-
 
 def find_opt_list(opts, value, default):
   list = []
@@ -530,8 +768,7 @@ class BackendLoader:
     self.opts = []
     self.available()
     return
-    
-
+                
   def available(self):
     path_list = [pyhelper_path, "."]
     for path in path_list:
@@ -545,11 +782,9 @@ class BackendLoader:
             be = Backend(mod_name, mod)
             self.backends[opt_name] = be
           except:
-            print "Invalid backend: ", f
             pass
 
     return self.backends
-
 
   def check_args(self, args):
     for opt in args:
@@ -569,7 +804,6 @@ class BackendLoader:
           sys.exit(-1)
     return self.opts
 
-
   def get_opt_fmts(self):
     fmts = []
     for be in self.opts:
@@ -581,18 +815,17 @@ class BackendLoader:
     print "The following backends are available."
     space = 10
     for key in self.backends:
-      desc = self.backends[key].mod.description()     
+      desc = self.backends[key].mod.description()                     
       print "    -b" + key + ("." * (space - len(key))) + desc
     print """
 Backend [xxx] specific help can be available by the following options.
     -bxxx --help|-h or --backend=xxx --help|-h
-  """
+        """
     return
-
 
   def usage(self):
     for be in self.opts:
-      print self.backends[be].mod.usage()     
+      print self.backends[be].mod.usage()                     
       print ""
     return
 
@@ -602,12 +835,11 @@ Backend [xxx] specific help can be available by the following options.
       print ""
     return
 
-
   def generate_code(self, data, opts):
     for be in self.opts:
       self.backends[be].obj(data, opts).print_all()
     return
-    
+                
 
 def fmtd_args(width, args):
   arg_fmt = [""]
@@ -626,7 +858,6 @@ def fmtd_args(width, args):
 
 def main():
   global opt_args_fmt
-  global conf_path
 
   backends = BackendLoader()
   backends.check_args(sys.argv[1:])
@@ -647,8 +878,6 @@ def main():
 
   output = None
   verbose = False
-  output_cxx = False
-  output_python = False
 
   for o, a in opts:
     if o == "-v":
@@ -667,42 +896,36 @@ def main():
       output = a
       # ...
 
-  prefix = [' ']
-  if conf_path[0] != '':
-    prefix = os.popen("rtm-config --prefix", "r").read().split("\n")
+  idl_dir = os.path.join(get_python_lib(),"OpenRTM_aist\\RTM_IDL")
   idl_inc = []
-  if prefix[0] != '':
-    idl_inc.append(prefix[0] + "/include/rtm/idl")
-    idl_inc.append(prefix[0] + "/include/rtm")
+  idl_inc.append(idl_dir)
   idl_inc.append(".")
 
   # Create dictionary for ezt
-  data = {
-    'module':       MakeModuleProfile(opts),
-                'config':       MakeConfig(opts),
-    'inport':       MakeDataPort(opts, "inport"),
-    'outport':      MakeDataPort(opts, "outport"),
-    'service':      MakePortInterface(opts, "service"),
-    'consumer':     MakePortInterface(opts, "consumer"),
-                'corbaport':    MakeCorbaPort(opts),
-    'service_idl':  MakeServiceIDL(opts),
-    'consumer_idl': MakeConsumerIDL(opts),
-    'idl_include':  find_opt_list(opts, "--idl-include", idl_inc),
-    'fname':        output,
-    'args':         sys.argv,
-    'fmtd_args':    fmtd_args(70, sys.argv)
-    }
+  data = {'basicInfo':        CreateBasicInfo(opts),
+          'actions':          CreateActions(opts),
+          'configurationSet': CreateConfigurationSet(opts),
+          'dataPorts':        CreateDataPorts(opts),
+          'servicePorts':     CreateServicePorts(opts),
+          'args':             sys.argv,
+          'fmtd_args':        fmtd_args(70, sys.argv),
+          'idl_include':      idl_inc
+          }
+  CreateId(data)
+  PickupIDLFiles(data)
 
-  if data['fname'] == None:
-    data['fname'] = data['module'].name
-
+  if not data.has_key('fname'):
+    data['fname'] = data['basicInfo']['name']
   backends.generate_code(data, opts)
 
-  import README_src
-  readme_src = README_src.README_src(data)
-  readme_src.print_all()
+  import README_gen
+  readme = README_gen.README_gen(data)
+  readme.print_all()
+  import profile_gen
+  profile = profile_gen.profile_gen(data)
+  profile.print_all()
   return
-    
+        
 
 if __name__ == "__main__":
   main()
