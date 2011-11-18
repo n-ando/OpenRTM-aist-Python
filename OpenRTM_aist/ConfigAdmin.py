@@ -130,7 +130,7 @@ class Config:
   # @endif
   def __init__(self, name, var, def_val, trans=None):
     self.name = name
-    self.default_value = def_val
+    self._default_value = def_val
     self._var = var
     if trans:
       self._trans = trans
