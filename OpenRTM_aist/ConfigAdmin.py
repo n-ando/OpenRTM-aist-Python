@@ -131,11 +131,58 @@ class Config:
   def __init__(self, name, var, def_val, trans=None):
     self.name = name
     self.default_value = def_val
+    self.string_value = ""
+    self.callback = None
     self._var = var
     if trans:
       self._trans = trans
     else:
       self._trans = OpenRTM_aist.stringTo
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief コールバックのセット
+  # 
+  # 変数変更時にコールされるコールバック関数をセットする.
+  #
+  # @else
+  #
+  # @brief Setting callback
+  #
+  # This member function sets callback function which is called
+  # when variable is changed.
+  #
+  # @endif
+  #
+  # void setCallback(CallbackFunc cbf);
+  def setCallback(self, cbf):
+    self.callback = cbf
+    
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief 変数変更を知らせるオブザーバ関数
+  # 
+  # 変数変更を知らせるオブザーバ関数.
+  #
+  # @else
+  #
+  # @brief Observer function to notify variable changed
+  #
+  # This function notifies variable has been changed.
+  #
+  # @endif
+  #
+  # void notifyUpdate(const char* key, const char* val);
+  def notifyUpdate(self, key, val):
+    self.callback(key, val)
+    return
 
 
   ##
@@ -164,11 +211,16 @@ class Config:
   # @endif
   # virtual bool update(const char* val)
   def update(self, val):
-    if self._trans(self._var, val):
+    if self.string_value == val:
       return True
-    self._trans(self._var, self._default_value)
+    self.string_value = val
+    # value changed
+    if self._trans(self._var, val):
+      self.notifyUpdate(self.name, val)
+      return True
+    self._trans(self._var, self.default_value)
+    self.notifyUpdate(self.name, val)
     return False
-
 
 
 ##
@@ -347,6 +399,7 @@ class ConfigAdmin:
     self._emptyconf  = OpenRTM_aist.Properties()
     self._newConfig  = []
     self._listeners  = OpenRTM_aist.ConfigurationListeners()
+    self._changedParam = []
 
   ##
   # @if jp
@@ -414,13 +467,64 @@ class ConfigAdmin:
     if trans is None:
       trans = OpenRTM_aist.stringTo
     
+    if not param_name or not def_val:
+      return False
+
     if self.isExist(param_name):
       return False
 
     if not trans(var, def_val):
       return False
+    conf_ = Config(param_name, var, def_val, trans)
+    self._params.append(conf_)
+    conf_.setCallback(self.onUpdateParam)
+    self.update(self.getActiveId(), param_name)
     
-    self._params.append(Config(param_name, var, def_val, trans))
+    return True
+
+
+  ##
+  # @if jp
+  #
+  # @brief コンフィギュレーションパラメータの解除
+  # 
+  # コンフィギュレーションパラメータと変数のバインドを解除する。
+  # 指定した名称のコンフィギュレーションパラメータが存在しない場合は
+  # falseを返す。
+  #
+  # @param param_name コンフィギュレーションパラメータ名
+  # @return 設定結果(設定成功:true，設定失敗:false)
+  # 
+  # @else
+  #
+  # @brief Unbinding configuration parameters
+  # 
+  # Unbind configuration parameter from its variable. It returns
+  # false, if configuration parameter of specified name has already
+  # existed.
+  #
+  # @param param_name Configuration parameter name
+  # @return Setup result (Successful:true, Failed:false)
+  #
+  # @endif
+  #
+  # bool unbindParameter(const char* param_name);
+  def unbindParameter(self, param_name):
+    find_idx = -1
+    for (find_idx,param) in enumerate(self._params):
+      if param.name == param_name:
+        break
+    if find_idx == -1:
+      return False
+
+    del self._params[find_idx]
+
+    # configsets
+    leaf = self._configsets.getLeaf()
+    for i in range(len(leaf)):
+      if leaf[i].hasKey(param_name):
+        leaf[i].removeNode(param_name)
+
     return True
 
 
@@ -530,24 +634,28 @@ class ConfigAdmin:
     if config_set and config_param is None:
       if self._configsets.hasKey(config_set) is None:
         return
+      self._changedParam = []
       prop = self._configsets.getNode(config_set)
       for i in range(len(self._params)):
         if prop.hasKey(self._params[i].name):
+          # self._changedParam is updated here
           self._params[i].update(prop.getProperty(self._params[i].name))
-          self.onUpdate(config_set)
+      self.onUpdate(config_set)
 
     # update(const char* config_set, const char* config_param)
     if config_set and config_param:
+      self._changedParam = []
       key = config_set
       key = key+"."+config_param
       for conf in self._params:
         if conf.name == config_param:
           conf.update(self._configsets.getProperty(key))
-          self.onUpdateParam(config_set, config_param)
+          #self.onUpdateParam(config_set, config_param)
           return
 
     # update()
     if config_set is None and config_param is None:
+      self._changedParam = []
       if self._changed and self._active:
         self.update(self._activeId)
         self._changed = False
@@ -618,6 +726,29 @@ class ConfigAdmin:
   def isChanged(self):
     return self._changed
 
+
+  ##
+  # @if jp
+  #
+  # @brief 変更されたパラメータのリスト
+  # 
+  # コンフィギュレーションパラメータのうち変更されたもののリストを返す。
+  #
+  # @return 変更されたパラメータ名リスト
+  #
+  # @else
+  #
+  # @brief Changed parameters list
+  # 
+  # This operation returns parameter list which are changed.
+  #
+  # @return Changed parameters list
+  #
+  # @endif
+  #
+  # coil::vstring& changedParameters() { return m_changedParam; }
+  def changedParameters(self):
+    return self._changedParam
 
   ##
   # @if jp
@@ -794,13 +925,14 @@ class ConfigAdmin:
   # @endif
   # bool setConfigurationSetValues(const coil::Properties& config_set)
   def setConfigurationSetValues(self, config_set):
-    if config_set.getName() == "" or config_set.getName() is None:
+    node_ = config_set.getName()
+    if node_ == "" or node_ is None:
       return False
 
-    if not self._configsets.hasKey(config_set.getName()):
+    if not self._configsets.hasKey(node_):
       return False
 
-    p = self._configsets.getNode(config_set.getName())
+    p = self._configsets.getNode(node_)
     if p is None:
       return False
 
@@ -1441,8 +1573,8 @@ class ConfigAdmin:
   # 設定されてるコールバックオブジェクトを呼び出す。
   #
   # @param self 
-  # @param config_set コンフィギュレーションID
   # @param config_param コンフィギュレーションパラメータ名
+  # @param config_value コンフィギュレーション値
   #
   # @else
   #
@@ -1451,15 +1583,16 @@ class ConfigAdmin:
   # Call the set callback object.
   # 
   # @param self 
-  # @param config_set configuration-set ID.
   # @param config_param configuration parameter name.
+  # @param config_value configuration value.
   #
   # @endif
   #
-  # void onUpdateParam(const char* config_set, const char* config_param);
-  def onUpdateParam(self, config_set, config_param):
-    self._listeners.configparam_[OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM].notify(config_set,
-                                                                                                            config_param)
+  # void onUpdateParam(const char* config_param, const char* config_value);
+  def onUpdateParam(self, config_param, config_value):
+    self._changedParam.append(config_param)
+    self._listeners.configparam_[OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM].notify(config_param,
+                                                                                                            config_value)
     return
 
 

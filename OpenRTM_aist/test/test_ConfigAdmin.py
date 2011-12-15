@@ -89,6 +89,14 @@ class TestConfigAdmin(unittest.TestCase):
     self._ca.bindParameter("str_param0", self.str_param0, "hoge")
     self._ca.bindParameter("str_param1", self.str_param1, "dara")
     self._ca.bindParameter("vector_param0", self.vector_param0, "0.0,1.0,2.0,3.0,4.0")
+    print "Changed Parameters: ", self._ca.changedParameters()
+    self.assertEqual(True,self._ca.unbindParameter("int_param0"))
+    self.assertEqual(True,self._ca.unbindParameter("int_param1"))
+    self.assertEqual(True,self._ca.unbindParameter("double_param0"))
+    self.assertEqual(True,self._ca.unbindParameter("double_param1"))
+    self.assertEqual(True,self._ca.unbindParameter("str_param0"))
+    self.assertEqual(True,self._ca.unbindParameter("str_param1"))
+    self.assertEqual(True,self._ca.unbindParameter("vector_param0"))
     return
 
   def test_update(self):
@@ -180,29 +188,29 @@ class TestConfigAdmin(unittest.TestCase):
     return
 
   def test_setOnUpdate(self):
-    self._ca.setOnUpdate(None)
+    self._ca.setOnUpdate(self.CallBack)
     return
 
   def test_setOnUpdateParam(self):
-    self._ca.setOnUpdateParam(None)
+    self._ca.setOnUpdateParam(self.CallBack)
     return
 
   def test_setOnSetConfigurationSet(self):
-    self._ca.setOnSetConfigurationSet(None)
+    self._ca.setOnSetConfigurationSet(self.CallBack)
     return
 
   def test_setOnAddConfigurationSet(self):
-    self._ca.setOnAddConfigurationSet(None)
+    self._ca.setOnAddConfigurationSet(self.CallBack)
     return 
 
 
   def test_setOnRemoveConfigurationSet(self):
-    self._ca.setOnRemoveConfigurationSet(None)
+    self._ca.setOnRemoveConfigurationSet(self.CallBack)
     return 
 
 
   def test_setOnActivateSet(self):
-    self._ca.setOnActivateSet(None)
+    self._ca.setOnActivateSet(self.CallBack)
     return 
 
   
