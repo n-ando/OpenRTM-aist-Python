@@ -37,6 +37,14 @@ def ticktack():
   i = (i+1) % 4
   return str_[i]
 
+class MyConfigurationParamListner(OpenRTM_aist.ConfigurationParamListener):
+  def __init__(self):
+    pass
+
+  def __call__(self, config_set_name, config_param_name):
+    print "Changed config_set_name: ", config_set_name, " config_param_name: ", config_param_name
+    return
+    
 
 class ConfigSample(OpenRTM_aist.DataFlowComponentBase):
   # class constructor
@@ -60,7 +68,8 @@ class ConfigSample(OpenRTM_aist.DataFlowComponentBase):
     self.bindParameter("str_param0", self._str_param0, "hoge")
     self.bindParameter("str_param1", self._str_param1, "dara")
     self.bindParameter("vector_param0", self._vector_param0, "0.0,1.0,2.0,3.0,4.0")
-  
+    self.addConfigurationParamListener(OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM,
+                                       MyConfigurationParamListner())
 
     print "\n Please change configuration values from RtcLink"
     
