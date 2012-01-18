@@ -228,7 +228,7 @@ class Manager:
         manager.initExecContext()
         manager.initComposite()
         manager.initTimer()
-        #manager.initManagerServant()
+        manager.initManagerServant()
 
     return manager
 
