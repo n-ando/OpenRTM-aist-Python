@@ -113,6 +113,7 @@ class Manager:
     self._poa = None
     self._poaManager = None 
     self._finalized = self.Finalized()
+    self._listeners = OpenRTM_aist.ManagerActionListeners()
     signal.signal(signal.SIGINT, handler)
     
     return
@@ -264,6 +265,7 @@ class Manager:
   # @endif
   def shutdown(self):
     self._rtcout.RTC_TRACE("Manager.shutdown()")
+    self._listeners.manager_.preShutdown()
     self.shutdownComponents()
     self.shutdownNaming()
     self.shutdownORB()
@@ -274,6 +276,7 @@ class Manager:
     else:
       self.join()
 
+    self._listeners.manager_.postShutdown()
     self.shutdownLogger()
     global manager
     if manager:
@@ -375,6 +378,17 @@ class Manager:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return False
 
+    lsvc_ = [s.strip() for s in self._config.getProperty("manager.local_service.modules").split(",")]
+
+    for svc_ in lsvc_:
+      basename_ = svc_.split(".")[0]+"Init"
+      try:
+        self._module.load(svc_, basename_)
+      except:
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+
+    self.initLocalService()
+
     mods = [s.strip() for s in self._config.getProperty("manager.modules.preload").split(",")]
 
     for i in range(len(mods)):
@@ -394,6 +408,9 @@ class Manager:
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
         self.__try_direct_load(basename)
 
+    sdofactory_ = OpenRTM_aist.SdoServiceConsumerFactory.instance()
+    self._config.setProperty("sdo.service.consumer.available_services",
+                             OpenRTM_aist.flatten(sdofactory_.getIdentifiers()))
     if self._initProc:
       self._initProc(self)
 
@@ -485,6 +502,7 @@ class Manager:
   def load(self, fname, initfunc):
     self._rtcout.RTC_TRACE("Manager.load(fname = %s, initfunc = %s)",
                            (fname, initfunc))
+    self._listeners.module_.preLoad(fname, initfunc)
     try:
       fname_ = fname.split(os.sep)
       if len(fname_) > 1:
@@ -497,6 +515,7 @@ class Manager:
         initfunc = mod[0]+"Init"
       path = self._module.load(fname, initfunc)
       self._rtcout.RTC_DEBUG("module path: %s", path)
+      self._listeners.module_.postLoad(path, initfunc)
     except:
       self.__try_direct_load(fname)
 
@@ -524,7 +543,9 @@ class Manager:
   # @endif
   def unload(self, fname):
     self._rtcout.RTC_TRACE("Manager.unload()")
+    self._listeners.module_.preUnload(fname)
     self._module.unload(fname)
+    self._listeners.module_.postUnload(fname)
     return
 
 
@@ -766,6 +787,7 @@ class Manager:
   #
   def createComponent(self, comp_args):
     self._rtcout.RTC_TRACE("Manager.createComponent(%s)", comp_args)
+    self._listeners.rtclifecycle_.preCreate(comp_args)
     comp_prop = OpenRTM_aist.Properties()
     comp_id   = OpenRTM_aist.Properties()
 
@@ -857,6 +879,7 @@ class Manager:
                              comp_id.getProperty("implementation_id"))
       return None
     self._rtcout.RTC_TRACE("RTC Created: %s", comp_id.getProperty("implementation_id"))
+    self._listeners.rtclifecycle_.postCreate(comp)
 
     # The property specified by the parameter of createComponent() is merged.
     # The property("instance_name") specified by the parameter of createComponent()
@@ -869,7 +892,9 @@ class Manager:
     # rtc.conf:
     #   [category].[type_name].config_file = file_name
     #   [category].[instance_name].config_file = file_name
+    self._listeners.rtclifecycle_.preConfigure(prop)
     self.configureComponent(comp,prop)
+    self._listeners.rtclifecycle_.postConfigure(prop)
 
     # The property specified by the parameter of createComponent() is set.
     # The property("exported_ports") specified by the parameter of createComponent()
@@ -877,6 +902,7 @@ class Manager:
     #comp.setProperties(comp_prop)
 
     # Component initialization
+    self._listeners.rtclifecycle_.preInitialize()
     if comp.initialize() != RTC.RTC_OK:
       self._rtcout.RTC_TRACE("RTC initialization failed: %s",
                              comp_id.getProperty("implementation_id"))
@@ -886,6 +912,7 @@ class Manager:
       
     self._rtcout.RTC_TRACE("RTC initialization succeeded: %s",
                            comp_id.getProperty("implementation_id"))
+    self._listeners.rtclifecycle_.postInitialize()
     self.registerComponent(comp)
     return comp
 
@@ -912,9 +939,11 @@ class Manager:
     self._compManager.registerObject(comp)
     names = comp.getNamingNames()
 
+    self._listeners.naming_.preBind(comp, names)
     for name in names:
       self._rtcout.RTC_TRACE("Bind name: %s", name)
       self._namingManager.bindObject(name, comp)
+    self._listeners.naming_.postBind(comp, names)
 
     return True
 
@@ -938,9 +967,11 @@ class Manager:
     self._compManager.unregisterObject(comp.getInstanceName())
     names = comp.getNamingNames()
     
+    self._listeners.naming_.preUnbind(comp, names)
     for name in names:
       self._rtcout.RTC_TRACE("Unbind name: %s", name)
       self._namingManager.unbindObject(name)
+    self._listeners.naming_.postUnbind(comp, names)
 
     return True
 
@@ -1065,6 +1096,81 @@ class Manager:
   def getComponents(self):
     self._rtcout.RTC_TRACE("Manager.getComponents()")
     return self._compManager.getObjects()
+
+
+  # void Manager::
+  # addManagerActionListener(RTM::ManagerActionListener* listener,
+  #                          bool autoclean)
+  def addManagerActionListener(self, listener,autoclean=True):
+    self._listeners.manager_.addListener(listener, autoclean)
+    return
+
+
+  # void Manager::
+  # removeManagerActionListener(RTM::ManagerActionListener* listener)
+  def removeManagerActionListener(self, listener):
+    self._listeners.manager_.removeListener(listener)
+    return
+  
+
+  # void Manager::
+  # addModuleActionListener(RTM::ModuleActionListener* listener,
+  #                          bool autoclean)
+  def addModuleActionListener(self, listener, autoclean=True):
+    self._listeners.module_.addListener(listener, autoclean)
+    return
+
+
+  # void Manager::
+  # removeModuleActionListener(RTM::ModuleActionListener* listener)
+  def removeModuleActionListener(self, listener):
+    self._listeners.module_.removeListener(listener)
+    return
+
+
+  # void Manager::
+  # addRtcLifecycleActionListener(RTM::RtcLifecycleActionListener* listener,
+  #                               bool autoclean)
+  def addRtcLifecycleActionListener(self, listener, autoclean=True):
+    self._listeners.rtclifecycle_.addListener(listener, autoclean)
+    return
+
+
+  # void Manager::
+  # removeRtcLifecycleActionListener(RTM::RtcLifecycleActionListener* listener)
+  def removeRtcLifecycleActionListener(self, listener):
+    self._listeners.rtclifecycle_.removeListener(listener)
+    return
+
+  
+  # void Manager::
+  # addNamingActionListener(RTM::NamingActionListener* listener,
+  #                         bool autoclean)
+  def addNamingActionListener(self, listener, autoclean=True):
+    self._listeners.naming_.addListener(listener, autoclean)
+    return
+
+
+  # void Manager::
+  # removeNamingActionListener(RTM::NamingActionListener* listener)
+  def removeNamingActionListener(self, listener):
+    self._listeners.naming_.removeListener(listener)
+    return
+  
+
+  # void Manager::
+  # addLocalServiceActionListener(RTM::LocalServiceActionListener* listener,
+  #                               bool autoclean)
+  def addLocalServiceActionListener(self, listener, autoclean=True):
+    self._listeners.localservice_.addListener(listener, autoclean)
+    return
+
+
+  # void Manager::
+  # removeLocalServiceActionListener(RTM::LocalServiceActionListener* listener)
+  def removeLocalServiceActionListener(self, listener):
+    self._listeners.localservice_.removeListener(listener)
+    return
 
 
   #============================================================
@@ -1619,7 +1725,17 @@ class Manager:
   # @endif
   def shutdownNaming(self):
     self._rtcout.RTC_TRACE("Manager.shutdownNaming()")
+    comps = self.getComponents()
+    
+    for copm in comps:
+      names = comp.getNamingNames()
+      self._listeners.naming_.preUnbind(comp, names);
+      for name in names:
+        self._namingNamager.unbindObject(name)
+      self._listeners.naming_.postUnbind(comp, names);
+
     self._namingManager.unbindAll()
+    return
 
 
   ##
@@ -1758,6 +1874,23 @@ class Manager:
     return True
 
   
+  # bool Manager::initLocalService()
+  def initLocalService(self):
+    self._rtcout.RTC_TRACE("Manager::initLocalService()")
+
+    admin_ = OpenRTM_aist.LocalServiceAdmin.instance()
+    prop_ = OpenRTM_aist.Properties(prop=self._config.getNode("manager.local_service"))
+    admin_.init(prop_)
+    self._rtcout.RTC_DEBUG("LocalServiceAdmin's properties:")
+    self._rtcout.RTC_DEBUG("%s",prop_)
+
+    svclist_ = admin_.getServiceProfiles()
+    for svc_ in svclist_:
+      self._rtcout.RTC_INFO("Available local service: %s (%s)",
+                            (svc_.name, svc_.uuid))
+    return True
+
+
   ##
   # @if jp
   # @brief NamingManager に登録されている全コンポーネントの終了処理
@@ -1967,10 +2100,15 @@ class Manager:
     type_prop = OpenRTM_aist.Properties()
 
     name_prop = OpenRTM_aist.Properties()
+    config_fname = []
 
     if self._config.getProperty(name_conf) != "":
       try:
         conff = open(self._config.getProperty(name_conf))
+        name_prop.load(conff)
+        self._rtcout.RTC_INFO("Component instance conf file: %s loaded.",
+                              self._config.getProperty(name_conf))
+        config_fname.append(self._config.getProperty(name_conf))
       except:
         print "Not found. : %s" % self._config.getProperty(name_conf)
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
@@ -1978,11 +2116,21 @@ class Manager:
         name_prop.load(conff)
 
     if self._config.findNode(category + "." + inst_name):
-      name_prop.mergeProperties(self._config.getNode(category + "." + inst_name))
+      temp_ = OpenRTM_aist.Properties(prop=self._config.getNode(category+"."+inst_name))
+      keys_ = temp_.propertyNames()
+      if not (len(keys_) == 1 and keys[-1] == "config_file"):
+        name_prop.mergeProperties(self._config.getNode(category + "." + inst_name))
+        self._rtcout.RTC_INFO("Component name conf exists in rtc.conf. Merged.")
+        if self._config.findNode("config_file"):
+          config_fname.append(self._config.getProperty("config_file"))
 
     if self._config.getProperty(type_conf) != "":
       try:
         conff = open(self._config.getProperty(type_conf))
+        type_prop.load(conff)
+        self._rtcout.RTC_INFO("Component type conf file: %s loaded.",
+                              self._config.getProperty(type_conf))
+        config_fname.append(self._config.getProperty(type_conf))
       except:
         print "Not found. : %s" % self._config.getProperty(type_conf)
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
@@ -1990,10 +2138,17 @@ class Manager:
         type_prop.load(conff)
 
     if self._config.findNode(category + "." + type_name):
-      type_prop.mergeProperties(self._config.getNode(category + "." + type_name))
+      temp_ = OpenRTM_aist.Properties(prop=self._config.getNode(category+"."+type_name))
+      keys_ = temp_.propertyNames()
+      if not (len(keys_) == 1 and keys[-1] == "config_file"):
+        type_prop.mergeProperties(self._config.getNode(category + "." + type_name))
+        self._rtcout.RTC_INFO("Component type conf exists in rtc.conf. Merged.")
+        if self._config.findNode("config_file"):
+          config_fname.append(self._config.getProperty("config_file"))
 
     comp.setProperties(prop)
     type_prop.mergeProperties(name_prop)
+    type_prop.setProperty("config_file",OpenRTM_aist.flatten(OpenRTM_aist.unique_sv(config_fname)))
     comp.setProperties(type_prop)
 
     comp_prop = OpenRTM_aist.Properties(prop=comp.getProperties())

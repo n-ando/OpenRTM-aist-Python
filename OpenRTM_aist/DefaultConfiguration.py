@@ -75,6 +75,7 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "manager.name",                     "manager",
                  "manager.command",                  "rtcd",
                  "manager.language",                 "Python",
+                 "manager.local_service.enabled_services","ALL",
                  "sdo.service.provider.enabled_service",  "ALL",
                  "sdo.service.consumer.enabled_service",  "ALL",
                  ""]
