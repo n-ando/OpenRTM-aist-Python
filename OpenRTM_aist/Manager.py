@@ -906,8 +906,10 @@ class Manager:
     if comp.initialize() != RTC.RTC_OK:
       self._rtcout.RTC_TRACE("RTC initialization failed: %s",
                              comp_id.getProperty("implementation_id"))
-      comp.exit()
       self._rtcout.RTC_TRACE("%s was finalized", comp_id.getProperty("implementation_id"))
+      if comp.exit() != RTC.RTC_OK:
+        self._rtcout.RTC_DEBUG("%s finalization was failed.",
+                               comp_id.getProperty("implementation_id"))
       return None
       
     self._rtcout.RTC_TRACE("RTC initialization succeeded: %s",
