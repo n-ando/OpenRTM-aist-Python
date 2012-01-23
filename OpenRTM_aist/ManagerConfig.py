@@ -201,6 +201,7 @@ class ManagerConfig :
 
     # Properties from arguments are marged finally
     prop.mergeProperties(self._argprop)
+    prop.setProperty("config_file", self._configFile)
     return prop
 
 
