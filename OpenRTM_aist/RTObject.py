@@ -634,6 +634,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("exit()")
     if self._created:
       return RTC.PRECONDITION_NOT_MET
+    if self._exiting:
+      return RTC.RTC_OK
 
     # deactivate myself on owned EC
     OpenRTM_aist.CORBA_SeqUtil.for_each(self._ecMine,
