@@ -2110,6 +2110,7 @@ class Manager:
         name_prop.load(conff)
         self._rtcout.RTC_INFO("Component instance conf file: %s loaded.",
                               self._config.getProperty(name_conf))
+        self._rtcout.RTC_DEBUG(name_prop)
         config_fname.append(self._config.getProperty(name_conf))
       except:
         print "Not found. : %s" % self._config.getProperty(name_conf)
@@ -2123,6 +2124,7 @@ class Manager:
       if not (len(keys_) == 1 and keys[-1] == "config_file"):
         name_prop.mergeProperties(self._config.getNode(category + "." + inst_name))
         self._rtcout.RTC_INFO("Component name conf exists in rtc.conf. Merged.")
+        self._rtcout.RTC_DEBUG(name_prop)
         if self._config.findNode("config_file"):
           config_fname.append(self._config.getProperty("config_file"))
 
@@ -2132,6 +2134,7 @@ class Manager:
         type_prop.load(conff)
         self._rtcout.RTC_INFO("Component type conf file: %s loaded.",
                               self._config.getProperty(type_conf))
+        self._rtcout.RTC_DEBUG(type_prop)
         config_fname.append(self._config.getProperty(type_conf))
       except:
         print "Not found. : %s" % self._config.getProperty(type_conf)
@@ -2145,6 +2148,7 @@ class Manager:
       if not (len(keys_) == 1 and keys[-1] == "config_file"):
         type_prop.mergeProperties(self._config.getNode(category + "." + type_name))
         self._rtcout.RTC_INFO("Component type conf exists in rtc.conf. Merged.")
+        self._rtcout.RTC_DEBUG(type_prop)
         if self._config.findNode("config_file"):
           config_fname.append(self._config.getProperty("config_file"))
 
