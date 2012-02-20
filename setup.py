@@ -484,7 +484,7 @@ for tmp_xml in templates_xml:
 ##############################################################################################
 
 pkg_name      = "OpenRTM-aist-Python"
-pkg_version   = "1.0.0"
+pkg_version   = "1.0.2"
 pkg_desc      = "Python modules for OpenRTM-aist-1.0"
 pkg_author    = "Shinji Kurihara and Noriaki Ando"
 pkg_email     = "n-ando@aist.go.jp"
@@ -503,8 +503,8 @@ examples_install = False
 
 cwd_ = os.getcwd()
 
-if cwd_.find("OpenRTM-aist-Python-example-1.0.0") != -1 or \
-      cwd_.find("openrtm-aist-python-example-1.0.0") != -1:
+if cwd_.find("OpenRTM-aist-Python-example-1.0.2") != -1 or \
+      cwd_.find("openrtm-aist-python-example-1.0.2") != -1:
 
   examples_install = True
 

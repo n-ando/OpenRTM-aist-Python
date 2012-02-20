@@ -36,7 +36,7 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 
 　　C:\distribution
 　　　　│
-　　　　├─ OpenRTM-aist-Python-1.0.0
+　　　　├─ OpenRTM-aist-Python-1.0.2
 　　　　│　　├─ doc　　※doxygen
 　　　　│　　│　　├─ ClassReference-jp
 　　　　│　　│　　└─ ClassReference-en
@@ -80,7 +80,7 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 　　　　  　　　　　└─ x86_win32
 
 
-　　(1) OpenRTM-aist-Python-1.0.0 は、
+　　(1) OpenRTM-aist-Python-1.0.2 は、
 　　　　Python版OpenRTM-aistのインストール対象ファイルであり、
 　　　　doxygenにより作成されたリファレンスファイル(※doxygen)と、
         IDLコンパイルを行うためのファイル(※idlcompiler)と、
@@ -144,9 +144,9 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 
 　　[ビルド後に使用するファイル]
 　　　　│
-　　　　├─ OpenRTM-aist-Python-1.0.0.msi　英語のインストーラー
+　　　　├─ OpenRTM-aist-Python-1.0.2.msi　英語のインストーラー
 　　　　│
-　　　　└─ OpenRTM-aist-Python-1.0.0_**-**.msi　各国語毎のインストーラー
+　　　　└─ OpenRTM-aist-Python-1.0.2_**-**.msi　各国語毎のインストーラー
 
 　　　※build.cmd を実行すると、複数のテンポラリファイルとmsiファイルが
 　　　　作成されます。

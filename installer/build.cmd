@@ -4,7 +4,7 @@
 @rem   usually only %TARGET% might be changed
 @rem ------------------------------------------------------------
 @set PATH=%WIX%\bin;%PATH%
-@set VERSION=1.0.1
+@set VERSION=1.0.2
 @set TARGET=OpenRTM-aist-Python
 @set TARGET_WXS=%TARGET%.wxs
 @set TARGET_WIXOBJ=%TARGET%.wixobj
@@ -22,7 +22,7 @@
 @rem default distribution package folder
 @rem ------------------------------------------------------------
 @set DISTRIBUTION=C:\distribution
-@set OPENRTM_PY=%DISTRIBUTION%\OpenRTM-aist-Python-1.0.0
+@set OPENRTM_PY=%DISTRIBUTION%\OpenRTM-aist-Python-1.0.2
 @set OMNIORB_PY24=%DISTRIBUTION%\omniORBpy-3.0-Python2.4
 @set OMNIORB_PY25=%DISTRIBUTION%\omniORBpy-3.4-Python2.5
 @set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.4-Python2.6
