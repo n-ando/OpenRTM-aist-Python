@@ -48,6 +48,9 @@ from ManagerConfig import *
 from Timer import *
 from ModuleManager import *
 from NamingManager import *
+from ExecutionContextProfile import *
+from RTObjectStateMachine import *
+from ExecutionContextWorker import *
 from ExecutionContextBase import *
 from StateMachine import *
 from PeriodicExecutionContext import *
