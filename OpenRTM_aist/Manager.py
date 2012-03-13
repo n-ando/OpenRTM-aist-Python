@@ -862,7 +862,15 @@ class Manager:
                     "corba.id",
                     "exec_cxt.periodic.type",
                     "exec_cxt.periodic.rate",
-                    "exec_cxt.evdriven.type",
+                    "exec_cxt.event_driven.type",
+                    "exec_cxt.sync_transition",
+                    "exec_cxt.sync_activation",
+                    "exec_cxt.sync_deactivation",
+                    "exec_cxt.sync_reset",
+                    "exec_cxt.transition_timeout",
+                    "exec_cxt.activation_timeout",
+                    "exec_cxt.deactivation_timeout",
+                    "exec_cxt.reset_timeout",
                     "logger.enable",
                     "logger.log_level",
                     "naming.enable",
@@ -870,7 +878,8 @@ class Manager:
                     "naming.formats"]
 
     for i in range(len(inherit_prop)):
-      prop.setProperty(inherit_prop[i],self._config.getProperty(inherit_prop[i]))
+      if self._config.findNode(inherit_prop[i]):
+        prop.setProperty(inherit_prop[i],self._config.getProperty(inherit_prop[i]))
 
     comp = factory.create(self)
 
@@ -1879,7 +1888,6 @@ class Manager:
   # bool Manager::initLocalService()
   def initLocalService(self):
     self._rtcout.RTC_TRACE("Manager::initLocalService()")
-
     admin_ = OpenRTM_aist.LocalServiceAdmin.instance()
     prop_ = OpenRTM_aist.Properties(prop=self._config.getNode("manager.local_service"))
     admin_.init(prop_)
