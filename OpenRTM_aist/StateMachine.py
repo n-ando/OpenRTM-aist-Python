@@ -154,6 +154,7 @@ class StateMachine:
   # @endif
   def __init__(self, num_of_state):
     self._num = num_of_state
+    self._listener = None
     self._entry  = {}
     self._predo  = {}
     self._do     = {}
@@ -166,6 +167,7 @@ class StateMachine:
     self.setNullFunc(self._predo,  None)
     self.setNullFunc(self._postdo, None)
     self._transit = None
+    self._selftrans = False
     self._mutex = threading.RLock()
 
 
@@ -203,7 +205,9 @@ class StateMachine:
   # @brief Set Listener Object
   # @endif
   def setListener(self, listener):
+    assert(listener)
     self._listener = listener
+    return
 
 
   ##
@@ -225,7 +229,7 @@ class StateMachine:
     if self._entry.has_key(state):
       self._entry[state] = call_back
     else:
-      self._entry.setdefault(state, call_back)
+      return False
     return True
 
 
@@ -248,7 +252,7 @@ class StateMachine:
     if self._predo.has_key(state):
       self._predo[state] = call_back
     else:
-      self._predo.setdefault(state, call_back)
+      return False
     return True
 
 
@@ -271,7 +275,7 @@ class StateMachine:
     if self._do.has_key(state):
       self._do[state] = call_back
     else:
-      self._do.setdefault(state, call_back)
+      return False
     return True
 
 
@@ -294,7 +298,7 @@ class StateMachine:
     if self._postdo.has_key(state):
       self._postdo[state] = call_back
     else:
-      self._postdo.setdefault(state, call_back)
+      return False
     return True
 
 
@@ -317,7 +321,7 @@ class StateMachine:
     if self._exit.has_key(state):
       self._exit[state] = call_back
     else:
-      self._exit.setdefault(state, call_back)
+      return False
     return True
 
 
@@ -438,6 +442,9 @@ class StateMachine:
   def goTo(self, state):
     guard = OpenRTM_aist.ScopedLock(self._mutex)
     self._states.next = state
+    if self._states.curr == state:
+      self._selftrans = True
+    return
 
 
   ##
@@ -461,22 +468,26 @@ class StateMachine:
       # pre-do
       if self._predo[states.curr]:
         self._predo[states.curr](states)
+
       if self.need_trans():
         return
 
       # do
       if self._do[states.curr]:
         self._do[states.curr](states)
+
       if self.need_trans():
         return
 
       # post-do
       if self._postdo[states.curr]:
         self._postdo[states.curr](states)
+
     # If state transition required, exit current state and enter next state
     else:
       if self._exit[states.curr]:
         self._exit[states.curr](states)
+
       self.sync(states)
 
       # If state transition still required, move to the next state
@@ -485,6 +496,51 @@ class StateMachine:
         if self._entry[states.curr]:
           self._entry[states.curr](states)
         self.update_curr(states.curr)
+
+    return
+
+
+  # void worker_pre()
+  def worker_pre(self):
+    state = StateHolder()
+    self.sync(state)
+    if state.curr == state.next:
+      if self._predo[state.curr]:
+        self._predo[state.curr](state)
+      return
+
+    # State changed
+    if self._exit[state.curr]:
+      self._exit[state.curr](state)
+
+    self.sync(state)
+    if state.curr != state.next:
+      state.curr = state.next
+      if self._entry[state.curr]:
+        self._entry[state.curr](state)
+      self.update_curr(state.curr)
+
+    return
+
+  # void worker_do()
+  def worker_do(self):
+    state = StateHolder()
+    self.sync(state)
+
+    if self._do[state.curr]:
+      self._do[state.curr](state)
+
+    return
+
+
+  # void worker_post()
+  def worker_post(self):
+    state = StateHolder()
+    self.sync(state)
+    if self._postdo[state.curr]:
+      self._postdo[state.curr](state)
+
+    return
 
 
   ##
@@ -506,6 +562,7 @@ class StateMachine:
         s[StateMachine.state_array[i]] = nullfunc
       else:
         s.setdefault(StateMachine.state_array[i], nullfunc)
+    return
 
 
   ##
