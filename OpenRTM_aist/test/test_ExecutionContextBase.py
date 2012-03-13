@@ -97,7 +97,7 @@ class MyEC3(ExecutionContextBase,
     self.activate()
     return 0
 
-  def onStarted(self):
+  def onStarting(self):
     self._svc = True
     self.open(0)
     return RTC.RTC_OK
