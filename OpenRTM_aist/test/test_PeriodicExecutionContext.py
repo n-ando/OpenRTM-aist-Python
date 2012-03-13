@@ -165,7 +165,7 @@ class TestPeriodicExecutionContext(unittest.TestCase):
     self._dfp = DFP()
     self._dfp._poa._get_the_POAManager().activate()
 
-    self._pec = PeriodicExecutionContext(self._dfp._ref, 10)
+    self._pec = PeriodicExecutionContext()
     self._pec.add_component(self._dfp.getRef())
     self._pec.start()
   
