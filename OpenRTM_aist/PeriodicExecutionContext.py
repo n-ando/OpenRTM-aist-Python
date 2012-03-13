@@ -576,7 +576,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     else:
       guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
       self._workerthread._running = True
-      self._workerthread._cond.signal()
+      self._workerthread._cond.notify()
       del guard
     return RTC.RTC_OK
 
@@ -594,14 +594,14 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   def onWaitingActivated(self, comp, count):
     self._rtcout.RTC_TRACE("onWaitingActivated(count = %d)", count)
     self._rtcout.RTC_PARANOID("curr: %s, next: %s",
-                              self.getStateString(comp.getStates().curr),
-                              self.getStateString(comp.getStates().next))
+                              (self.getStateString(comp.getStates().curr),
+                               self.getStateString(comp.getStates().next)))
     # Now comp's next state must be ACTIVE state
     # If worker thread is stopped, restart worker thread.
     guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
     if self._workerthread._running == False:
       self._workerthread._running = True
-      self._workerthread._cond.signal()
+      self._workerthread._cond.notify()
     del guard
     return RTC.RTC_OK
 
@@ -611,8 +611,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   def onActivated(self, comp, count):
     self._rtcout.RTC_TRACE("onActivated(count = %d)", count)
     self._rtcout.RTC_PARANOID("curr: %s, next: %s",
-                              self.getStateString(comp.getStates().curr),
-                              self.getStateString(comp.getStates().next))
+                              (self.getStateString(comp.getStates().curr),
+                               self.getStateString(comp.getStates().next)))
     # count = -1; Asynch mode. Since onWaitingActivated is not
     # called, onActivated() have to send restart singnal to worker
     # thread.
@@ -623,7 +623,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
     if self._workerthread._running == False:
       self._workerthread._running = True
-      self._workerthread._cond.signal()
+      self._workerthread._cond.notify()
     del guard
     return RTC.RTC_OK
 
@@ -633,8 +633,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   def onWaitingDeactivated(self, comp, count):
     self._rtcout.RTC_TRACE("onWaitingDeactivated(count = %d)", count)
     self._rtcout.RTC_PARANOID("curr: %s, next: %s",
-                              self.getStateString(comp.getStates().curr),
-                              self.getStateString(comp.getStates().next))
+                              (self.getStateString(comp.getStates().curr),
+                               self.getStateString(comp.getStates().next)))
     if self.isAllNextState(RTC.INACTIVE_STATE):
       guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
       if self._workerthread._running == True:
@@ -650,8 +650,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   def onDeactivated(self, comp, count):
     self._rtcout.RTC_TRACE("onDeactivated(count = %d)", count)
     self._rtcout.RTC_PARANOID("curr: %s, next: %s",
-                              self.getStateString(comp.getStates().curr),
-                              self.getStateString(comp.getStates().next))
+                              (self.getStateString(comp.getStates().curr),
+                               self.getStateString(comp.getStates().next)))
     if self.isAllNextState(RTC.INACTIVE_STATE):
       guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
       if self._workerthread._running == True:
@@ -667,8 +667,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   def onWaitingReset(self, comp, count):
     self._rtcout.RTC_TRACE("onWaitingReset(count = %d)", count)
     self._rtcout.RTC_PARANOID("curr: %s, next: %s",
-                              self.getStateString(comp.getStates().curr),
-                              self.getStateString(comp.getStates().next))
+                              (self.getStateString(comp.getStates().curr),
+                               self.getStateString(comp.getStates().next)))
     if self.isAllNextState(RTC.INACTIVE_STATE):
       guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
       if self._workerthread._running == True:
@@ -684,8 +684,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   def onReset(self, comp, count):
     self._rtcout.RTC_TRACE("onReset(count = %d)", count)
     self._rtcout.RTC_PARANOID("curr: %s, next: %s",
-                              self.getStateString(comp.getStates().curr),
-                              self.getStateString(comp.getStates().next))
+                              (self.getStateString(comp.getStates().curr),
+                               self.getStateString(comp.getStates().next)))
     if self.isAllNextState(RTC.INACTIVE_STATE):
       guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
       if self._workerthread._running == True:
