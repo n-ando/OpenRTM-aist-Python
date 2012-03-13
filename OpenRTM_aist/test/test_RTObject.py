@@ -201,7 +201,7 @@ class TestRTObject_impl(unittest.TestCase):
 
   def test_attach_context(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec = OpenRTM_aist.PeriodicExecutionContext(rtobj.getObjRef(), 10)
+    ec = OpenRTM_aist.PeriodicExecutionContext()
     id = rtobj.getObjRef().attach_context(ec.getObjRef())
     print "attach_context: ", id
     print rtobj.getObjRef().detach_context(id)
@@ -328,6 +328,7 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
     ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
     ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec.set_rate(1000)
     ec.bindComponent(rtobj)
     self.assertEqual(rtobj.getExecutionRate(0),1000.0)
     return
@@ -355,8 +356,8 @@ class TestRTObject_impl(unittest.TestCase):
     ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
     ec.set_rate(1000.0)
     ec.bindComponent(rtobj)
-    self.assertEqual(rtobj.activate(0),RTC.RTC_OK)
     ec.start()
+    self.assertEqual(rtobj.activate(0),RTC.RTC_OK)
     time.sleep(0.1)
     ret = rtobj.deactivate(0)
     time.sleep(0.1)
@@ -369,9 +370,9 @@ class TestRTObject_impl(unittest.TestCase):
     ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
     ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
     ec.bindComponent(rtobj)
-    self.assertEqual(rtobj.activate(0),RTC.RTC_OK)
     ec.start()
-    ec._comps[0]._sm._sm.goTo(RTC.ERROR_STATE)
+    self.assertEqual(rtobj.activate(0),RTC.RTC_OK)
+    ec._worker._comps[0]._sm.goTo(RTC.ERROR_STATE)
     time.sleep(0.1)
     self.assertEqual(rtobj.reset(0),RTC.RTC_OK)
     ec.stop()
