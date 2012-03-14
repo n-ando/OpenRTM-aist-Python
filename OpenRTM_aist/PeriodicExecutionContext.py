@@ -576,7 +576,9 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     else:
       guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
       self._workerthread._running = True
+      self._workerthread._cond.acquire()
       self._workerthread._cond.notify()
+      self._workerthread._cond.release()
       del guard
     return RTC.RTC_OK
 
@@ -601,7 +603,9 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
     if self._workerthread._running == False:
       self._workerthread._running = True
+      self._workerthread._cond.acquire()
       self._workerthread._cond.notify()
+      self._workerthread._cond.release()
     del guard
     return RTC.RTC_OK
 
@@ -623,7 +627,9 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
     if self._workerthread._running == False:
       self._workerthread._running = True
+      self._workerthread._cond.acquire()
       self._workerthread._cond.notify()
+      self._workerthread._cond.release()
     del guard
     return RTC.RTC_OK
 
@@ -741,6 +747,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
 #
 # @endif
 def PeriodicExecutionContextInit(manager):
-  manager.registerECFactory("PeriodicExecutionContext",
-                            OpenRTM_aist.PeriodicExecutionContext,
-                            OpenRTM_aist.ECDelete)
+  OpenRTM_aist.ExecutionContextFactory.instance().addFactory("PeriodicExecutionContext",
+                                                             OpenRTM_aist.PeriodicExecutionContext,
+                                                             OpenRTM_aist.ECDelete)
+  return
