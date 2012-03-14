@@ -18,6 +18,8 @@ import time
 import OpenRTM_aist
 import RTC
 
+DEFAULT_EXECUTION_RATE = 1000
+
 ##
 # @if jp
 # @class ExecutionContextBase
@@ -488,9 +490,9 @@ class ExecutionContextBase:
 
     ret_ = self.onStarted() # Template
     if ret_ != RTC.RTC_OK:
-      self._rtcout.RTC_ERROR("Invoking on_startup() for each RTC failed.")
+      self._rtcout.RTC_ERROR("onStartted() failed. Started EC aborted..")
       self._worker.stop()
-      self._rtcout.RTC_ERROR("on_shutdown() was invoked, because of on_startup")
+      self._rtcout.RTC_ERROR("on_shutdown() was invoked, because of onStarted")
       return ret_
 
     return ret_
@@ -517,7 +519,7 @@ class ExecutionContextBase:
 
     ret_ = self.onStopped() # Template
     if ret_ != RTC.RTC_OK:
-      self._rtcout.RTC_ERROR("Invoking on_shutdown() for each RTC failed.")
+      self._rtcout.RTC_ERROR("onStopped() failed. Stopped EC aborted.")
       return ret_
 
     return ret_
