@@ -131,7 +131,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
 
       if count_ > 1000:
         exctm_ = (t1_ - t0_).getTime().toDouble()
-        slptm_ = self._period.toDouble() - exctm_
+        slptm_ = period_.toDouble() - exctm_
         self._rtcout.RTC_PARANOID("Period:    %f [s]", period_.toDouble())
         self._rtcout.RTC_PARANOID("Execution: %f [s]", exctm_)
         self._rtcout.RTC_PARANOID("Sleep:     %f [s]", slptm_)
