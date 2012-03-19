@@ -20,6 +20,7 @@ from ObjectManager import *
 from SystemLogger import *
 from TimeValue import *
 from TimeMeasure import *
+from ClockManager import *
 from Singleton import *
 from Factory import *
 from GlobalFactory import *
