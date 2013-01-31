@@ -2879,7 +2879,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # bool removeInPort(InPortBase& port);
   def removeInPort(self, port):
     self._rtcout.RTC_TRACE("removeInPort()")
-    ret = self.removePort(inport)
+    ret = self.removePort(port)
 
     if ret:
       for inport in self._inports:
@@ -2918,7 +2918,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # bool removeOutPort(OutPortBase& port);
   def removeOutPort(self, port):
     self._rtcout.RTC_TRACE("removeOutPort()")
-    ret = self.removePort(outport)
+    ret = self.removePort(port)
 
     if ret:
       for outport in self._outports:
