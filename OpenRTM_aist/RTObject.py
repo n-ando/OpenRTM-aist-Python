@@ -509,9 +509,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       return RTC.PRECONDITION_NOT_MET
 
     ret = self.on_initialize()
+    self._created = False
     if ret is not RTC.RTC_OK:
       return ret
-    self._created = False
 
     # -- entering alive state --
     for i in range(len(self._ecMine)):
@@ -634,6 +634,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("exit()")
     if self._created:
       return RTC.PRECONDITION_NOT_MET
+    if self._exiting:
+      return RTC.RTC_OK
 
     # deactivate myself on owned EC
     OpenRTM_aist.CORBA_SeqUtil.for_each(self._ecMine,
@@ -1150,8 +1152,10 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
 
     if self._configsets.haveConfig(active_set):
       self._configsets.update(active_set)
+      self._configsets.activateConfigurationSet(active_set)
     else:
       self._configsets.update("default")
+      self._configsets.activateConfigurationSet("default")
 
     self.postOnInitialize(0,ret)
     return ret
@@ -2598,6 +2602,77 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   ##
   # @if jp
   #
+  # @brief コンフィギュレーションサービスを取得する
+  # 
+  # コンフィギュレーションサービスオブジェクトを取得する。このサービ
+  # スオブジェクトを利用して、コンフィギュレーションパラメータの操作
+  # を行うことができる。主な操作としては、
+  #
+  # - unbindParameter(): パラメータのアンバインド
+  # - update(): パラメータの更新
+  # - update(set_name): 特定のセットの更新
+  # - update(set_name, param_name): 特定のセットのパラメータの更新
+  # - isExist(): パラメータの存在確認
+  # - isChanged(): パラメータが変更されたかの確認
+  # - changedParameters(): 変更されたパラメータのリスト
+  # - getActiveId(): アクティブセット名の取得
+  # - haveConfig(config_id): コンフィグセットを持っているかどうか
+  # - getConfigurationSets(): 全コンフィギュレーションセットの取得
+  # - getConfigurationSet(set_id): 特定セットを取得
+  #
+  # コールバック関連 
+  # - addConfigurationParamListener(): リスナの追加
+  # - removeConfigurationParamListener(): リスナの削除
+  # - addConfigurationSetListener(): リスナの追加
+  # - removeConfigurationSetListener(): リスナの削除
+  # - addConfigurationSetNameListener(): リスナの追加
+  # - removeConfigurationSetNameListener(): リスナの削除
+  #
+  # 詳細はConfigAdminクラスリファレンスを参照のこと。
+  #
+  # @return ConfigAdmin object
+  # 
+  # @else
+  #
+  # @brief Getting configuration service
+  # 
+  # This operation returns configuration service object. By using
+  # this service, user can manipulate configuration
+  # parameters. Mainly the following operations are supported.
+  #
+  # - unbindParameter(): Unbinding parameters
+  # - update(): Updateing parameters
+  # - update(set_name): Updating a specific configuration set
+  # - update(set_name, param_name): Updating specific parameter in a set
+  # - isExist(): Checking existence of a parameter
+  # - isChanged(): Check if a parameter was updated
+  # - changedParameters(): Getting changed parameter list
+  # - getActiveId(): Getting active configuration set name
+  # - haveConfig(config_id): Checking if having a specified configuration set
+  # - getConfigurationSets(): getting all the configuration sets
+  # - getConfigurationSet(set_id): Getting a configuration set
+  #
+  # Callback related member functions
+  # - addConfigurationParamListener(): Adding listener
+  # - removeConfigurationParamListener(): Removing listener
+  # - addConfigurationSetListener(): Adding listener
+  # - removeConfigurationSetListener(): Removing listener
+  # - addConfigurationSetNameListener(): Adding listener
+  # - removeConfigurationSetNameListener(): Removing listener
+  #
+  # See details in the ConfigAdmin class reference
+  #
+  # @return ConfigAdmin object
+  #
+  # @endif
+  #
+  # ConfigAdmin& getConfigService() { return m_configsets; }
+  def getConfigService(self):
+    return self._configsets
+
+  ##
+  # @if jp
+  #
   # @brief コンフィギュレーションパラメータの更新(ID指定)
   # 
   # 指定したIDのコンフィギュレーションセットに設定した値で、
@@ -2804,7 +2879,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # bool removeInPort(InPortBase& port);
   def removeInPort(self, port):
     self._rtcout.RTC_TRACE("removeInPort()")
-    ret = self.removePort(inport)
+    ret = self.removePort(port)
 
     if ret:
       for inport in self._inports:
@@ -2843,7 +2918,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # bool removeOutPort(OutPortBase& port);
   def removeOutPort(self, port):
     self._rtcout.RTC_TRACE("removeOutPort()")
-    ret = self.removePort(outport)
+    ret = self.removePort(port)
 
     if ret:
       for outport in self._outports:

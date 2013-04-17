@@ -403,7 +403,17 @@ class ManagerServant(RTM__POA.Manager):
   # ReturnCode_t delete_component(const char* instance_name)
   def delete_component(self, instance_name):
     self._rtcout.RTC_TRACE("delete_component(%s)", instance_name)
-    self._mgr.deleteComponent(instance_name)
+    comp_ = self._mgr.getComponent(instance_name)
+    if not comp_:
+      self._rtcout.RTC_WARN("No such component exists: %s", instance_name)
+      return RTC.BAD_PARAMETER
+
+    try:
+      comp_.exit()
+    except:
+      self._rtcout.RTC_ERROR("Unknown exception was raised, when RTC was finalized.")
+      return RTC.RTC_ERROR
+
     return RTC.RTC_OK
   
 

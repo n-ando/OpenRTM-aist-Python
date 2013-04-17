@@ -773,7 +773,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
         compIn._sm._sm.goTo(RTC.INACTIVE_STATE)
         count_ = 0
         usec_per_sec_ = 1.0e6
-        sleeptime_ = 10.0 * usec_per_sec_ / float(self.get_rate())
+        sleeptime_ = usec_per_sec_ / float(self.get_rate())
         self._rtcout.RTC_PARANOID("Sleep time is %f [us]", sleeptime_)
         while compIn._sm._sm.isIn(RTC.ACTIVE_STATE):
           self._rtcout.RTC_TRACE("Waiting to be the INACTIVE state %d %f", (count_, float(time.time())))

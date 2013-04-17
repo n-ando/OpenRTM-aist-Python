@@ -11,7 +11,8 @@
 #---------------------------------------
 # パッケージリスト
 #---------------------------------------
-omnipy="python python-omniorb2-omg omniidl4-python omniorb4-nameserver"
+omnipy_old="python python-omniorb2-omg omniidl4-python omniorb4-nameserver"
+omnipy="$omnipy_old python-omniorb-omg omniidl-python omniorb-nameserver"
 openrtm="openrtm-aist-python openrtm-aist-python-example"
 packages="$omnipy $openrtm"
 u_packages="$omnipy $openrtm "
