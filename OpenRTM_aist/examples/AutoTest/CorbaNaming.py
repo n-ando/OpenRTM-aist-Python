@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# -*- Python -*-
+# -*- coding: euc-jp -*-
 
 
 ##
@@ -19,23 +18,25 @@
 import omniORB.CORBA as CORBA
 import CosNaming
 import string
+import sys
+import traceback
 
 ##
 # @if jp
 # @class CorbaNaming
-# @brief CORBA Naming Service εγΠε¦­εγΒε¦Ύεβ―εγ©εβΉ
+# @brief CORBA Naming Service ¥Ψ¥λ¥Ρ΅Ό¥―¥ι¥Ή
 #
-# εαΖεΆ°εβ―εγ©εβΉεα―εΰ΅¤osNaming::NamingContext εα«κ±ΎεαÒε£λεγ©εγ¦ε¥ρεγΌεβ―εγ©εβΉεα§εα¤ε£λεΰ‚
-# CosNaming::NamingContext εαΈθ·αεα¤εβªεγΤε¦®εγΌεβ·εγ§εγ³εα¨εα»εαΌιπΈε΅ψμ«ήκ¦Ώεα®
-# εβªεγΤε¦®εγΌεβ·εγ§εγ³εβΔθ½πθΐΦε΅ωεβ¶εΆªεα¨εβ¤εΆ­εΰΆε¥νεγΌεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ CosNaming::Name
-# εα®θ½£εβΎε£κεα«λφ®η­Ξη―χεα«εβ°ε£λιπΊη±νπ£¨νοΎεβΔη½χεαΒζ»Πε΅ρεβ¶ε¤¬εγΤε¦®εγΌεβ·εγ§εγ³εβ¤θ½πθΐΦε΅ωεβ¶ε€‚
+# ¤³¤Ξ¥―¥ι¥Ή¤Ο΅ΆCosNaming::NamingContext ¤ΛΒΠ¤Ή¤λ¥ι¥Γ¥Ρ΅Ό¥―¥ι¥Ή¤Η¤Ά¤λ΅£
+# CosNaming::NamingContext ¤¬»ύ¤Δ¥ª¥Ϊ¥μ΅Ό¥·¥η¥σ¤Θ¤Ϋ¤άΖ±¤Έµ΅Η½¤Ξ
+# ¥ª¥Ϊ¥μ΅Ό¥·¥η¥σ¤ςΔσ¶΅¤Ή¤λ¤Θ¤Θ¤β¤Λ΅Ά¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ CosNaming::Name
+# ¤ΞΒε¤ο¤κ¤ΛΚΈ»ϊΞσ¤Λ¤θ¤λΜΎΑ°Ι½Έ½¤ςΌυ¤±ΙΥ¤±¤λ¥ª¥Ϊ¥μ΅Ό¥·¥η¥σ¤βΔσ¶΅¤Ή¤λ΅£
 #
-# εβªεγΜε¤Ίεβ§εβ―εγ°εΆ±ντήθ―πλω¤ε€Άε΅βεβ¶ε΅δεα―ντήθ―πνϋ΄κΐΈεΆ­ CORBA εγΊε¦Ύεγ εβµεγΌεγΐεΆ­λξ¥ξΈΤε΅χ
-# θ½¥κΐΈε€Άε΅σεα®εγΊε¦Ύεγ εβµεγΌεγΐεΆ°εγ«εγΌεγ°ε¤µεγ³εγ¬ε¤―εβΉεγ°εΆ­κ±ΎεαΞεΆ¨ξª®εΰªεΆ°εβªεγΤε¦®εγΌεβ·εγ§εγ³
-# εβΔη®¨νπ¬ε΅ωεβ¶ε€‚
-# μΉ±εα¨λΣξκ³¤εα®εγΊε¦Ύεγήε¦µεβ°εβ³εγ³εγ¬ε¤―εβΉεγ°εΆ°θΏΨθ―πεβ¨ε¤¬εγΜε¤Ίεβ§εβ―εγ°εΆ°εγΐε¤¦εγ³εγ²εΆ­εα΄ε΅δεα¦εΰ
-# ρΰΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε΅μκ―ΠηΨªεαΞεΆ¬εα¨η ΄ιπ°εΆ©εβ¤ε€ΆηΌ·ιθ¶νϊ¨εΆ­εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςεγΐε¤¦εγ³εγ‰
-# εαΞιΦ°νϊ¨εΆ°εβ³εγ³εγ¬ε¤―εβΉεγ°ε£δεβªεγΜε¤Ίεβ§εβ―εγ°εΆ°εγΐε¤¦εγ³εγ²ε£ςπ£Έε΅ζεαΖεΆªεβ¤εΆ©εαΊε£λεΰ‚
+# ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΟΐΈΐ®»ώ΅Ά¤Ά¤λ¤¤¤ΟΐΈΐ®ΔΎΈε¤Λ CORBA ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤ΛΐάΒ³¤·
+# °ΚΈε΅Ά¤³¤Ξ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤Ξ¥λ΅Ό¥Θ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ΛΒΠ¤·¤ΖΌο΅Ή¤Ξ¥ª¥Ϊ¥μ΅Ό¥·¥η¥σ
+# ¤ς½θΝύ¤Ή¤λ΅£
+# ΏΌ¤¤³¬ΑΨ¤Ξ¥Ν΅Ό¥ί¥σ¥°¥³¥σ¥Ζ¥­¥Ή¥Θ¤ΞΊξΐ®¤δ¥ª¥Φ¥Έ¥§¥―¥Θ¤Ξ¥Π¥¤¥σ¥Ι¤Λ¤ª¤¤¤Ζ΅Ά
+# ΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤¬ΒΈΊί¤·¤Κ¤¤ΎμΉη¤Η¤β΅Ά¶―ΐ©Εª¤Λ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¥Π¥¤¥σ¥Ι
+# ¤·ΜάΕª¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤δ¥ª¥Φ¥Έ¥§¥―¥Θ¤Ξ¥Π¥¤¥σ¥Ι¤ςΉΤ¤¦¤³¤Θ¤β¤Η¤­¤λ΅£
 #
 # @since 0.4.0
 #
@@ -66,11 +67,11 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief εβ³εγ³εβΉεγ°ε¦«εβ―εβΏ
+  # @brief ¥³¥σ¥Ή¥Θ¥ι¥―¥Ώ
   #
   # @param self
   # @param orb ORB
-  # @param name_server εγΊε¦Ύεγ εβµεγΌεγΐεΆ°ιπΊι§°(εγ®ε¥υεβ©εγ«εγ°η€¤:None)
+  # @param name_server ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤ΞΜΎΎΞ(¥Η¥Υ¥©¥λ¥ΘΓΝ:None)
   #
   # @else
   #
@@ -92,6 +93,7 @@ class CorbaNaming:
           print "CorbaNaming: Failed to narrow the root naming context."
 
       except CORBA.ORB.InvalidName:
+        self.__print_exception()
         print "Service required is invalid [does not exist]."
 
     return
@@ -100,7 +102,7 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief εγ®ε¤»εγ°ε¦«εβ―εβΏ
+  # @brief ¥Η¥Ή¥Θ¥ι¥―¥Ώ
   # 
   # @param self
   # 
@@ -116,12 +118,12 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief εγΊε¦Ύεγήε¦µεβ°εβµεγΌεγΖε¤»εα®ιθΪθΨ΅ιμ–
+  # @brief ¥Ν΅Ό¥ί¥σ¥°¥µ΅Ό¥Σ¥Ή¤Ξ½ι΄ό²½
   # 
-  # λμ®η®Τε΅υεβΈεΆ΅εγΊε¦Ύεγ εβµεγΌεγΐζΈ΄εΆ°εγΊε¦Ύεγήε¦µεβ°εβµεγΌεγΖε¤»εβΔη―ύλόήη·φεαΞεΆΐεαÒε€‚
+  # »ΨΔκ¤µ¤μ¤Ώ¥Ν΅Ό¥ΰ¥µ΅Ό¥ΠΎε¤Ξ¥Ν΅Ό¥ί¥σ¥°¥µ΅Ό¥Σ¥Ή¤ς½ι΄ό²½¤·¤ή¤Ή΅£
   # 
   # @param self
-  # @param name_server εγΊε¦Ύεγ εβµεγΌεγΐεΆ°ιπΊι§°
+  # @param name_server ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤ΞΜΎΎΞ
   # 
   # @else
   # 
@@ -139,43 +141,69 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief Object εβ’ bind εαÒε£λ
+  # @brief ¥λ΅Ό¥Θ¥³¥σ¥Ζ¥­¥Ή¥Θ¤¬ΐΈΒΈ¤·¤Ζ¤¤¤λ¤«¤ςΚΦ¤Ή΅£
+  # 
+  # ¥λ΅Ό¥Θ¥³¥σ¥Ζ¥­¥Ή¥Θ¤¬ΐΈΒΈ¤·¤Ζ¤¤¤λ¤«¤Ξ¥Α¥§¥Γ¥―¤ςΉΤ¤¦΅£
+  # 
+  # @param self
+  # @else
+  # @brief Check on whether the root context is alive.
+  # Check on whether the root context is alive.
+  # @param self
+  # @endif
+  # bool CorbaNaming::isAlive()
+  def isAlive(self):
+    try:
+      if self._rootContext._non_existent():
+        return False
+      return True
+    except:
+      self.__print_exception()
+      return False
+
+    return False
+
+
+  ##
+  # @if jp
   #
-  # CosNaming::bind() εα¨εα»εαΌιπΈι­²εΆ°ιγΊε΅νεβΔε΅ωεβ¶ε΅μεΰΆηΈΈεα«θΊΌε΅θεβ²ε£μεαήε¥νεγΌεγ εβµεγΌεγΐεΆ°
-  # εγ«εγΌεγ°ε¤µεγ³εγ¬ε¤―εβΉεγ°εΆ­κ±ΎεαΞεΆ¨bind()εαΈηΒΎεα³ιηΊεαΚε£μεβ¶ι¤»εαΈιΚ²εαªεβ¶ε€‚
+  # @brief Object ¤ς bind ¤Ή¤λ
   #
-  # Name <name> εα¨ Object <obj> εβΔη½Ζκ©² NamingContext θΊ΄εΆ­εγΐε¤¦εγ³εγ²ε΅ωεβ¶ε€‚
-  # c_n εα n νυªνϋ®εα® NameComponent εβΔε΅βεβ²ε£οεαÒεΆªεαÒε£λεα¨εΰ
-  # name εα n ιΰ¶εΆ° NameComponent εα¶ε£ιλθΐε£λεα¨εαΊε€Άζ»¥θΊ¶εΆ°εβ°ε΅ζεα«λι±εβΎε£μεβ¶ε€‚
+  # CosNaming::bind() ¤Θ¤Ϋ¤άΖ±Εω¤ΞΖ―¤­¤ς¤Ή¤λ¤¬΅ΆΎο¤ΛΝΏ¤¨¤ι¤μ¤Ώ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤Ξ
+  # ¥λ΅Ό¥Θ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ΛΒΠ¤·¤Ζbind()¤¬ΈΖ¤Σ½Π¤µ¤μ¤λΕΐ¤¬°Ϋ¤Κ¤λ΅£
   #
-  # cxt->bind(<c_1, c_2, ... c_n>, obj) εα―θ½¥θΊ¶εΆ°λσΊζ½ΨεΆªιπΈι­²εΆ©εα¤ε£λεΰ‚
+  # Name <name> ¤Θ Object <obj> ¤ςΕφ³Ί NamingContext Ύε¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ΅£
+  # c_n ¤¬ n ΘΦΜά¤Ξ NameComponent ¤ς¤Ά¤ι¤ο¤Ή¤Θ¤Ή¤λ¤Θ΅Ά
+  # name ¤¬ n ΈΔ¤Ξ NameComponent ¤«¤ιΐ®¤λ¤Θ¤­΅Ά°Κ²Ό¤Ξ¤θ¤¦¤Λ°·¤ο¤μ¤λ΅£
+  #
+  # cxt->bind(<c_1, c_2, ... c_n>, obj) ¤Ο°Κ²Ό¤ΞΑΰΊξ¤ΘΖ±Εω¤Η¤Ά¤λ΅£
   # cxt->resolve(<c_1, ... c_(n-1)>)->bind(<c_n>, obj)
   #
-  # εαÒεΆ¬εβΎεΆ£εΰ1νυªνϋ®εα¶ε£ιn-1νυªνϋ®εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςπ©£μ³ΊεαΞε€΅Ο-1νυªνϋ®εα®εβ³εγ³εγ¬ε¤―εβΉεγ
-  # θΊ΄εΆ­ name <n> εα¨εαΞεΆ¨εΰ€obj εβ’ bind εαÒε£λεΰ‚
-  # ιπΊη±νπ©£μ³Ίεα«ιο¤η΄ΆεαÒε£λ <c_1, ... c_(n-1)> εα® NemingContext εα―εΰ
-  # bindContext() εβ„ rebindContext() εα§λχΆεα«εγΐε¤¦εγ³εγ²θΈ°εΆΑεα§εαªεαΒε£μεα°εαªεβ²εΆ¬εα¨ε€‚
-  # εβ¤ε΅χ <c_1, ... c_(n-1)> εα® NamingContext εαΈη­ΠηΨªεαΞεΆ¬εα¨η ΄ιπ°εΆ­εα―εΰ
-  # NotFound θΐ¶η¤Με΅μνωΊντήε΅ωεβ¶ε€‚
+  # ¤Ή¤Κ¤ο¤Α΅Ά1ΘΦΜά¤«¤ιn-1ΘΦΜά¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς²ς·θ¤·΅Άn-1ΘΦΜά¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ
+  # Ύε¤Λ name <n> ¤Θ¤·¤Ζ΅΅obj ¤ς bind ¤Ή¤λ΅£
+  # ΜΎΑ°²ς·θ¤Λ»²²Γ¤Ή¤λ <c_1, ... c_(n-1)> ¤Ξ NemingContext ¤Ο΅Ά
+  # bindContext() ¤δ rebindContext() ¤Η΄ϋ¤Λ¥Π¥¤¥σ¥ΙΊΡ¤ί¤Η¤Κ¤±¤μ¤Π¤Κ¤ι¤Κ¤¤΅£
+  # ¤β¤· <c_1, ... c_(n-1)> ¤Ξ NamingContext ¤¬ΒΈΊί¤·¤Κ¤¤ΎμΉη¤Λ¤Ο΅Ά
+  # NotFound Ξγ³°¤¬Θ―ΐΈ¤Ή¤λ΅£
   #
-  # εαήεΆΆεαΞε€ΆηΌ·ιθ¶εγΐε¤¦εγ³εγ²ε¥υεγ©εβ° force εα true εα®λω¤εΆ±εΰ<c_1, ... c_(n-1)>
-  # εαΈη­ΠηΨªεαΞεΆ¬εα¨η ΄ιπ°εΆ­εβ¤ε€Άη«νκΊ°νϊ¨εΆ­εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςεγΐε¤¦εγ³εγ²ε΅χεαªεαΈε£ιεΰ
-  # λό€ξ·¤ιΣδεα« obj εβΔηΏνιι name <c_n> εα«εγΐε¤¦εγ³εγ²ε΅ωεβ¶ε€‚
+  # ¤Ώ¤ΐ¤·΅Ά¶―ΐ©¥Π¥¤¥σ¥Ι¥Υ¥ι¥° force ¤¬ true ¤Ξ»ώ¤Ο΅Ά<c_1, ... c_(n-1)>
+  # ¤¬ΒΈΊί¤·¤Κ¤¤ΎμΉη¤Λ¤β΅ΆΊΖµΆΕª¤Λ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¥Π¥¤¥σ¥Ι¤·¤Κ¤¬¤ι΅Ά
+  # ΊΗ½ªΕª¤Λ obj ¤ςΜΎΑ° name <c_n> ¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ΅£
   #
-  # εα¨ε΅ϊεβΈεΆ°κΆ΄ιπ°εΆ©εβ¤ε€΅Ο-1νυªνϋ®εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ζΈ΄εΆ­ name<n> εα®εβªεγΜε¤Ίεβ§εβ―εγ
-  # (Object εα¤ε£λεα¨εΆ± εβ³εγ³εγ¬ε¤―εβΉεγ) εαΈε¥πεβ¤εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£μεα°
-  # AlreadyBound θΐ¶η¤Με΅μνωΊντήε΅ωεβ¶ε€‚
+  # ¤¤¤Ί¤μ¤ΞΎμΉη¤Η¤β΅Άn-1ΘΦΜά¤Ξ¥³¥σ¥Ζ¥­¥Ή¥ΘΎε¤Λ name<n> ¤Ξ¥ª¥Φ¥Έ¥§¥―¥Θ
+  # (Object ¤Ά¤λ¤¤¤Ο ¥³¥σ¥Ζ¥­¥Ή¥Θ) ¤¬¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤μ¤Π
+  # AlreadyBound Ξγ³°¤¬Θ―ΐΈ¤Ή¤λ΅£
   #
   # @param self
-  # @param name_list εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ° NameComponent
-  # @param obj ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ‹ Object
-  # @param force trueεα®κΆ΄ιπ°ε€Άλ€ΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςκΎ·ιθ¶νϊ¨εΆ­εγΐε¤¦εγ³εγ²ε΅ωεβ‹
-  #              (εγ®ε¥υεβ©εγ«εγ°η€¤:None)
+  # @param name_list ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ NameComponent
+  # @param obj ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ Object
+  # @param force true¤ΞΎμΉη΅ΆΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¶―ΐ©Εª¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ
+  #              (¥Η¥Υ¥©¥λ¥ΘΓΝ:None)
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² name_list εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
-  # @exception AlreadyBound name <c_n> εα® Object εαΈε΅ωεα§εα«εγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λεΰ‚
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ name_list ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
+  # @exception AlreadyBound name <c_n> ¤Ξ Object ¤¬¤Ή¤Η¤Λ¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λ΅£
   #
   # @else
   #
@@ -205,21 +233,21 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief Object εβ’ bind εαÒε£λ
+  # @brief Object ¤ς bind ¤Ή¤λ
   #
-  # Object εβ’ bind εαÒε£λρϊΦεΆ­θΊΌε΅θεβ¶ηΏνιιΊε΅μλφ®η­Ξη―χπ£¨νοΎεα§εα¤ε£λεαΖεΆªθ½¥κ¦ΜεΆ±εΰ΅Γind()
-  # εα¨ιπΈε΅ψεα§εα¤ε£λεΰ£Γind(toName(string_name), obj) εα¨ξ―²ζΎ΅εΰ‚
+  # Object ¤ς bind ¤Ή¤λΊέ¤ΛΝΏ¤¨¤λΜΎΑ°¤¬ΚΈ»ϊΞσΙ½Έ½¤Η¤Ά¤λ¤³¤Θ°Κ³°¤Ο΅Άbind()
+  # ¤ΘΖ±¤Έ¤Η¤Ά¤λ΅£bind(toName(string_name), obj) ¤ΘΕω²Α΅£
   #
   # @param self
-  # @param string_name εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ°λφ®η­Ξη―χπ£¨νοΎ
-  # @param obj ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ¶ε¤¬εγΜε¤Ίεβ§εβ―εγ
-  # @param force trueεα®κΆ΄ιπ°ε€Άλ€ΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςκΎ·ιθ¶νϊ¨εΆ­εγΐε¤¦εγ³εγ²ε΅ωεβ‹
-  #              (εγ®ε¥υεβ©εγ«εγ°η€¤:true)
+  # @param string_name ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤ΞΚΈ»ϊΞσΙ½Έ½
+  # @param obj ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ¥ª¥Φ¥Έ¥§¥―¥Θ
+  # @param force true¤ΞΎμΉη΅ΆΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¶―ΐ©Εª¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ
+  #              (¥Η¥Υ¥©¥λ¥ΘΓΝ:true)
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² string_name εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
-  # @exception AlreadyBound name <n> εα® Object εαΈε΅ωεα§εα«εγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λεΰ‚
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ string_name ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
+  # @exception AlreadyBound name <n> ¤Ξ Object ¤¬¤Ή¤Η¤Λ¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λ΅£
   #
   # @else
   #
@@ -233,33 +261,33 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief ρΰΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ς bind εαΞεΆ¬εαΈε£ι Object εβ’ bind εαÒε£λ
+  # @brief ΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς bind ¤·¤Κ¤¬¤ι Object ¤ς bind ¤Ή¤λ
   #
-  # context εα§θΊΌε΅θεβ²ε£μεα NamingContext εα«κ±ΎεαΞεΆ¨εΰ΅Οame εα§λμ®η®Τε΅υεβΈεΆ΅
-  # εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ <c_1, ... c_(n-1)> εβ’ NamingContext εα¨εαΞεΆ¨
-  # π©£μ³ΊεαΞεΆ¬εαΈε£ιεΰΆηΏνιι <c_n> εα«κ±ΎεαΞεΆ¨ obj εβ’ bind εαÒε£λεΰ‚
-  # εβ¤ε΅χεΰ<c_1, ... c_(n-1)> εα«κ±ΎκΑΨε΅ωεβ‹ NamingContext εαΈεΆ¬εα¨η ΄ιπ°εΆ­εα―
-  # λφ°εαήεΆ¬ NamingContext εβΔε¥πεβ¤εγ³εγ²ε΅ωεβ¶ε€‚
+  # context ¤ΗΝΏ¤¨¤ι¤μ¤Ώ NamingContext ¤ΛΒΠ¤·¤Ζ΅Άname ¤Η»ΨΔκ¤µ¤μ¤Ώ
+  # ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ <c_1, ... c_(n-1)> ¤ς NamingContext ¤Θ¤·¤Ζ
+  # ²ς·θ¤·¤Κ¤¬¤ι΅ΆΜΎΑ° <c_n> ¤ΛΒΠ¤·¤Ζ obj ¤ς bind ¤Ή¤λ΅£
+  # ¤β¤·΅Ά<c_1, ... c_(n-1)> ¤ΛΒΠ±ώ¤Ή¤λ NamingContext ¤¬¤Κ¤¤ΎμΉη¤Λ¤Ο
+  # Ώ·¤Ώ¤Κ NamingContext ¤ς¥Π¥¤¥σ¥Ι¤Ή¤λ΅£
   #
-  # λό€ξ·¤ιΣδεα« <c_1, c_2, ..., c_(n-1)> εα«κ±ΎκΑΨε΅ωεβ‹ NamingContext εαΈιΘ΅λθ
-  # εαΎεαήεΆ±π©£μ³ΊεαΚε£μεαήζΈ΄εΆ©εΰ΅¤osNaming::bind(<c_n>, object) εαΈηΒΎεα³ιηΊεαΚε£μεβ¶ε€‚
-  # εαΖεΆ°εα¨εαΊε€Άε΅ωεα§εα«εγΐε¤¦εγ³εγ®ε¤¥εγ³εβ°εαΈη­ΠηΨªεαÒε£μεα° AlreadyBoundθΐ¶η¤Με΅μνωΊντήε΅ωεβ¶ε€‚
+  # ΊΗ½ªΕª¤Λ <c_1, c_2, ..., c_(n-1)> ¤ΛΒΠ±ώ¤Ή¤λ NamingContext ¤¬ΐΈΐ®
+  # ¤ή¤Ώ¤Ο²ς·θ¤µ¤μ¤ΏΎε¤Η΅ΆCosNaming::bind(<c_n>, object) ¤¬ΈΖ¤Σ½Π¤µ¤μ¤λ΅£
+  # ¤³¤Ξ¤Θ¤­΅Ά¤Ή¤Η¤Λ¥Π¥¤¥σ¥Η¥£¥σ¥°¤¬ΒΈΊί¤Ή¤μ¤Π AlreadyBoundΞγ³°¤¬Θ―ΐΈ¤Ή¤λ΅£
   #
-  # ρΰΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςπ©£μ³ΊεαÒε£λραΌι¨¶εΆ©εΰΆκ§£μ³ΊεαΞε£θεα¬εΆªεαÒε£λεβ³εγ³εγ¬ε¤―εβΉεγ°εΆª
-  # ιπΈε΅ψιπΊη±νεα® NamingContext εα§εα―εαªεα„ Binding εαΈη­ΠηΨªεαÒε£λκΆ΄ιπ°ε€
-  # CannotProceed θΐ¶η¤Με΅μνωΊντήε΅χιη¦νπ¬ε£ςθΊ­μ―ΆεαÒε£λεΰ‚
+  # ΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς²ς·θ¤Ή¤λ²αΔψ¤Η΅Ά²ς·θ¤·¤θ¤¦¤Θ¤Ή¤λ¥³¥σ¥Ζ¥­¥Ή¥Θ¤Θ
+  # Ζ±¤ΈΜΎΑ°¤Ξ NamingContext ¤Η¤Ο¤Κ¤¤ Binding ¤¬ΒΈΊί¤Ή¤λΎμΉη΅Ά
+  # CannotProceed Ξγ³°¤¬Θ―ΐΈ¤·½θΝύ¤ςΓζ»ί¤Ή¤λ΅£
   #
   # @param self
-  # @param context bind εβΔλΛλκ©¶ε΅ωεβ¶ε€€NamingContext
-  # @param name_list εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ°εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ
-  # @param obj ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ¶ε¤¬εγΜε¤Ίεβ§εβ―εγ
+  # @param context bind ¤ς³«»Ο¤Ή¤λ΅΅NamingContext
+  # @param name_list ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ
+  # @param obj ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ¥ª¥Φ¥Έ¥§¥―¥Θ
   #
-  # @exception CannotProceed <c_1, ..., c_(n-1)> εα«κ±ΎκΑΨε΅ωεβ‹ NamingContext 
-  #            εα®εα¬εΆ£εα²εα¨εα¤εαΈε€Άε΅ωεα§εα« NamingContext θ½¥κ¦ΜεΆ° object εα«εγΐε¤¦εγ³εγ‰
-  #            εαΚε£μεα¦εα΄ε£κεΰΆη®¨νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName ιπΊη±ν name_list εαΈζΈΊθ­£
-  # @exception AlreadyBound name <c_n> εα«εαÒεΆ©εα«θΏΚε£ιεα¶εΆ° object εαΈε¥πεβ¤εγ³εγ‰
-  #            εαΚε£μεα¦εα¨ε£λεΰ‚
+  # @exception CannotProceed <c_1, ..., c_(n-1)> ¤ΛΒΠ±ώ¤Ή¤λ NamingContext 
+  #            ¤Ξ¤¦¤Α¤Ò¤Θ¤Δ¤¬΅Ά¤Ή¤Η¤Λ NamingContext °Κ³°¤Ξ object ¤Λ¥Π¥¤¥σ¥Ι
+  #            ¤µ¤μ¤Ζ¤ª¤κ΅Ά½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName ΜΎΑ° name_list ¤¬ΙΤΐµ
+  # @exception AlreadyBound name <c_n> ¤Λ¤Ή¤Η¤Λ²Ώ¤ι¤«¤Ξ object ¤¬¥Π¥¤¥σ¥Ι
+  #            ¤µ¤μ¤Ζ¤¤¤λ΅£
   # @else
   #
   # @brief
@@ -286,21 +314,21 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief Object εβ’ rebind εαÒε£λ
+  # @brief Object ¤ς rebind ¤Ή¤λ
   #
-  # name_list εα§λμ®η®Τε΅υεβΈεΆ΅ Binding εαΈε΅ωεα§εα«κ―ΠηΨªεαÒε£λκΆ΄ιπ°ε£ςρω¤εα¨εΆ¨ bind() εα¨ιπΈε΅ψ
-  # εα§εα¤ε£λεΰ¤ε¥πεβ¤εγ³εγ®ε¤¥εγ³εβ°εαΈε΅ωεα§εα«κ―ΠηΨªεαÒε£λκΆ΄ιπ°εΆ­εα―εΰΆθΜ²εαΞε΅δεγΐε¤¦εγ³εγ®ε¤¥εγ³εβ°εα«
-  # ξΏ®εαΊθ½ϋεα°ε£ιεβΈε£λεΰ‚
+  # name_list ¤Η»ΨΔκ¤µ¤μ¤Ώ Binding ¤¬¤Ή¤Η¤ΛΒΈΊί¤Ή¤λΎμΉη¤ς½ό¤¤¤Ζ bind() ¤ΘΖ±¤Έ
+  # ¤Η¤Ά¤λ΅£¥Π¥¤¥σ¥Η¥£¥σ¥°¤¬¤Ή¤Η¤ΛΒΈΊί¤Ή¤λΎμΉη¤Λ¤Ο΅ΆΏ·¤·¤¤¥Π¥¤¥σ¥Η¥£¥σ¥°¤Λ
+  # ΓΦ¤­΄Ή¤¨¤ι¤μ¤λ΅£
   #
   # @param self
-  # @param name_list εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ° NameComponent
-  # @param obj ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ¶ε¤¬εγΜε¤Ίεβ§εβ―εγ
-  # @param force trueεα®κΆ΄ιπ°ε€Άλ€ΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςκΎ·ιθ¶νϊ¨εΆ­εγΐε¤¦εγ³εγ²ε΅ωεβ‹
-  #              (εγ®ε¥υεβ©εγ«εγ°η€¤:true)
+  # @param name_list ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ NameComponent
+  # @param obj ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ¥ª¥Φ¥Έ¥§¥―¥Θ
+  # @param force true¤ΞΎμΉη΅ΆΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¶―ΐ©Εª¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ
+  #              (¥Η¥Υ¥©¥λ¥ΘΓΝ:true)
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName ιπΊη±ν name_list εαΈζΈΊθ­£
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName ΜΎΑ° name_list ¤¬ΙΤΐµ
   #
   # @else
   #
@@ -318,12 +346,14 @@ class CorbaNaming:
       if force:
         self.rebindRecursive(self._rootContext, name_list, obj)
       else:
+        self.__print_exception()
         raise
 
     except CosNaming.NamingContext.CannotProceed, err:
       if force:
         self.rebindRecursive(err.cxt, err,rest_of_name, obj)
       else:
+        self.__print_exception()
         raise
       
     return
@@ -332,20 +362,20 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief Object εβ’ rebind εαÒε£λ
+  # @brief Object ¤ς rebind ¤Ή¤λ
   #
-  # Object εβ’ rebind εαÒε£λρϊΦεΆ­θΊΌε΅θεβ¶ηΏνιιΊε΅μλφ®η­Ξη―χπ£¨νοΎεα§εα¤ε£λεαΖεΆªθ½¥κ¦ΜεΆ± rebind()
-  # εα¨ιπΈε΅ψεα§εα¤ε£λεΰ£Σebind(toName(string_name), obj) εα¨ξ―²ζΎ΅εΰ‚
+  # Object ¤ς rebind ¤Ή¤λΊέ¤ΛΝΏ¤¨¤λΜΎΑ°¤¬ΚΈ»ϊΞσΙ½Έ½¤Η¤Ά¤λ¤³¤Θ°Κ³°¤Ο rebind()
+  # ¤ΘΖ±¤Έ¤Η¤Ά¤λ΅£rebind(toName(string_name), obj) ¤ΘΕω²Α΅£
   #
   # @param self
-  # @param string_name εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ°λφ®η­Ξη―χπ£¨νοΎ
-  # @param obj ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ¶ε¤¬εγΜε¤Ίεβ§εβ―εγ
-  # @param force trueεα®κΆ΄ιπ°ε€Άλ€ΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςκΎ·ιθ¶νϊ¨εΆ­εγΐε¤¦εγ³εγ²ε΅ωεβ‹
-  #              (εγ®ε¥υεβ©εγ«εγ°η€¤:true)
+  # @param string_name ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤ΞΚΈ»ϊΞσΙ½Έ½
+  # @param obj ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ¥ª¥Φ¥Έ¥§¥―¥Θ
+  # @param force true¤ΞΎμΉη΅ΆΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¶―ΐ©Εª¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ
+  #              (¥Η¥Υ¥©¥λ¥ΘΓΝ:true)
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² string_name εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ string_name ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
   #
   # @else
   #
@@ -361,21 +391,21 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief ρΰΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ς bind εαΞεΆ¬εαΈε£ι Object εβ’ rebind εαÒε£λ
+  # @brief ΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς bind ¤·¤Κ¤¬¤ι Object ¤ς rebind ¤Ή¤λ
   #
-  # name_list <c_n> εα§λμ®η®Τε΅υεβΈεΆ΅ NamingContext εβ¤ε΅χεαΎεΆ± Object εαΈε΅ωεα§εα«κ―ΠηΨªεαÒε£λ
-  # κΆ΄ιπ°ε£ςρω¤εα¨εΆ¨ bindRecursive() εα¨ιπΈε΅ψεα§εα¤ε£λεΰ‚
+  # name_list <c_n> ¤Η»ΨΔκ¤µ¤μ¤Ώ NamingContext ¤β¤·¤―¤Ο Object ¤¬¤Ή¤Η¤ΛΒΈΊί¤Ή¤λ
+  # ΎμΉη¤ς½ό¤¤¤Ζ bindRecursive() ¤ΘΖ±¤Έ¤Η¤Ά¤λ΅£
   #
-  # name_list <c_n> εα§λμ®η®Τε΅υεβΈεΆ΅εγΐε¤¦εγ³εγ®ε¤¥εγ³εβ°εαΈε΅ωεα§εα«κ―ΠηΨªεαÒε£λκΆ΄ιπ°εΆ­εα―εΰ
-  # λφ°εαΞε΅δεγΐε¤¦εγ³εγ®ε¤¥εγ³εβ°εα«ξΏ®εαΊθ½ϋεα°ε£ιεβΈε£λεΰ‚
+  # name_list <c_n> ¤Η»ΨΔκ¤µ¤μ¤Ώ¥Π¥¤¥σ¥Η¥£¥σ¥°¤¬¤Ή¤Η¤ΛΒΈΊί¤Ή¤λΎμΉη¤Λ¤Ο΅Ά
+  # Ώ·¤·¤¤¥Π¥¤¥σ¥Η¥£¥σ¥°¤ΛΓΦ¤­΄Ή¤¨¤ι¤μ¤λ΅£
   #
   # @param self
-  # @param context bind εβΔλΛλκ©¶ε΅ωεβ¶ε€€NamingContext
-  # @param name_list εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ° NameComponent
-  # @param obj ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ¶ε¤¬εγΜε¤Ίεβ§εβ―εγ
+  # @param context bind ¤ς³«»Ο¤Ή¤λ΅΅NamingContext
+  # @param name_list ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ NameComponent
+  # @param obj ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ¥ª¥Φ¥Έ¥§¥―¥Θ
   #
-  # @exception CannotProceed ρΰΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε΅μπ©£μ³Ίεα§εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName θΊΌε΅θεβ²ε£μεα name_list εαΈζΈΊθ­£εΰ‚
+  # @exception CannotProceed ΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤¬²ς·θ¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName ΝΏ¤¨¤ι¤μ¤Ώ name_list ¤¬ΙΤΐµ΅£
   #
   # @else
   #
@@ -403,21 +433,21 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief NamingContext εβ’ bind εαÒε£λ
+  # @brief NamingContext ¤ς bind ¤Ή¤λ
   #
-  # bind κ±Ύπ³΅εα¨εαΞεΆ¨λμ®η®Τε΅υεβΈεΆ΅κΎΚθΚ² name εαΈθΛηκ―Ξη―χεα®κΆ΄ιπ°εΆ± bindByString() εα¨εΰ
-  # εαΪε£μθ½¥κ¦ΜεΆ°κΆ΄ιπ°εΆ± bind() εα¨ιπΈε΅ψεα§εα¤ε£λεΰ‚
+  # bind ΒΠΎέ¤Θ¤·¤Ζ»ΨΔκ¤µ¤μ¤Ώ°ϊΏτ name ¤¬ΚΈ»ϊΞσ¤ΞΎμΉη¤Ο bindByString() ¤Θ΅Ά
+  # ¤½¤μ°Κ³°¤ΞΎμΉη¤Ο bind() ¤ΘΖ±¤Έ¤Η¤Ά¤λ΅£
   #
   # @param self
-  # @param name εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιι
-  # @param name_cxt ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ‹ NamingContext
-  # @param force trueεα®κΆ΄ιπ°ε€Άλ€ΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςκΎ·ιθ¶νϊ¨εΆ­εγΐε¤¦εγ³εγ²ε΅ωεβ‹
-  #              (εγ®ε¥υεβ©εγ«εγ°η€¤:True)
+  # @param name ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°
+  # @param name_cxt ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ NamingContext
+  # @param force true¤ΞΎμΉη΅ΆΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¶―ΐ©Εª¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ
+  #              (¥Η¥Υ¥©¥λ¥ΘΓΝ:True)
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² name εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
-  # @exception AlreadyBound name <c_n> εα® Object εαΈε΅ωεα§εα«εγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λεΰ‚
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ name ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
+  # @exception AlreadyBound name <c_n> ¤Ξ Object ¤¬¤Ή¤Η¤Λ¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λ΅£
   #
   # @else
   #
@@ -435,15 +465,15 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief NamingContext εβ’ bind εαÒε£λ
+  # @brief NamingContext ¤ς bind ¤Ή¤λ
   #
-  # bind εαΚε£μεβ¶ε¤¬εγΜε¤Ίεβ§εβ―εγ°ε΅μ NamingContext εα§εα¤ε£λεαΖεΆªεβΔλÒ¦εα¨εΆ¨
-  # bindRecursive() εα¨ιπΈε΅ψεα§εα¤ε£λεΰ‚
+  # bind ¤µ¤μ¤λ¥ª¥Φ¥Έ¥§¥―¥Θ¤¬ NamingContext ¤Η¤Ά¤λ¤³¤Θ¤ς½ό¤¤¤Ζ
+  # bindRecursive() ¤ΘΖ±¤Έ¤Η¤Ά¤λ΅£
   #
   # @param self
-  # @param context bind εβΔλΛλκ©¶ε΅ωεβ¶ε€€NamingContext
-  # @param name_list εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ°εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ
-  # @param name_cxt ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ‹ NamingContext
+  # @param context bind ¤ς³«»Ο¤Ή¤λ΅΅NamingContext
+  # @param name_list ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ
+  # @param name_cxt ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ NamingContext
   #
   # @else
   #
@@ -458,22 +488,22 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief NamingContext εβ’ rebind εαÒε£λ
+  # @brief NamingContext ¤ς rebind ¤Ή¤λ
   #
-  # bind κ±Ύπ³΅εα¨εαΞεΆ¨λμ®η®Τε΅υεβΈεΆ΅κΎΚθΚ² name εαΈθΛηκ―Ξη―χεα®κΆ΄ιπ°εΆ± rebindByString() εα¨εΰ
-  # εαΪε£μθ½¥κ¦ΜεΆ°κΆ΄ιπ°εΆ± rebind() εα¨ιπΈε΅ψεα§εα¤ε£λεΰ‚
-  # εα©εα΅εβ²εΆ°κΆ΄ιπ°ε£βεγΐε¤¦εγ³εγ®ε¤¥εγ³εβ°εαΈε΅ωεα§εα«κ―ΠηΨªεαÒε£λκΆ΄ιπ°εΆ­εα―εΰ
-  # λφ°εαΞε΅δεγΐε¤¦εγ³εγ®ε¤¥εγ³εβ°εα«ξΏ®εαΊθ½ϋεα°ε£ιεβΈε£λεΰ‚
+  # bind ΒΠΎέ¤Θ¤·¤Ζ»ΨΔκ¤µ¤μ¤Ώ°ϊΏτ name ¤¬ΚΈ»ϊΞσ¤ΞΎμΉη¤Ο rebindByString() ¤Θ΅Ά
+  # ¤½¤μ°Κ³°¤ΞΎμΉη¤Ο rebind() ¤ΘΖ±¤Έ¤Η¤Ά¤λ΅£
+  # ¤Ι¤Α¤ι¤ΞΎμΉη¤β¥Π¥¤¥σ¥Η¥£¥σ¥°¤¬¤Ή¤Η¤ΛΒΈΊί¤Ή¤λΎμΉη¤Λ¤Ο΅Ά
+  # Ώ·¤·¤¤¥Π¥¤¥σ¥Η¥£¥σ¥°¤ΛΓΦ¤­΄Ή¤¨¤ι¤μ¤λ΅£
   #
   # @param self
-  # @param name εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ°εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ
-  # @param name_cxt ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ‹ NamingContext
-  # @param force trueεα®κΆ΄ιπ°ε€Άλ€ΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςκΎ·ιθ¶νϊ¨εΆ­εγΐε¤¦εγ³εγ²ε΅ωεβ‹
-  #              (εγ®ε¥υεβ©εγ«εγ°η€¤:true)
+  # @param name ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ
+  # @param name_cxt ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ NamingContext
+  # @param force true¤ΞΎμΉη΅ΆΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¶―ΐ©Εª¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ
+  #              (¥Η¥Υ¥©¥λ¥ΘΓΝ:true)
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² name εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ name ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
   #
   # @else
   #
@@ -489,14 +519,14 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief ρΰΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςιζΊηΈ°νϊ¨εΆ­ rebind εα— NamingContext εβ’ rebind εαÒε£λ    #
-  # bind εαΚε£μεβ¶ε¤¬εγΜε¤Ίεβ§εβ―εγ°ε΅μ NamingContext εα§εα¤ε£λεαΖεΆªεβΔλÒ¦εα¨εΆ¨
-  # rebindRecursive() εα¨ιπΈε΅ψεα§εα¤ε£λεΰ‚
+  # @brief ΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ςΊΖµΆΕª¤Λ rebind ¤· NamingContext ¤ς rebind ¤Ή¤λ    #
+  # bind ¤µ¤μ¤λ¥ª¥Φ¥Έ¥§¥―¥Θ¤¬ NamingContext ¤Η¤Ά¤λ¤³¤Θ¤ς½ό¤¤¤Ζ
+  # rebindRecursive() ¤ΘΖ±¤Έ¤Η¤Ά¤λ΅£
   #
   # @param self
-  # @param context bind εβΔλΛλκ©¶ε΅ωεβ¶ε€€NamingContext
-  # @param name_list εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ° NameComponent
-  # @param name_cxt ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ‹ NamingContext
+  # @param context bind ¤ς³«»Ο¤Ή¤λ΅΅NamingContext
+  # @param name_list ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ NameComponent
+  # @param name_cxt ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ NamingContext
   #
   # @else
   #
@@ -511,26 +541,26 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief Object εβ’ name εα¶ε£ιπ©£μ³ΊεαÒε£λ
+  # @brief Object ¤ς name ¤«¤ι²ς·θ¤Ή¤λ
   #
-  # name εα« bind εαΚε£μεα¦εα¨ε£λεβªεγΜε¤Ίεβ§εβ―εγ°η½βνε§εβΔκΏΘε΅ωεΰ‚
-  # εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ <c_1, c_2, ... c_n> εα―ιζΊηΈ°νϊ¨εΆ­π©£μ³ΊεαΚε£μεβ¶ε€‚
+  # name ¤Λ bind ¤µ¤μ¤Ζ¤¤¤λ¥ª¥Φ¥Έ¥§¥―¥Θ»²ΎΘ¤ςΚΦ¤Ή΅£
+  # ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ <c_1, c_2, ... c_n> ¤ΟΊΖµΆΕª¤Λ²ς·θ¤µ¤μ¤λ΅£
   # 
-  # κΎΚθΚ² name εα«θΊΌε΅θεβ²ε£μεαήη€¤εαΈθΛηκ―Ξη―χεα®κΆ΄ιπ°εΆ­εα―εαΎεαΤθΧΰιθΪεΆ­ toName() εα«εβ°εΆ¥εα¦
-  # NameComponent εα«κ¦²θ½ϋεαΚε£μεβ¶ε€‚
+  # °ϊΏτ name ¤ΛΝΏ¤¨¤ι¤μ¤ΏΓΝ¤¬ΚΈ»ϊΞσ¤ΞΎμΉη¤Λ¤Ο¤ή¤ΊΊΗ½ι¤Λ toName() ¤Λ¤θ¤Γ¤Ζ
+  # NameComponent ¤ΛΚΡ΄Ή¤µ¤μ¤λ΅£
   # 
-  # CosNaming::resolve() εα¨εα»εαΌιπΈι­²εΆ°ιγΊε΅νεβΔε΅ωεβ¶ε΅μεΰΆηΈΈεα«θΊΌε΅θεβ²ε£μεα
-  # εγΊε¦Ύεγ εβµεγΌεγΐεΆ°εγ«εγΌεγ°ε¤µεγ³εγ¬ε¤―εβΉεγ°εΆ­κ±ΎεαΞεΆ¨ resolve() εαΈηΒΎεα³ιηΊεαΚε£μεβ¶ι¤»εα
-  # νυ°εαªεβ¶ε€‚
+  # CosNaming::resolve() ¤Θ¤Ϋ¤άΖ±Εω¤ΞΖ―¤­¤ς¤Ή¤λ¤¬΅ΆΎο¤ΛΝΏ¤¨¤ι¤μ¤Ώ
+  # ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤Ξ¥λ΅Ό¥Θ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ΛΒΠ¤·¤Ζ resolve() ¤¬ΈΖ¤Σ½Π¤µ¤μ¤λΕΐ¤¬
+  # °Ϋ¤Κ¤λ΅£
   #
   # @param self
-  # @param name π©£μ³ΊεαÒεΆ»εαΊε¤¬εγΜε¤Ίεβ§εβ―εγ°εΆ°ιπΊη±νεα®εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ
+  # @param name ²ς·θ¤Ή¤Ω¤­¥ª¥Φ¥Έ¥§¥―¥Θ¤ΞΜΎΑ°¤Ξ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ
   #
-  # @return π©£μ³ΊεαΚε£μεαήε¤¬εγΜε¤Ίεβ§εβ―εγ°η½βνε§
+  # @return ²ς·θ¤µ¤μ¤Ώ¥ª¥Φ¥Έ¥§¥―¥Θ»²ΎΘ
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² name εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ name ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
   #
   # @else
   #
@@ -545,30 +575,31 @@ class CorbaNaming:
       obj = self._rootContext.resolve(name_)
       return obj
     except CosNaming.NamingContext.NotFound, ex:
+      self.__print_exception()
       return None
 
 
   ##
   # @if jp
   #
-  # @brief λμ®η®Τε΅υεβΈεΆ΅ιπΊη±νεα®εβªεγΜε¤Ίεβ§εβ―εγ°εΆ° bind εβΔκ§£ρω¤εαÒε£λ
+  # @brief »ΨΔκ¤µ¤μ¤ΏΜΎΑ°¤Ξ¥ª¥Φ¥Έ¥§¥―¥Θ¤Ξ bind ¤ς²ς½ό¤Ή¤λ
   #
-  # name εα« bind εαΚε£μεα¦εα¨ε£λεβªεγΜε¤Ίεβ§εβ―εγ°η½βνε§εβΔκ§£ρω¤εαÒε£λεΰ‚
-  # εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ <c_1, c_2, ... c_n> εα―ιζΊηΈ°νϊ¨εΆ­π©£μ³ΊεαΚε£μεβ¶ε€‚
+  # name ¤Λ bind ¤µ¤μ¤Ζ¤¤¤λ¥ª¥Φ¥Έ¥§¥―¥Θ»²ΎΘ¤ς²ς½ό¤Ή¤λ΅£
+  # ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ <c_1, c_2, ... c_n> ¤ΟΊΖµΆΕª¤Λ²ς·θ¤µ¤μ¤λ΅£
   # 
-  # κΎΚθΚ² name εα«θΊΌε΅θεβ²ε£μεαήη€¤εαΈθΛηκ―Ξη―χεα®κΆ΄ιπ°εΆ­εα―εαΎεαΤθΧΰιθΪεΆ­ toName() εα«εβ°εΆ¥εα¦
-  # NameComponent εα«κ¦²θ½ϋεαΚε£μεβ¶ε€‚
+  # °ϊΏτ name ¤ΛΝΏ¤¨¤ι¤μ¤ΏΓΝ¤¬ΚΈ»ϊΞσ¤ΞΎμΉη¤Λ¤Ο¤ή¤ΊΊΗ½ι¤Λ toName() ¤Λ¤θ¤Γ¤Ζ
+  # NameComponent ¤ΛΚΡ΄Ή¤µ¤μ¤λ΅£
   # 
-  # CosNaming::unbind() εα¨εα»εαΌιπΈι­²εΆ°ιγΊε΅νεβΔε΅ωεβ¶ε΅μεΰΆηΈΈεα«θΊΌε΅θεβ²ε£μεα
-  # εγΊε¦Ύεγ εβµεγΌεγΐεΆ°εγ«εγΌεγ°ε¤µεγ³εγ¬ε¤―εβΉεγ°εΆ­κ±ΎεαΞεΆ¨ unbind() εαΈηΒΎεα³ιηΊεαΚε£μεβ¶ι¤»εα
-  # νυ°εαªεβ¶ε€‚
+  # CosNaming::unbind() ¤Θ¤Ϋ¤άΖ±Εω¤ΞΖ―¤­¤ς¤Ή¤λ¤¬΅ΆΎο¤ΛΝΏ¤¨¤ι¤μ¤Ώ
+  # ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤Ξ¥λ΅Ό¥Θ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ΛΒΠ¤·¤Ζ unbind() ¤¬ΈΖ¤Σ½Π¤µ¤μ¤λΕΐ¤¬
+  # °Ϋ¤Κ¤λ΅£
   #
   # @param self
-  # @param name ιι΄λÒ¦εαÒε£λεβªεγΜε¤Ίεβ§εβ―εγ°εΆ°εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ
+  # @param name Ίο½ό¤Ή¤λ¥ª¥Φ¥Έ¥§¥―¥Θ¤Ξ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² name εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ name ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
   #
   # @else
   #
@@ -581,21 +612,25 @@ class CorbaNaming:
     else:
       name_ = name
 
-    self._rootContext.unbind(name_)
+    try:
+      self._rootContext.unbind(name_)
+    except:
+      self.__print_exception()
+
     return
 
 
   ##
   # @if jp
   #
-  # @brief λφ°εαΞε΅δεβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςντήθ―πεαÒε£λ
+  # @brief Ώ·¤·¤¤¥³¥σ¥Ζ¥­¥Ή¥Θ¤ςΐΈΐ®¤Ή¤λ
   #
-  # θΊΌε΅θεβ²ε£μεαήε¥νεγΌεγ εβµεγΌεγΐζΈ΄εΆ©ντήθ―πεαΚε£μεα NamingContext εβΔκΏΘε΅ωεΰ‚
-  # πΑΘε΅υεβΈεΆ΅ NamingContext εα― bind εαΚε£μεα¦εα¨εΆ¬εα¨ε€‚
+  # ΝΏ¤¨¤ι¤μ¤Ώ¥Ν΅Ό¥ΰ¥µ΅Ό¥ΠΎε¤ΗΐΈΐ®¤µ¤μ¤Ώ NamingContext ¤ςΚΦ¤Ή΅£
+  # ΚΦ¤µ¤μ¤Ώ NamingContext ¤Ο bind ¤µ¤μ¤Ζ¤¤¤Κ¤¤΅£
   # 
   # @param self
   # 
-  # @return ντήθ―πεαΚε£μεαήθΜ²εαΞε΅δ NamingContext
+  # @return ΐΈΐ®¤µ¤μ¤ΏΏ·¤·¤¤ NamingContext
   #
   # @else
   #
@@ -607,25 +642,25 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief λφ°εαΞε΅δεβ³εγ³εγ¬ε¤―εβΉεγ°ε£ς bind εαÒε£λ
+  # @brief Ώ·¤·¤¤¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς bind ¤Ή¤λ
   #
-  # θΊΌε΅θεβ²ε£μεα name εα«κ±ΎεαΞεΆ¨λφ°εαΞε΅δεβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςεγΐε¤¦εγ³εγ²ε΅ωεβ¶ε€‚
-  # ντήθ―πεαΚε£μεαήε€€NamingContext εα―εγΊε¦Ύεγ εβµεγΌεγΐζΈ΄εΆ©ντήθ―πεαΚε£μεαήε£βεα®εα§εα¤ε£λεΰ‚
+  # ΝΏ¤¨¤ι¤μ¤Ώ name ¤ΛΒΠ¤·¤ΖΏ·¤·¤¤¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¥Π¥¤¥σ¥Ι¤Ή¤λ΅£
+  # ΐΈΐ®¤µ¤μ¤Ώ΅΅NamingContext ¤Ο¥Ν΅Ό¥ΰ¥µ΅Ό¥ΠΎε¤ΗΐΈΐ®¤µ¤μ¤Ώ¤β¤Ξ¤Η¤Ά¤λ΅£
   # 
-  # κΎΚθΚ² name εα«θΊΌε΅θεβ²ε£μεαήη€¤εαΈθΛηκ―Ξη―χεα®κΆ΄ιπ°εΆ­εα―εαΎεαΤθΧΰιθΪεΆ­ toName() εα«εβ°εΆ¥εα¦
-  # NameComponent εα«κ¦²θ½ϋεαΚε£μεβ¶ε€‚
+  # °ϊΏτ name ¤ΛΝΏ¤¨¤ι¤μ¤ΏΓΝ¤¬ΚΈ»ϊΞσ¤ΞΎμΉη¤Λ¤Ο¤ή¤ΊΊΗ½ι¤Λ toName() ¤Λ¤θ¤Γ¤Ζ
+  # NameComponent ¤ΛΚΡ΄Ή¤µ¤μ¤λ΅£
   # 
   # @param self
-  # @param name NamingContextεα«θ½Πε΅ρεβ¶ηΏνιιΊεΆ°εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ
-  # @param force trueεα®κΆ΄ιπ°ε€Άλ€ΘζΈ­εα®εβ³εγ³εγ¬ε¤―εβΉεγ°ε£ςκΎ·ιθ¶νϊ¨εΆ­εγΐε¤¦εγ³εγ²ε΅ωεβ‹
-  #              (εγ®ε¥υεβ©εγ«εγ°η€¤:true)
+  # @param name NamingContext¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ
+  # @param force true¤ΞΎμΉη΅ΆΕΣΓζ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ς¶―ΐ©Εª¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ
+  #              (¥Η¥Υ¥©¥λ¥ΘΓΝ:true)
   #
-  # @return ντήθ―πεαΚε£μεαήθΜ²εαΞε΅δ NamingContext
+  # @return ΐΈΐ®¤µ¤μ¤ΏΏ·¤·¤¤ NamingContext
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² name εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
-  # @exception AlreadyBound name <n> εα® Object εαΈε΅ωεα§εα«εγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λεΰ‚
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ name ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
+  # @exception AlreadyBound name <n> ¤Ξ Object ¤¬¤Ή¤Η¤Λ¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λ΅£
   #
   # @else
   #
@@ -645,11 +680,13 @@ class CorbaNaming:
       if force:
         self.bindRecursive(self._rootContext, name_, self.newContext())
       else:
+        self.__print_exception()
         raise
     except CosNaming.NamingContext.CannotProceed, err:
       if force:
         self.bindRecursive(err.cxt, err.rest_of_name, self.newContext())
       else:
+        self.__print_exception()
         raise
     return None
 
@@ -657,16 +694,16 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief NamingContext εβΔλΩώεβΆεβ―εγ¬ε¤¥εγΜη·φεαÒε£λ
+  # @brief NamingContext ¤ςΘσ¥Ά¥―¥Ζ¥£¥Φ²½¤Ή¤λ
   #
-  # context εα§λμ®η®Τε΅υεβΈεΆ΅ NamingContext εβΔλΩώεβΆεβ―εγ¬ε¤¥εγΜη·φεαÒε£λεΰ‚
-  # context εα«θ½ΜεΆ°εβ³εγ³εγ¬ε¤―εβΉεγ°ε΅μεγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λκΆ΄ιπ°εΆ± NotEmpty θΐ¶η¤Με΅μ
-  # νωΊντήε΅ωεβ¶ε€‚
+  # context ¤Η»ΨΔκ¤µ¤μ¤Ώ NamingContext ¤ςΘσ¥Ά¥―¥Ζ¥£¥Φ²½¤Ή¤λ΅£
+  # context ¤ΛΒΎ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤¬¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λΎμΉη¤Ο NotEmpty Ξγ³°¤¬
+  # Θ―ΐΈ¤Ή¤λ΅£
   # 
   # @param self
-  # @param context ρύάε¤¤εβ―εγ¬ε¤¥εγΜη·φεαÒε£λ NamingContext
+  # @param context Θσ¥Ά¥―¥Ζ¥£¥Φ²½¤Ή¤λ NamingContext
   #
-  # @exception NotEmpty κ±Ύπ³΅context εα«θ½ΜεΆ°εβ³εγ³εγ¬ε¤―εβΉεγ°ε΅μεγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λεΰ‚
+  # @exception NotEmpty ΒΠΎέcontext ¤ΛΒΎ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤¬¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λ΅£
   #
   # @else
   #
@@ -691,19 +728,19 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief NamingContext εβΔη«νκΊ°νϊ¨εΆ­θΊ¶εΆ¥εα¦ρύάε¤¤εβ―εγ¬ε¤¥εγΜη·φεαÒε£λ
+  # @brief NamingContext ¤ςΊΖµΆΕª¤Λ²Ό¤Γ¤ΖΘσ¥Ά¥―¥Ζ¥£¥Φ²½¤Ή¤λ
   #
-  # context εα§θΊΌε΅θεβ²ε£μεα NamingContext εα«κ±ΎεαΞεΆ¨εΰ΅Οame εα§λμ®η®Τε΅υεβΈεΆ΅
-  # εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ <c_1, ... c_(n-1)> εβ’ NamingContext εα¨εαΞεΆ¨
-  # π©£μ³ΊεαΞεΆ¬εαΈε£ιεΰΆηΏνιι <c_n> εα«κ±ΎεαΞεΆ¨ ρύάε¤¤εβ―εγ¬ε¤¥εγΜη·φεβΔκ΅Έε΅ζεΰ‚
+  # context ¤ΗΝΏ¤¨¤ι¤μ¤Ώ NamingContext ¤ΛΒΠ¤·¤Ζ΅Άname ¤Η»ΨΔκ¤µ¤μ¤Ώ
+  # ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ <c_1, ... c_(n-1)> ¤ς NamingContext ¤Θ¤·¤Ζ
+  # ²ς·θ¤·¤Κ¤¬¤ι΅ΆΜΎΑ° <c_n> ¤ΛΒΠ¤·¤Ζ Θσ¥Ά¥―¥Ζ¥£¥Φ²½¤ςΉΤ¤¦΅£
   #
   # @param self
-  # @param context ρύάε¤¤εβ―εγ¬ε¤¥εγΜη·φεαÒε£λ NamingContext
+  # @param context Θσ¥Ά¥―¥Ζ¥£¥Φ²½¤Ή¤λ NamingContext
   #
-  # @exception NotEmpty κ±Ύπ³΅context εα«θ½ΜεΆ°εβ³εγ³εγ¬ε¤―εβΉεγ°ε΅μεγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λεΰ‚
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² name εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
+  # @exception NotEmpty ΒΠΎέcontext ¤ΛΒΎ¤Ξ¥³¥σ¥Ζ¥­¥Ή¥Θ¤¬¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λ΅£
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ name ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
   #
   # @else
   # @brief Destroy the naming context recursively
@@ -738,9 +775,9 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief εαÒεΆ»εα¦εα® Binding εβΔη±κρω¤εαÒε£λ
+  # @brief ¤Ή¤Ω¤Ζ¤Ξ Binding ¤ςΊο½ό¤Ή¤λ
   #
-  # νω»ρμ²εαΚε£μεα¦εα¨ε£λιε¨εα¦εα®Binding εβΔη±κρω¤εαÒε£λεΰ‚
+  # ΕΠΟΏ¤µ¤μ¤Ζ¤¤¤λΑ΄¤Ζ¤ΞBinding ¤ςΊο½ό¤Ή¤λ΅£
   #
   # @param self
   #
@@ -754,15 +791,15 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief θΊΌε΅θεβ²ε£μεα NamingContext εα® Binding εβΔη½φκΐΞε΅ωεβ‹
+  # @brief ΝΏ¤¨¤ι¤μ¤Ώ NamingContext ¤Ξ Binding ¤ςΌθΖΐ¤Ή¤λ
   #
-  # λμ®η®Τε΅υεβΈεΆ΅ NamingContext εα® Binding εβΔη½φκΐΞε΅ωεβ¶ε€‚
+  # »ΨΔκ¤µ¤μ¤Ώ NamingContext ¤Ξ Binding ¤ςΌθΖΐ¤Ή¤λ΅£
   #
   # @param self
-  # @param name_cxt Binding ιοΜηΎΞη―Ύπ³΅ NamingContext
-  # @param how_many Binding εβΔη½φκΐΞε΅ωεβ¶λΣξκ³¤εα®μΉ±εα•
-  # @param rbl ιοΜηΎΞε΅χεα Binding εβΔζΏΪθ·αεαÒε£λεγΦε¦­εγ€
-  # @param rbi ιοΜηΎΞε΅χεα Binding εβΔεΆ΅εα©εβ¶εΆ΅εβΆεΆ°εβ¤εγ¬ε¦®εγΌεβΏ
+  # @param name_cxt Binding ΌθΖΐΒΠΎέ NamingContext
+  # @param how_many Binding ¤ςΌθΖΐ¤Ή¤λ³¬ΑΨ¤ΞΏΌ¤µ
+  # @param rbl ΌθΖΐ¤·¤Ώ Binding ¤ςΚέ»ύ¤Ή¤λ¥Ϋ¥λ¥ΐ
+  # @param rbi ΌθΖΐ¤·¤Ώ Binding ¤ς¤Ώ¤Ι¤λ¤Ώ¤α¤Ξ¥¤¥Ζ¥μ΅Ό¥Ώ
   #
   # @else
   # @endif
@@ -781,16 +818,16 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief θΊΌε΅θεβ²ε£μεα NameComponent εα®λφ®η­Ξη―χπ£¨νοΎεβΔκΏΘε΅ω
+  # @brief ΝΏ¤¨¤ι¤μ¤Ώ NameComponent ¤ΞΚΈ»ϊΞσΙ½Έ½¤ςΚΦ¤Ή
   #
-  # λμ®η®Τε΅υεβΈεΆ΅ NameComponent εβΔθΛηκ―ΞεΆ­κ¦²θ½ϋεαÒε£λεΰ‚
+  # »ΨΔκ¤µ¤μ¤Ώ NameComponent ¤ςΚΈ»ϊ¤ΛΚΡ΄Ή¤Ή¤λ΅£
   #
   # @param self
-  # @param name_list κ¦²θ½ϋκ±Ύπ³΅ NameComponent
+  # @param name_list ΚΡ΄ΉΒΠΎέ NameComponent
   #
-  # @return λφ®η­Ξη―χκ¦²θ½ϋξ·ΐθΫό
+  # @return ΚΈ»ϊΞσΚΡ΄Ή·λ²Μ
   #
-  # @exception InvalidName κΎΚθΚ² name_list εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
+  # @exception InvalidName °ϊΏτ name_list ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
   #
   # @else
   # @brief Get string representation of given NameComponent
@@ -803,21 +840,21 @@ class CorbaNaming:
     string_name = [""]
     self.nameToString(name_list, string_name, slen)
 
-    return string_name
+    return string_name[0]
 
 
   ##
   # @if jp
-  # @brief θΊΌε΅θεβ²ε£μεαήθΛηκ―Ξη―χπ£¨νοΎεβ’ NameComponent εα«ιθ¬κ§£εαÒε£λ
+  # @brief ΝΏ¤¨¤ι¤μ¤ΏΚΈ»ϊΞσΙ½Έ½¤ς NameComponent ¤ΛΚ¬²ς¤Ή¤λ
   #
-  # λμ®η®Τε΅υεβΈεΆ΅λφ®η­Ξη―χεβ’ NameComponent εα«κ¦²θ½ϋεαÒε£λεΰ‚
+  # »ΨΔκ¤µ¤μ¤ΏΚΈ»ϊΞσ¤ς NameComponent ¤ΛΚΡ΄Ή¤Ή¤λ΅£
   #
   # @param self
-  # @param sname κ¦²θ½ϋκ±Ύπ³΅λφ®η­Ξη―χ
+  # @param sname ΚΡ΄ΉΒΠΎέΚΈ»ϊΞσ
   #
-  # @return NameComponent κ¦²θ½ϋξ·ΐθΫό
+  # @return NameComponent ΚΡ΄Ή·λ²Μ
   #
-  # @exception InvalidName κΎΚθΚ² sname εαΈζΈΊθ­£εΰ‚
+  # @exception InvalidName °ϊΏτ sname ¤¬ΙΤΐµ΅£
   #
   # @else
   # @brief Get NameComponent from gien string name representation
@@ -831,6 +868,7 @@ class CorbaNaming:
 
     nc_length = 0
     nc_length = self.split(string_name, "/", name_comps)
+
     if not (nc_length > 0):
       raise CosNaming.NamingContext.InvalidName
 
@@ -850,18 +888,18 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief θΊΌε΅θεβ²ε£μεα addr εα¨ string_name εα¶ε£ι URLπ£¨νοΎεβΔη½φκΐΞε΅ωεβ‹
+  # @brief ΝΏ¤¨¤ι¤μ¤Ώ addr ¤Θ string_name ¤«¤ι URLΙ½Έ½¤ςΌθΖΐ¤Ή¤λ
   #
-  # λμ®η®Τε΅υεβΈεΆ΅εβΆεγ²ε¦®εβΉεα¨ιπΊι§°εβΓ¶RLεα«κ¦²θ½ϋεαÒε£λεΰ‚
+  # »ΨΔκ¤µ¤μ¤Ώ¥Ά¥Ι¥μ¥Ή¤ΘΜΎΎΞ¤ςURL¤ΛΚΡ΄Ή¤Ή¤λ΅£
   #
   # @param self
-  # @param addr κ¦²θ½ϋκ±Ύπ³΅εβΆεγ²ε¦®εβΉ
-  # @param string_name κ¦²θ½ϋκ±Ύπ³΅ιπΊι§°
+  # @param addr ΚΡ΄ΉΒΠΎέ¥Ά¥Ι¥μ¥Ή
+  # @param string_name ΚΡ΄ΉΒΠΎέΜΎΎΞ
   #
-  # @return URL κ¦²θ½ϋξ·ΐθΫό
+  # @return URL ΚΡ΄Ή·λ²Μ
   #
-  # @exception InvalidAddress κΎΚθΚ² addr εαΈζΈΊθ­£εΰ‚
-  # @exception InvalidName κΎΚθΚ² string_name εαΈζΈΊθ­£εΰ‚
+  # @exception InvalidAddress °ϊΏτ addr ¤¬ΙΤΐµ΅£
+  # @exception InvalidName °ϊΏτ string_name ¤¬ΙΤΐµ΅£
   #
   # @else
   # @brief Get URL representation from given addr and string_name
@@ -872,19 +910,19 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief θΊΌε΅θεβ²ε£μεαήθΛηκ―Ξη―χπ£¨νοΎεβ’ resolve εαΞε¤¬εγΜε¤Ίεβ§εβ―εγ°ε£ςπΑΘε΅ω
+  # @brief ΝΏ¤¨¤ι¤μ¤ΏΚΈ»ϊΞσΙ½Έ½¤ς resolve ¤·¥ª¥Φ¥Έ¥§¥―¥Θ¤ςΚΦ¤Ή
   #
-  # λμ®η®Τε΅υεβΈεΆ΅λφ®η­Ξη―χπ£¨νοΎεβΓΣesolveεαΞρΌΈε¤¬εγΜε¤Ίεβ§εβ―εγ°ε£ςιοΜηΎΞε΅ωεβ¶ε€‚
+  # »ΨΔκ¤µ¤μ¤ΏΚΈ»ϊΞσΙ½Έ½¤ςresolve¤·΅¤¥ª¥Φ¥Έ¥§¥―¥Θ¤ςΌθΖΐ¤Ή¤λ΅£
   #
   # @param self
-  # @param string_name ιοΜηΎΞη―Ύπ³΅εβªεγΜε¤Ίεβ§εβ―εγ°θΛηκ―Ξη―χπ£¨νοΎ
+  # @param string_name ΌθΖΐΒΠΎέ¥ª¥Φ¥Έ¥§¥―¥ΘΚΈ»ϊΞσΙ½Έ½
   #
-  # @return π©£μ³ΊεαΚε£μεαήε¤¬εγΜε¤Ίεβ§εβ―εγ
+  # @return ²ς·θ¤µ¤μ¤Ώ¥ª¥Φ¥Έ¥§¥―¥Θ
   #
-  # @exception NotFound ρΰΘζΈ­εα® <c_1, c_2, ..., c_(n-1)> εαΈη­ΠηΨªεαΞεΆ¬εα¨ε€‚
-  # @exception CannotProceed θΏΚε£ιεα¶εΆ°νπ¬ιΘ³εα§ιη¦νπ¬ε£ςξΈÒι¶ΤεΆ©εαΊεΆ¬εα¨ε€‚
-  # @exception InvalidName κΎΚθΚ² name εα®ιπΊη±νεαΈζΈΊθ­£εΰ‚
-  # @exception AlreadyBound name <n> εα® Object εαΈε΅ωεα§εα«εγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λεΰ‚
+  # @exception NotFound ΕΣΓζ¤Ξ <c_1, c_2, ..., c_(n-1)> ¤¬ΒΈΊί¤·¤Κ¤¤΅£
+  # @exception CannotProceed ²Ώ¤ι¤«¤ΞΝύΝ³¤Η½θΝύ¤ς·ΡΒ³¤Η¤­¤Κ¤¤΅£
+  # @exception InvalidName °ϊΏτ name ¤ΞΜΎΑ°¤¬ΙΤΐµ΅£
+  # @exception AlreadyBound name <n> ¤Ξ Object ¤¬¤Ή¤Η¤Λ¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λ΅£
   #
   # @else
   # @brief Resolve from name of string representation and get object 
@@ -900,19 +938,19 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief εβªεγΜε¤Ίεβ§εβ―εγ°εΆ°ιπΊη±νεβΔε¥πεβ¤εγ³εγ²εΆΐεαήεΆ±π©£μ³ΊεαÒε£λ
+  # @brief ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΞΜΎΑ°¤ς¥Π¥¤¥σ¥Ι¤ή¤Ώ¤Ο²ς·θ¤Ή¤λ
   #
-  # λμ®η®Τε΅υεβΈεΆ΅εβ³εγ³εγ¬ε¤―εβΉεγ°εΆ­κ±ΎεαΞεΆ¨εβªεγΜε¤Ίεβ§εβ―εγ°ε£ς NameComponent εα§λμ®η®Τε΅υεβΈεΆ΅
-  # θΏΊι½®εα«εγΐε¤¦εγ³εγ²ε΅ωεβ¶ε€‚
-  # ιπΈζΈ€ξ°®θ±ΰεα«λχΆεα«θ½ΜεΆ°π¨Άι΄ εαΈε¥πεβ¤εγ³εγ²θΈ°εΆΑεα®κΆ΄ιπ°εΆ±εΰΆθΞ¤κ―ΠεΆ°εγΐε¤¦εγ³εγ²θΈ°εΆΑπ¨Άι΄ εβ’
-  # ιοΜηΎΞε΅ωεβ¶ε€‚
+  # »ΨΔκ¤µ¤μ¤Ώ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ΛΒΠ¤·¤Ζ¥ª¥Φ¥Έ¥§¥―¥Θ¤ς NameComponent ¤Η»ΨΔκ¤µ¤μ¤Ώ
+  # °ΜΓΦ¤Λ¥Π¥¤¥σ¥Ι¤Ή¤λ΅£
+  # Ζ±°μ²Υ½κ¤Λ΄ϋ¤ΛΒΎ¤ΞΝΧΑΗ¤¬¥Π¥¤¥σ¥ΙΊΡ¤ί¤ΞΎμΉη¤Ο΅Ά΄ϋΒΈ¤Ξ¥Π¥¤¥σ¥ΙΊΡ¤ίΝΧΑΗ¤ς
+  # ΌθΖΐ¤Ή¤λ΅£
   #
   # @param self
-  # @param context bind εβ¤ε΅χεαΎεΆ± resole κ±Ύπ³΅εβ³εγ³εγ¬ε¤―εβΉεγ
-  # @param name_list εβªεγΜε¤Ίεβ§εβ―εγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ° NameComponent
-  # @param obj ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ‹ Object
+  # @param context bind ¤β¤·¤―¤Ο resole ΒΠΎέ¥³¥σ¥Ζ¥­¥Ή¥Θ
+  # @param name_list ¥ª¥Φ¥Έ¥§¥―¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ NameComponent
+  # @param obj ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ Object
   #
-  # @return NameComponent εα§λμ®η®Τε΅υεβΈεΆ΅θΏΊι½®εα«εγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λεβªεγΜε¤Ίεβ§εβ―εγ
+  # @return NameComponent ¤Η»ΨΔκ¤µ¤μ¤Ώ°ΜΓΦ¤Λ¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λ¥ª¥Φ¥Έ¥§¥―¥Θ
   #
   # @else
   # @brief Bind of resolve the given name component
@@ -930,20 +968,20 @@ class CorbaNaming:
   ##
   # @if jp
   #
-  # @brief εβ³εγ³εγ¬ε¤―εβΉεγ°εΆ°ιπΊη±νεβΔε¥πεβ¤εγ³εγ²εΆΐεαήεΆ±π©£μ³ΊεαÒε£λ
+  # @brief ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ΞΜΎΑ°¤ς¥Π¥¤¥σ¥Ι¤ή¤Ώ¤Ο²ς·θ¤Ή¤λ
   #
-  # λμ®η®Τε΅υεβΈεΆ΅εβ³εγ³εγ¬ε¤―εβΉεγ°εΆ­κ±ΎεαΞεΆ¨ Contextεβ’ NameComponent εα§λμ®η®Τε΅υεβΈεΆ΅θΏΊι½®εα«
-  # εγΐε¤¦εγ³εγ²ε΅ωεβ¶ε€‚
-  # Context εαΈι©Ίεα®κΆ΄ιπ°εΆ±λφ°π¨Ύε¤µεγ³εγ¬ε¤―εβΉεγ°ε£ςντήθ―πεαΞεΆ¨εγΐε¤¦εγ³εγ²ε΅ωεβ¶ε€‚
-  # ιπΈζΈ€ξ°®θ±ΰεα«λχΆεα«θ½ΜεΆ°π¨Άι΄ εαΈε¥πεβ¤εγ³εγ²θΈ°εΆΑεα®κΆ΄ιπ°εΆ±εΰΆθΞ¤κ―ΠεΆ°εγΐε¤¦εγ³εγ²θΈ°εΆΑπ¨Άι΄ εβ’
-  # ιοΜηΎΞε΅ωεβ¶ε€‚
+  # »ΨΔκ¤µ¤μ¤Ώ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ΛΒΠ¤·¤Ζ Context¤ς NameComponent ¤Η»ΨΔκ¤µ¤μ¤Ώ°ΜΓΦ¤Λ
+  # ¥Π¥¤¥σ¥Ι¤Ή¤λ΅£
+  # Context ¤¬¶υ¤ΞΎμΉη¤ΟΏ·µ¬¥³¥σ¥Ζ¥­¥Ή¥Θ¤ςΐΈΐ®¤·¤Ζ¥Π¥¤¥σ¥Ι¤Ή¤λ΅£
+  # Ζ±°μ²Υ½κ¤Λ΄ϋ¤ΛΒΎ¤ΞΝΧΑΗ¤¬¥Π¥¤¥σ¥ΙΊΡ¤ί¤ΞΎμΉη¤Ο΅Ά΄ϋΒΈ¤Ξ¥Π¥¤¥σ¥ΙΊΡ¤ίΝΧΑΗ¤ς
+  # ΌθΖΐ¤Ή¤λ΅£
   #
   # @param self
-  # @param context bind εβ¤ε΅χεαΎεΆ± resole κ±Ύπ³΅εβ³εγ³εγ¬ε¤―εβΉεγ
-  # @param name_list εβ³εγ³εγ¬ε¤―εβΉεγ°εΆ­θ½Πε΅ρεβ¶ηΏνιιΊεΆ° NameComponent
-  # @param new_context ρφΆρΰ£θ½Πε΅ρεβ²ε£μεβ‹ Context(εγ®ε¥υεβ©εγ«εγ°η€¤:None)
+  # @param context bind ¤β¤·¤―¤Ο resole ΒΠΎέ¥³¥σ¥Ζ¥­¥Ή¥Θ
+  # @param name_list ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ΛΙΥ¤±¤λΜΎΑ°¤Ξ NameComponent
+  # @param new_context ΄ΨΟΆΙΥ¤±¤ι¤μ¤λ Context(¥Η¥Υ¥©¥λ¥ΘΓΝ:None)
   #
-  # @return NameComponent εα§λμ®η®Τε΅υεβΈεΆ΅θΏΊι½®εα«εγΐε¤¦εγ³εγ²ε΅υεβΈεΆ¨εα¨ε£λContext
+  # @return NameComponent ¤Η»ΨΔκ¤µ¤μ¤Ώ°ΜΓΦ¤Λ¥Π¥¤¥σ¥Ι¤µ¤μ¤Ζ¤¤¤λContext
   #
   # @else
   # @brief Bind of resolve the given name component
@@ -960,13 +998,13 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief εγΊε¦Ύεγ εβµεγΌεγΐεΆ°ιπΊη±νεβΔη½φκΐΞε΅ωεβ‹
+  # @brief ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤ΞΜΎΑ°¤ςΌθΖΐ¤Ή¤λ
   #
-  # πª­κ°Τε΅χεαήε¥νεγΌεγ εβµεγΌεγΐεΆ°ιπΊη±νεβΔη½φκΐΞε΅ωεβ¶ε€‚
+  # ΐίΔκ¤·¤Ώ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤ΞΜΎΑ°¤ςΌθΖΐ¤Ή¤λ΅£
   #
   # @param self
   #
-  # @return εγΊε¦Ύεγ εβµεγΌεγΐεΆ°ιπΊη±ν
+  # @return ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤ΞΜΎΑ°
   #
   # @else
   # @brief Get the name of naming server
@@ -977,13 +1015,13 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief εγ«εγΌεγ°ε¤µεγ³εγ¬ε¤―εβΉεγ°ε£ςιοΜηΎΞε΅ωεβ‹
+  # @brief ¥λ΅Ό¥Θ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ςΌθΖΐ¤Ή¤λ
   #
-  # πª­κ°Τε΅χεαήε¥νεγΌεγ εβµεγΌεγΐεΆ°εγ«εγΌεγ°ε¤µεγ³εγ¬ε¤―εβΉεγ°ε£ςιοΜηΎΞε΅ωεβ¶ε€‚
+  # ΐίΔκ¤·¤Ώ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤Ξ¥λ΅Ό¥Θ¥³¥σ¥Ζ¥­¥Ή¥Θ¤ςΌθΖΐ¤Ή¤λ΅£
   #
   # @param self
   #
-  # @return εγΊε¦Ύεγ εβµεγΌεγΐεΆ°εγ«εγΌεγ°ε¤µεγ³εγ¬ε¤―εβΉεγ
+  # @return ¥Ν΅Ό¥ΰ¥µ΅Ό¥Π¤Ξ¥λ΅Ό¥Θ¥³¥σ¥Ζ¥­¥Ή¥Θ
   #
   # @else
   # @brief Get the root context
@@ -994,14 +1032,14 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief εβªεγΜε¤Ίεβ§εβ―εγ°ε΅μεγΊε¦Ύεγήε¦µεβ°εβ³εγ³εγ¬ε¤―εβΉεγ°ε΅λιθ¤ιθ¥εαÒε£λ
+  # @brief ¥ª¥Φ¥Έ¥§¥―¥Θ¤¬¥Ν΅Ό¥ί¥σ¥°¥³¥σ¥Ζ¥­¥Ή¥Θ¤«Θ½ΚΜ¤Ή¤λ
   #
-  # λμ®η®Τε΅χεαήκ¦Άι΄ εαΈε¥νεγΌεγήε¦µεβ°εβ³εγ³εγ¬ε¤―εβΉεγ°ε΅λιθ¤ιθ¥εαÒε£λ
+  # »ΨΔκ¤·¤ΏΝΧΑΗ¤¬¥Ν΅Ό¥ί¥σ¥°¥³¥σ¥Ζ¥­¥Ή¥Θ¤«Θ½ΚΜ¤Ή¤λ
   #
   # @param self
-  # @param obj ιθ¤ιθ¥κ±Ύπ³΅π¨Άι΄ 
+  # @param obj Θ½ΚΜΒΠΎέΝΧΑΗ
   #
-  # @return ιθ¤ιθ¥ξ·ΐθΫό(εγΊε¦Ύεγήε¦µεβ°εβ³εγ³εγ¬ε¤―εβΉεγ:trueεΰΆε΅ύεβΈζ»¥κ¦–:false)
+  # @return Θ½ΚΜ·λ²Μ(¥Ν΅Ό¥ί¥σ¥°¥³¥σ¥Ζ¥­¥Ή¥Θ:true΅Ά¤½¤μ°Κ³°:false)
   #
   # @else
   # @brief Whether the object is NamingContext
@@ -1016,15 +1054,15 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief θΊΌε΅θεβ²ε£μεαήηΏνιιΊε΅μεγΊε¦Ύεγήε¦µεβ°εβ³εγ³εγ¬ε¤―εβΉεγ°ε΅λεα©εα¬ε΅λιθ¤ιθ¥εαÒε£λ
+  # @brief ΝΏ¤¨¤ι¤μ¤ΏΜΎΑ°¤¬¥Ν΅Ό¥ί¥σ¥°¥³¥σ¥Ζ¥­¥Ή¥Θ¤«¤Ι¤¦¤«Θ½ΚΜ¤Ή¤λ
   #
-  # NameComponent εβ¤ε΅χεαΎεΆ±λφ®η­Ξη―χεα§λμ®η®Τε΅χεαήκ¦Άι΄ εαΈε¥νεγΌεγήε¦µεβ°εβ³εγ³εγ¬ε¤―εβΉεγ°ε΅λ
-  # ιθ¤ιθ¥εαÒε£λ
+  # NameComponent ¤β¤·¤―¤ΟΚΈ»ϊΞσ¤Η»ΨΔκ¤·¤ΏΝΧΑΗ¤¬¥Ν΅Ό¥ί¥σ¥°¥³¥σ¥Ζ¥­¥Ή¥Θ¤«
+  # Θ½ΚΜ¤Ή¤λ
   #
   # @param self
-  # @param name_list ιθ¤ιθ¥κ±Ύπ³΅
+  # @param name_list Θ½ΚΜΒΠΎέ
   #
-  # @return ιθ¤ιθ¥ξ·ΐθΫό(εγΊε¦Ύεγήε¦µεβ°εβ³εγ³εγ¬ε¤―εβΉεγ:trueεΰΆε΅ύεβΈζ»¥κ¦–:false)
+  # @return Θ½ΚΜ·λ²Μ(¥Ν΅Ό¥ί¥σ¥°¥³¥σ¥Ζ¥­¥Ή¥Θ:true΅Ά¤½¤μ°Κ³°:false)
   #
   # @else
   # @brief Whether the given name component is NamingContext
@@ -1035,18 +1073,18 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ°εΆ°ργ¨ιθ¬ε£ςπΑΘε΅ω
+  # @brief ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ¤ΞΙτΚ¬¤ςΚΦ¤Ή
   #
-  # λμ®η®Τε΅υεβΈεΆ΅ξ±¨ηΦ΄εα®εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ°ε£ςιοΜηΎΞε΅ωεβ¶ε€‚
-  # ξ·¤ζΊ¬ζ½Ίι½®εαΈθ·ηκ°Τε΅υεβΈεΆ¨εα¨εΆ¬εα¨η ΄ιπ°εΆ±εΰΆθΧΰκΐΈεΆ°π¨Άι΄ εβΔλÒ¦εα¨εΆ΅εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ
-  # εβΔκΏΘε΅ωεΰ‚
+  # »ΨΔκ¤µ¤μ¤ΏΘΟ°Ο¤Ξ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ¤ςΌθΖΐ¤Ή¤λ΅£
+  # ½ªΞ»°ΜΓΦ¤¬»ΨΔκ¤µ¤μ¤Ζ¤¤¤Κ¤¤ΎμΉη¤Ο΅ΆΊΗΈε¤ΞΝΧΑΗ¤ς½ό¤¤¤Ώ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ
+  # ¤ςΚΦ¤Ή΅£
   #
   # @param self
-  # @param name_list μ¦Ψι΄Άκ±Ύπ³΅NameComponent
-  # @param begin ιοΜηΎΞι―¨ηΦ΄ρφ¶η§¶ζ½Ίι½®
-  # @param end ιοΜηΎΞι―¨ηΦ΄ξ·¤ζΊ¬ζ½Ίι½®(εγ®ε¥υεβ©εγ«εγ°η€¤:None)
+  # @param name_list Έ΅ΊχΒΠΎέNameComponent
+  # @param begin ΌθΖΐΘΟ°Ο³«»Ο°ΜΓΦ
+  # @param end ΌθΖΐΘΟ°Ο½ªΞ»°ΜΓΦ(¥Η¥Υ¥©¥λ¥ΘΓΝ:None)
   #
-  # @return NameComponent ιοΜηΎΞιµΐθΫό
+  # @return NameComponent ΌθΖΐ·λ²Μ
   #
   # @else
   # @brief Get subset of given name component
@@ -1068,19 +1106,19 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ°εΆ°λφ®η­Ξη―χπ£¨νοΎεβΔη½φκΐΞε΅ωεβ‹
+  # @brief ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ¤ΞΚΈ»ϊΞσΙ½Έ½¤ςΌθΖΐ¤Ή¤λ
   #
-  # λμ®η®Τε΅χεαήι―¨ηΦ΄εα®εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ°εΆ°λφ®η­Ξη―χπ£¨νοΎεβΔη½φκΐΞε΅ωεβ¶ε€‚
-  # λφ®η­Ξη―χπ£¨νοΎεα―εΰ΅―ameComponentεα®μ©¶θ―πεα·άNc[0],Nc[1],Nc[2]ώΏ¥ώΏ¥ώΏ¥}εα®κΆ΄ιπ°ε€
-  #   Nc[0]id.Nc[0].kind/Nc[1]id.Nc[1].kind/Nc[2].id/Nc[2].kindώΏ¥ώΏ¥ώΏ¥
-  # εα¨εα¨ε΅ζκΏΆκΎΎεΆ©ιοΜηΎΞεΆ©εαΊε£λεΰ‚
-  # ιοΜηΎΞε΅χεαήθΛηκ―Ξη―χεα®ρυ·εαΚε΅μλμ®η®Τε΅χεαήλΚΉεαΚζ»¥θΊ΄εΆ°κΆ΄ιπ°εΆ±εΰ
-  # λμ®η®Τε΅χεαήλΚΉεαΚεΆ©ιθ®ε£κλν¨εα¦εβ²ε£μεβ¶ε€‚
+  # »ΨΔκ¤·¤ΏΘΟ°Ο¤Ξ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ¤ΞΚΈ»ϊΞσΙ½Έ½¤ςΌθΖΐ¤Ή¤λ΅£
+  # ΚΈ»ϊΞσΙ½Έ½¤Ο΅ΆNameComponent¤ΞΉ½ΐ®¤¬{Nc[0],Nc[1],Nc[2]¥¥¥}¤ΞΎμΉη΅Ά
+  #   Nc[0]id.Nc[0].kind/Nc[1]id.Nc[1].kind/Nc[2].id/Nc[2].kind¥¥¥
+  # ¤Θ¤¤¤¦·ΑΌ°¤ΗΌθΖΐ¤Η¤­¤λ΅£
+  # ΌθΖΐ¤·¤ΏΚΈ»ϊΞσ¤ΞΔΉ¤µ¤¬»ΨΔκ¤·¤ΏΔΉ¤µ°ΚΎε¤ΞΎμΉη¤Ο΅Ά
+  # »ΨΔκ¤·¤ΏΔΉ¤µ¤ΗΐΪ¤κΌΞ¤Ζ¤ι¤μ¤λ΅£
   #
   # @param self
-  # @param name_list ιοΜηΎΞη―Ύπ³΅NameComponent
-  # @param string_name ιοΜηΎΞιµΐθΫόλφ®η­Ξη―χ
-  # @param slen ιοΜηΎΞη―Ύπ³΅λφ®η­Ξη―χλό€κ¦§ιΰ¤
+  # @param name_list ΌθΖΐΒΠΎέNameComponent
+  # @param string_name ΌθΖΐ·λ²ΜΚΈ»ϊΞσ
+  # @param slen ΌθΖΐΒΠΎέΚΈ»ϊΞσΊΗΒηΓΝ
   #
   # @else
   # @brief Get string representation of name component
@@ -1105,17 +1143,17 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief εγΊε¦Ύεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ°εΆ°λφ®η­Ξη―χπ£¨νοΎλω¤εΆ°λφ®η­ΞλΚΉεβΔη½φκΐΞε΅ωεβ‹
+  # @brief ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ¤ΞΚΈ»ϊΞσΙ½Έ½»ώ¤ΞΚΈ»ϊΔΉ¤ςΌθΖΐ¤Ή¤λ
   #
-  # λμ®η®Τε΅χεαήε¥νεγΌεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ°ε£ςλφ®η­Ξη―χεα§π£¨νοΎεαΞεΆ΅κΆ΄ιπ°εΆ°ρυ·εαΚε£ςιοΜηΎΞε΅ωεβ¶ε€‚
-  # λφ®η­Ξη―χπ£¨νοΎεα―εΰ΅―ameComponentεα®μ©¶θ―πεα·άNc[0],Nc[1],Nc[2]εγ»εγ»εγ»}εα®κΆ΄ιπ°ε€
-  #   Nc[0]id.Nc[0].kind/Nc[1]id.Nc[1].kind/Nc[2].id/Nc[2].kindεγ»εγ»εγ»
-  # εα¨εα¨ε΅ζκΏΆκΎΎεΆ©ιοΜηΎΞεΆ©εαΊε£λεΰ‚
+  # »ΨΔκ¤·¤Ώ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ¤ςΚΈ»ϊΞσ¤ΗΙ½Έ½¤·¤ΏΎμΉη¤ΞΔΉ¤µ¤ςΌθΖΐ¤Ή¤λ΅£
+  # ΚΈ»ϊΞσΙ½Έ½¤Ο΅ΆNameComponent¤ΞΉ½ΐ®¤¬{Nc[0],Nc[1],Nc[2]΅¦΅¦΅¦}¤ΞΎμΉη΅Ά
+  #   Nc[0]id.Nc[0].kind/Nc[1]id.Nc[1].kind/Nc[2].id/Nc[2].kind΅¦΅¦΅¦
+  # ¤Θ¤¤¤¦·ΑΌ°¤ΗΌθΖΐ¤Η¤­¤λ΅£
   #
   # @param self
-  # @param name_list ιοΜηΎΞη―Ύπ³΅NameComponent
+  # @param name_list ΌθΖΐΒΠΎέNameComponent
   #
-  # @return λμ®η®Τε΅χεαήε¥νεγΌεγ εβ³εγ³εγΪε¦ΎεγΊε¦µεγ°εΆ°λφ®η­Ξη―χρυ·εα•
+  # @return »ΨΔκ¤·¤Ώ¥Ν΅Ό¥ΰ¥³¥σ¥έ΅Ό¥Ν¥σ¥Θ¤ΞΚΈ»ϊΞσΔΉ¤µ
   #
   # @else
   # @brief Get string length of the name component's string representation
@@ -1143,35 +1181,38 @@ class CorbaNaming:
 
   ##
   # @if jp
-  # @brief λφ®η­Ξη―χεα®ιθ¬η²΄
+  # @brief ΚΈ»ϊΞσ¤ΞΚ¬³δ
   #
-  # λφ®η­Ξη―χεβΔθ·ηκ°Τε΅χεαήε¥ηεγªεγήε¤Αεα§ιθ¬η²΄εαÒε£λεΰ‚
+  # ΚΈ»ϊΞσ¤ς»ΨΔκ¤·¤Ώ¥Η¥κ¥ί¥Ώ¤ΗΚ¬³δ¤Ή¤λ΅£
   #
   # @param self
-  # @param input ιθ¬η²΄κ±Ύπ³΅λφ®η­Ξη―χ
-  # @param delimiter ιθ¬η²΄ντ¨εγ®ε¦¬εγήε¤Α
-  # @param results ιθ¬η²΄ξ·ΐθΫό
+  # @param input Κ¬³δΒΠΎέΚΈ»ϊΞσ
+  # @param delimiter Κ¬³δΝΡ¥Η¥κ¥ί¥Ώ
+  # @param results Κ¬³δ·λ²Μ
   #
-  # @return ιθ¬η²΄εαΞεΆ΅λφ®η­Ξη―χεα®π¨Άι΄ λυ°
+  # @return Κ¬³δ¤·¤ΏΚΈ»ϊΞσ¤ΞΝΧΑΗΏτ
   #
   # @else
   # @brief Split of string
   # @endif
   def split(self, input, delimiter, results):
     delim_size = len(delimiter)
-    found_pos = begin_pos = pre_pos = substr_size = 0
+    found_pos = 0
+    begin_pos = 0
+    pre_pos = 0
+    substr_size = 0
 
     if input[0:delim_size] == delimiter:
-      begin_pos = pre_pos = delim_size
+      begin_pos = delim_size
+      pre_pos = delim_size
 
     while 1:
       found_pos = string.find(input[begin_pos:],delimiter)
-      
       if found_pos == -1:
         results.append(input[pre_pos:])
         break
 
-      if found_pos > 0 and input[found_pos - 1] == "\\":
+      if found_pos > 0 and input[found_pos + begin_pos - 1] == "\\":
         begin_pos += found_pos + delim_size
       else:
         substr_size = found_pos + (begin_pos - pre_pos)
@@ -1181,3 +1222,25 @@ class CorbaNaming:
         pre_pos   = begin_pos
 
     return len(results)
+
+
+  ##
+  # @if jp
+  #
+  # @brief Ξγ³°ΎπΚσ½ΠΞΟ
+  #  Ξγ³°ΎπΚσ¤ς½ΠΞΟ¤Ή¤λ΅£
+  #
+  # @else
+  #
+  # @brief Print exception information 
+  #  Print exception information 
+  # @endif
+  def __print_exception(self):
+    if sys.version_info[0:3] >= (2, 4, 0):
+      print traceback.format_exc()
+    else:
+      _exc_list = traceback.format_exception(*sys.exc_info())
+      _exc_str = "".join(_exc_list)
+      print _exc_str
+
+    return
