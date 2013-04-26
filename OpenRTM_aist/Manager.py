@@ -1978,7 +1978,13 @@ class Manager:
         name_prop.load(conff)
 
     if self._config.findNode(category + "." + inst_name):
-      name_prop.mergeProperties(self._config.getNode(category + "." + inst_name))
+      temp_ = OpenRTM_aist.Properties(prop=self._config.getNode(category+"."+inst_name))
+      keys_ = temp_.propertyNames()
+      if not (len(keys_) == 1 and keys_[-1] == "config_file"):
+        name_prop.mergeProperties(self._config.getNode(category + "." + inst_name))
+        self._rtcout.RTC_INFO("Component name conf exists in rtc.conf. Merged.")
+        if self._config.findNode("config_file"):
+          config_fname.append(self._config.getProperty("config_file"))
 
     if self._config.getProperty(type_conf) != "":
       try:
@@ -1990,7 +1996,13 @@ class Manager:
         type_prop.load(conff)
 
     if self._config.findNode(category + "." + type_name):
-      type_prop.mergeProperties(self._config.getNode(category + "." + type_name))
+      temp_ = OpenRTM_aist.Properties(prop=self._config.getNode(category+"."+type_name))
+      keys_ = temp_.propertyNames()
+      if not (len(keys_) == 1 and keys_[-1] == "config_file"):
+        type_prop.mergeProperties(self._config.getNode(category + "." + type_name))
+        self._rtcout.RTC_INFO("Component type conf exists in rtc.conf. Merged.")
+        if self._config.findNode("config_file"):
+          config_fname.append(self._config.getProperty("config_file"))
 
     comp.setProperties(prop)
     type_prop.mergeProperties(name_prop)
