@@ -150,7 +150,39 @@ class TestTimeMeasure(unittest.TestCase):
     self.assert_(math.fabs(mean[0] - wait_) < 0.03)
     self.assert_(stdev[0] < (wait_ / 5.0))
     return
-  
+
+  def test_getsettimeofday(self):
+    """
+    if sys.platform == "win32":
+      from ctypes import windll, Structure, c_ushort, byref, c_ulong, c_long
+      class SYSTEMTIME(Structure):
+        _fields_ = [('wYear', c_ushort), 
+                    ('wMonth', c_ushort), 
+                    ('wDayOfWeek', c_ushort), 
+                    ('wDay', c_ushort), 
+                    ('wHour', c_ushort), 
+                    ('wMinute', c_ushort), 
+                    ('wSecond', c_ushort), 
+                    ('wMilliseconds', c_ushort)]
+
+
+      class LARGE_INTEGER(Structure):
+        _fields_ = [('low', c_ulong), 
+                    ('high', c_long)]
+
+
+      st = SYSTEMTIME(0,0,0,0,0,0,0,0)
+      windll.kernel32.GetSystemTime(byref(st))
+      ft = LARGE_INTEGER(0,0)
+      windll.kernel32.SystemTimeToFileTime(byref(st),byref(ft))
+      ret = windll.kernel32.FileTimeToSystemTime(byref(ft),
+                                                 byref(st))
+      print "settime Yer:", st.wYear, " Month:", st.wMonth, \
+          " DayOfWeek:", st.wDayOfWeek, " wDay:", st.wDay,  \
+          " Hour:", st.wHour, "Minute:", st.wMinute, \
+          " Second:", st.wSecond, "Milliseconds:", st.wMilliseconds
+    """
+    return
 ############### test #################
 if __name__ == '__main__':
   unittest.main()

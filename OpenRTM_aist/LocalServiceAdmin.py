@@ -64,27 +64,14 @@ class LocalServiceAdmin:
     self._services = []
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("LocalServiceAdmin")
     self._rtcout.RTC_TRACE("LocalServiceAdmin.__init__()")
+    self._factory = OpenRTM_aist.LocalServiceFactory.instance()
     return
 
-    
-  ##
-  # @if jp
-  #
-  # @brief 仮想デストラクタ
-  # 
-  # 仮想デストラクタ。
-  # 
-  # @else
-  #
-  # @brief Virtual destractor
-  #
-  # Virtual destractor.
-  #
-  # @endif
+
   def __del__(self):
     self.finalize()
     return
-    
+
 
   ##
   # @if jp
@@ -110,13 +97,12 @@ class LocalServiceAdmin:
       self._rtcout.RTC_INFO("All the local services are enabled.")
       all_enable_ = True
     
-    factory_ = OpenRTM_aist.LocalServiceFactory.instance()
-    ids_ = factory_.getIdentifiers()
+    ids_ = self._factory.getIdentifiers()
     self._rtcout.RTC_DEBUG("Available services: %s", OpenRTM_aist.flatten(ids_))
     for id_ in ids_:
       if all_enable_ or self.isEnabled(id_, svcs_):
         if self.notExisting(id_):
-          service_ = factory_.createObject(id_)
+          service_ = self._factory.createObject(id_)
           self._rtcout.RTC_DEBUG("Service created: %s", id_)
           prop_ = props.getNode(id_)
           service_.init(prop_)
@@ -140,11 +126,11 @@ class LocalServiceAdmin:
   # @endif
   # void finalize();
   def finalize(self):
-    factory_ = OpenRTM_aist.LocalServiceFactory.instance()
     for svc_ in self._services:
       svc_.finalize()
-      factory_.deleteObject(svc_)
+      self._factory.deleteObject(svc_)
     self._services = []
+
     return
     
 
@@ -289,8 +275,7 @@ class LocalServiceAdmin:
     for (i,svc_) in enumerate(self._services):
       if name == svc_.getProfile().name:
         svc_.finalize()
-        factory_ = OpenRTM_aist.LocalServiceFactory.instance()
-        factory_.deleteObject(svc_)
+        self._factory.deleteObject(svc_)
         del self._services[i]
         self._rtcout.RTC_INFO("SDO service  has been deleted: %s", name)
         del guard_

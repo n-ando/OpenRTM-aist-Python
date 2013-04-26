@@ -20,6 +20,7 @@ from ObjectManager import *
 from SystemLogger import *
 from TimeValue import *
 from TimeMeasure import *
+from ClockManager import *
 from Singleton import *
 from Factory import *
 from GlobalFactory import *
@@ -48,6 +49,9 @@ from ManagerConfig import *
 from Timer import *
 from ModuleManager import *
 from NamingManager import *
+from ExecutionContextProfile import *
+from RTObjectStateMachine import *
+from ExecutionContextWorker import *
 from ExecutionContextBase import *
 from StateMachine import *
 from PeriodicExecutionContext import *

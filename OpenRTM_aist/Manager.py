@@ -862,7 +862,15 @@ class Manager:
                     "corba.id",
                     "exec_cxt.periodic.type",
                     "exec_cxt.periodic.rate",
-                    "exec_cxt.evdriven.type",
+                    "exec_cxt.event_driven.type",
+                    "exec_cxt.sync_transition",
+                    "exec_cxt.sync_activation",
+                    "exec_cxt.sync_deactivation",
+                    "exec_cxt.sync_reset",
+                    "exec_cxt.transition_timeout",
+                    "exec_cxt.activation_timeout",
+                    "exec_cxt.deactivation_timeout",
+                    "exec_cxt.reset_timeout",
                     "logger.enable",
                     "logger.log_level",
                     "naming.enable",
@@ -870,7 +878,8 @@ class Manager:
                     "naming.formats"]
 
     for i in range(len(inherit_prop)):
-      prop.setProperty(inherit_prop[i],self._config.getProperty(inherit_prop[i]))
+      if self._config.findNode(inherit_prop[i]):
+        prop.setProperty(inherit_prop[i],self._config.getProperty(inherit_prop[i]))
 
     comp = factory.create(self)
 
@@ -1879,7 +1888,6 @@ class Manager:
   # bool Manager::initLocalService()
   def initLocalService(self):
     self._rtcout.RTC_TRACE("Manager::initLocalService()")
-
     admin_ = OpenRTM_aist.LocalServiceAdmin.instance()
     prop_ = OpenRTM_aist.Properties(prop=self._config.getNode("manager.local_service"))
     admin_.init(prop_)
@@ -2110,6 +2118,7 @@ class Manager:
         name_prop.load(conff)
         self._rtcout.RTC_INFO("Component instance conf file: %s loaded.",
                               self._config.getProperty(name_conf))
+        self._rtcout.RTC_DEBUG(name_prop)
         config_fname.append(self._config.getProperty(name_conf))
       except:
         print "Not found. : %s" % self._config.getProperty(name_conf)
@@ -2123,6 +2132,7 @@ class Manager:
       if not (len(keys_) == 1 and keys_[-1] == "config_file"):
         name_prop.mergeProperties(self._config.getNode(category + "." + inst_name))
         self._rtcout.RTC_INFO("Component name conf exists in rtc.conf. Merged.")
+        self._rtcout.RTC_DEBUG(name_prop)
         if self._config.findNode("config_file"):
           config_fname.append(self._config.getProperty("config_file"))
 
@@ -2132,6 +2142,7 @@ class Manager:
         type_prop.load(conff)
         self._rtcout.RTC_INFO("Component type conf file: %s loaded.",
                               self._config.getProperty(type_conf))
+        self._rtcout.RTC_DEBUG(type_prop)
         config_fname.append(self._config.getProperty(type_conf))
       except:
         print "Not found. : %s" % self._config.getProperty(type_conf)
@@ -2145,6 +2156,7 @@ class Manager:
       if not (len(keys_) == 1 and keys_[-1] == "config_file"):
         type_prop.mergeProperties(self._config.getNode(category + "." + type_name))
         self._rtcout.RTC_INFO("Component type conf exists in rtc.conf. Merged.")
+        self._rtcout.RTC_DEBUG(type_prop)
         if self._config.findNode("config_file"):
           config_fname.append(self._config.getProperty("config_file"))
 
