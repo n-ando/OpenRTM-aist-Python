@@ -48,7 +48,7 @@ class ConfigurationParamListenerType:
 # Configuration パラメータの変更に関するリスナクラス。
 # 以下のイベントに対してコールバックされる。
 #
-# - ON_UPDATE_CONFIG_PARAM
+# - ON_UPDATE_CONFIG_PARAM: パラメータが変更された
 #
 # @else
 # @class ConfigurationParamListener class
