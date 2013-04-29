@@ -842,10 +842,12 @@ class install_core_egg_info(_install_egg_info):
   def finalize_options(self):
     self.set_undefined_options('install_core_lib',
                                ('install_dir','install_dir'))
-    self.set_undefined_options('install_core',
-                               ('install_layout','install_layout'))
-    self.set_undefined_options('install_core',
-                               ('prefix_option','prefix_option'))
+    if hasattr(self, 'install_layout'):
+      self.set_undefined_options('install_core',
+                                 ('install_layout','install_layout'))
+    if hasattr(self, 'prefix_option'):
+      self.set_undefined_options('install_core',
+                                 ('prefix_option','prefix_option'))
     _install_egg_info.finalize_options(self)
 
 

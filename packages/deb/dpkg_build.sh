@@ -116,5 +116,9 @@ chmod 755 $packagedir/debian/rules
 cd $packagedir
 
 dpkg-buildpackage -W -us -uc -rfakeroot
+if test $? -ne 0; then
+  echo "dpkg-build failed"
+  exit -1
+fi
 
 mv $packagedir/../openrtm-aist* $packagedir/packages/
