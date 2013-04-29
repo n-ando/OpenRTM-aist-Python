@@ -348,7 +348,7 @@ def convert_file_code(file_name, char_code, crlf_code, hint=None):
   for line in open(file_name, "r"):
     try:
       outdata = conv_encoding(line.rstrip('\r\n'), char_code)
-    except Exception as e:
+    except Exception, e:
       print "Exception cought in " + file_name + ": " + line
       print e
       outfd.close()
