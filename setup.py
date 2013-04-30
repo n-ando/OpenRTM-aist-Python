@@ -241,7 +241,7 @@ example_path          = os.path.normpath(current_dir + "/" + example_dir)
 #
 document_dir          = "OpenRTM_aist/docs"
 target_doc_dir        = "share/openrtm-" + pkg_shortver + "/docs/python"
-document_match_regex  = ".*\.(html|png|gif||css|hhc|hhp|hhk)$"
+document_match_regex  = ".*\.(css|gif|png|html||hhc|hhk|hhp)$"
 document_path         = os.path.normpath(current_dir + "/" + document_dir)
 
 
@@ -403,6 +403,8 @@ def create_doc(doxygen_conf, target_dir):
   """
   def exec_doxygen(cmd):
     # remove target dir
+    if os.path.exists(target_dir + "/html/index.html"):
+      return
     if os.path.exists(target_dir):
       shutil.rmtree(target_dir)
 
@@ -660,7 +662,6 @@ class clean_all(Command):
   # sub_command member attribute
   sub_commands = [
     ('clean_core', None),
-    ('clean_doc',  None),
     ('clean_example', None)
     ]
 
