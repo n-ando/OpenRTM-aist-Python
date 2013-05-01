@@ -241,7 +241,7 @@ example_path          = os.path.normpath(current_dir + "/" + example_dir)
 #
 document_dir          = "OpenRTM_aist/docs"
 target_doc_dir        = "share/openrtm-" + pkg_shortver + "/docs/python"
-document_match_regex  = ".*\.(html|png|gif||css|hhc|hhp|hhk)$"
+document_match_regex  = ".*\.(css|gif|png|html||hhc|hhk|hhp)$"
 document_path         = os.path.normpath(current_dir + "/" + document_dir)
 
 
@@ -348,7 +348,7 @@ def convert_file_code(file_name, char_code, crlf_code, hint=None):
   for line in open(file_name, "r"):
     try:
       outdata = conv_encoding(line.rstrip('\r\n'), char_code)
-    except Exception as e:
+    except Exception, e:
       print "Exception cought in " + file_name + ": " + line
       print e
       outfd.close()
@@ -403,6 +403,8 @@ def create_doc(doxygen_conf, target_dir):
   """
   def exec_doxygen(cmd):
     # remove target dir
+    if os.path.exists(target_dir + "/html/index.html"):
+      return
     if os.path.exists(target_dir):
       shutil.rmtree(target_dir)
 
@@ -660,7 +662,6 @@ class clean_all(Command):
   # sub_command member attribute
   sub_commands = [
     ('clean_core', None),
-    ('clean_doc',  None),
     ('clean_example', None)
     ]
 
@@ -842,10 +843,12 @@ class install_core_egg_info(_install_egg_info):
   def finalize_options(self):
     self.set_undefined_options('install_core_lib',
                                ('install_dir','install_dir'))
-    self.set_undefined_options('install_core',
-                               ('install_layout','install_layout'))
-    self.set_undefined_options('install_core',
-                               ('prefix_option','prefix_option'))
+    if hasattr(self, 'install_layout'):
+      self.set_undefined_options('install_core',
+                                 ('install_layout','install_layout'))
+    if hasattr(self, 'prefix_option'):
+      self.set_undefined_options('install_core',
+                                 ('prefix_option','prefix_option'))
     _install_egg_info.finalize_options(self)
 
 
