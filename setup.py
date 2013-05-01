@@ -439,7 +439,9 @@ def create_doc(doxygen_conf, target_dir):
 # clean
 #   clean_core
 #   clean_example
-#   clean_doc
+# clean_doc (clean_doc is not subcommand of clean, because
+#            documentation files are included sdist pakcage
+#            )
 # sdist
 #   sdist_tgz
 #   sdist_zip
@@ -637,6 +639,12 @@ def remove_dirs(base_dir, dir_names):
     if os.path.exists(target_dir):
       shutil.rmtree(target_dir)
 
+def remove_files(base_dir, file_names):
+  for f in file_names:
+    target_file = os.path.normpath(base_dir + "/" + f)
+    if os.path.exists(target_file):
+      os.remove(target_file)
+
 #------------------------------------------------------------
 # "clean" command
 #------------------------------------------------------------
@@ -684,6 +692,8 @@ class clean_core(Command):
     return
   def run(self):
     remove_stubs(baseidl_path, baseidl_files, baseidl_mods)
+    remove_dirs('.', ["dist"])
+    remove_files('.', ["MANIFEST"])
 
 #------------------------------------------------------------
 # "clean_example" sub command
