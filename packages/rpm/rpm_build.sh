@@ -8,6 +8,23 @@
 #
 export LC_ALL=C
 
+clean_dirs()
+{
+    rm -rf *.log *.bak .rpmrc
+    dirs="BUILD RPMS SOURCES SPECS SRPMS BUILDROOT"
+    for d in $dirs; do
+	rm -rf $d
+    done
+
+}
+get_opt()
+{
+    if test "x$1" = "xclean" ; then
+	clean_dirs
+	exit 0
+    fi
+}
+
 check_distribution()
 {
     dist_name=""
@@ -65,6 +82,7 @@ get_version_info()
 
 create_rpmbuilddir()
 {
+    clean_dirs
     mkdir {BUILD,RPMS,SOURCES,SPECS,SRPMS}
     mkdir RPMS/{i386,i586,i686,x86_64,noarch}
     export BUILD_DIR=`pwd`
@@ -105,17 +123,11 @@ build_rpm()
     fi
 }
 
-get_opt()
+copy_rpm()
 {
-    if test "x$1" = "xclean" ; then
-	rm -rf *.log *.bak
-	dirs="BUILD RPMS SOURCES SPECS SRPMS BUILDROOT"
-	for d in $dirs; do
-	    rm -rf $d
-	done
-	exit 0
-    fi
+    find $BUILD_DIR -name '*.rpm' -exec cp {} ${BUILD_DIR}/.. \;
 }
+
 #------------------------------
 # main
 #------------------------------
@@ -130,4 +142,4 @@ copy_source_package
 create_spec_file
 
 build_rpm
-
+copy_rpm
