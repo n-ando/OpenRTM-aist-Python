@@ -214,14 +214,12 @@ baseidl_path  = os.path.normpath(current_dir + "/" + baseidl_dir)
 # scripts settings
 #
 pkg_scripts_unix  = ['OpenRTM_aist/utils/rtcd/rtcd_python',
-                     'OpenRTM_aist/utils/rtcprof/rtcprof_python',
-                     'OpenRTM_aist/ext/sdo/observer/setup.bat']
+                     'OpenRTM_aist/utils/rtcprof/rtcprof_python']
 pkg_scripts_win32 = ['OpenRTM_aist/utils/rtcd/rtcd.py',
                      'OpenRTM_aist/utils/rtcd/rtcd_python.exe',
                      'OpenRTM_aist/utils/rtcd/rtcd_python.bat',
                      'OpenRTM_aist/utils/rtcprof/rtcprof_python.py',
-                     'OpenRTM_aist/utils/rtcprof/rtcprof_python.bat',
-                     'OpenRTM_aist/ext/sdo/observer/setup.bat']
+                     'OpenRTM_aist/utils/rtcprof/rtcprof_python.bat']
 #
 # ext modules
 #
@@ -233,14 +231,14 @@ ext_match_regex_win32 = ".*\.(py|conf|bat|xml|idl)$"
 # examples
 #
 example_dir           = "OpenRTM_aist/examples"
-target_example_dir    = "share/openrtm-" + pkg_shortver + "/examples/python"
+target_example_dir    = "share/openrtm-" + pkg_shortver + "/example/python"
 example_match_regex   = ".*\.(py|conf|sh|xml|idl)$"
 example_path          = os.path.normpath(current_dir + "/" + example_dir)
 #
 # documents
 #
 document_dir          = "OpenRTM_aist/docs"
-target_doc_dir        = "share/openrtm-" + pkg_shortver + "/docs/python"
+target_doc_dir        = "share/openrtm-" + pkg_shortver + "/doc/python"
 document_match_regex  = ".*\.(css|gif|png|html||hhc|hhk|hhp)$"
 document_path         = os.path.normpath(current_dir + "/" + document_dir)
 
@@ -555,6 +553,21 @@ class build_core(build_sub):
     current_dir = baseidl_path
     idl_files   = [os.path.join(baseidl_path, f) for f in baseidl_files]
     compile_idl(self.omniidl, include_dirs, current_dir, idl_files)
+    self.run_command("build_py")
+
+from distutils.command.build_py import build_py as _build_py
+class build_py(_build_py):
+  """
+  This class is a subcommand of build_core command. The command copies
+  modules into build directory.
+  # This class was created for only copying OpenRTM-aist.pth file
+  """
+  description = "Copying pure python modules into build directory."
+  def run(self):
+    _build_py.run(self)
+    # copying OpenRTM-aist.pth file
+    self.copy_file(os.path.join(".", "OpenRTM-aist.pth"), self.build_lib,
+                   preserve_mode=False)
 
 #------------------------------------------------------------
 # "build_example" sub command
@@ -692,6 +705,7 @@ class clean_core(Command):
     return
   def run(self):
     remove_stubs(baseidl_path, baseidl_files, baseidl_mods)
+    remove_dirs('.', ["build"])
     remove_dirs('.', ["dist"])
     remove_files('.', ["MANIFEST"])
 
@@ -907,8 +921,13 @@ pkg_packages   = openrtm_core_packages \
 # IDL file list
 #
 pkg_package_data_files = {
-  'OpenRTM_aist': ['RTM_IDL/*.idl'],
-  'OpenRTM_aist': ['RTM_IDL/device_interfaces/*.idl']
+  'OpenRTM_aist': ['RTM_IDL/*.idl',
+                   'RTM_IDL/device_interfaces/*.idl',
+                   'ext/sdo/observer/*.conf',
+                   'ext/sdo/observer/*.bat',
+                   'ext/sdo/observer/*.sh',
+                   'ext/sdo/observer/*.idl',
+                   ],
   }
 #
 # scripts
@@ -917,17 +936,6 @@ if os_is() == "win32":
   pkg_scripts = pkg_scripts_win32
 else:
   pkg_scripts = pkg_scripts_unix
-#
-# ext modules
-#
-if os_is() == "win32":
-  ext_match_regex = ext_match_regex_win32
-else:
-  ext_match_regex = ext_match_regex_unix
-  pkg_ext_files = create_filelist(ext_dir,
-                                  "OpenRTM_aist/",
-                                  target_ext_dir,
-                                  ext_match_regex)
 
 #
 # example file list -> MyDistribution.example_files
@@ -965,6 +973,7 @@ core.setup(name             = pkg_name,
            distclass        = MyDistribution,
            cmdclass         = { "build": build_all,
                                 "build_core": build_core,
+                                "build_py": build_py,
                                 "build_example": build_example,
                                 "build_doc": build_doc,
                                 "clean": clean_all,
