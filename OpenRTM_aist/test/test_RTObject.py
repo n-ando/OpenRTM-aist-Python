@@ -27,6 +27,11 @@ from omniORB import CORBA, PortableServer
 from omniORB import any
 import unittest
 
+DEBUG=False
+def d_print(s):
+  if DEBUG:
+    print s
+
 configsample_spec = ["implementation_id", "TestComp",
          "type_name",         "TestComp",
          "description",       "Test example component",
@@ -54,52 +59,52 @@ class TestComp(OpenRTM_aist.RTObject_impl):
     OpenRTM_aist.RTObject_impl.__init__(self, orb=orb_, poa=poa_)
 
   def onInitialize(self):
-    print "onInitialize"
+    d_print("onInitialize")
     return RTC.RTC_OK
 
   def onFinalize(self):
-    print "onFinalize"
+    d_print("onFinalize")
     return RTC.RTC_OK
     
   def onStartup(self, ec_id):
-    print "onStartup"
+    d_print("onStartup")
     return RTC.RTC_OK
 
   def onShutdown(self, ec_id):
-    print "onSutdown"
+    d_print("onSutdown")
     return RTC.RTC_OK
 
   def onActivated(self, ec_id):
-    print "onActivated"
+    d_print("onActivated")
     return RTC.RTC_OK
 
   def onDeactivated(self, ec_id):
-    print "onDeactivated"
+    d_print("onDeactivated")
     return RTC.RTC_OK
 
   def onExecute(self, ec_id):
-    print "onExecute"
+    d_print("onExecute")
     return RTC.RTC_OK
 
   def onAborting(self, ec_id):
-    print "onAborting"
+    d_print("onAborting")
     return RTC.RTC_OK
 
   def onReset(self, ec_id):
-    print "onReset"
+    d_print("onReset")
     return RTC.RTC_OK
     
   def onStateUpdate(self, ec_id):
-    print "onStateUpdate"
+    d_print("onStateUpdate")
     return RTC.RTC_OK
 
   def onRateChanged(self, ec_id):
-    print "onRateChanged"
+    d_print("onRateChanged")
     return RTC.RTC_OK
 
     
 def TestCompInit(manager):
-  print "TestCompInit"
+  d_print("TestCompInit")
   global com
   profile = OpenRTM_aist.Properties(defaults_str=configsample_spec)
   manager.registerFactory(profile,
@@ -183,7 +188,7 @@ class TestRTObject_impl(unittest.TestCase):
 
   def test_get_context(self):
     rtobj = TestComp(self._orb, self._poa)
-    print rtobj.getObjRef().get_context(0)
+    d_print(rtobj.getObjRef().get_context(0))
     return
 
   def test_get_component_profile(self):
@@ -203,8 +208,8 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
     ec = OpenRTM_aist.PeriodicExecutionContext(rtobj.getObjRef(), 10)
     id = rtobj.getObjRef().attach_context(ec.getObjRef())
-    print "attach_context: ", id
-    print rtobj.getObjRef().detach_context(id)
+    d_print("attach_context: " + str(id))
+    d_print(rtobj.getObjRef().detach_context(id))
     poa = OpenRTM_aist.Manager.instance().getPOA()
     poa.deactivate_object(poa.servant_to_id(ec))
     return
@@ -250,7 +255,7 @@ class TestRTObject_impl(unittest.TestCase):
 
   def test_get_configuration(self):
     rtobj = TestComp(self._orb, self._poa)
-    print rtobj.getObjRef().get_configuration()
+    d_print(rtobj.getObjRef().get_configuration())
     return
 
   def test_get_monitoring(self):
@@ -329,7 +334,9 @@ class TestRTObject_impl(unittest.TestCase):
     ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
     ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
     ec.bindComponent(rtobj)
-    self.assertEqual(rtobj.getExecutionRate(0),1000.0)
+    import PeriodicExecutionContext
+    self.assertEqual(rtobj.getExecutionRate(0),
+                     1.0 / PeriodicExecutionContext.DEFAULT_PERIOD)
     return
 
   def test_setExecutionRate(self):
@@ -401,7 +408,7 @@ class TestRTObject_impl(unittest.TestCase):
     return
 
   def prelistenerFunc(self, id):
-    print "prelistenerFunc called !!!!"
+    d_print("prelistenerFunc called !!!!")
     return
 
   def test_addRemovePreComponentActionListener(self):
@@ -421,7 +428,7 @@ class TestRTObject_impl(unittest.TestCase):
     return
 
   def postlistenerFunc(self, id, ret):
-    print "postlistenerFunc called !!!!"
+    d_print("postlistenerFunc called !!!!")
     return
 
   def test_addRemovePostComponentActionListener(self):
@@ -465,7 +472,7 @@ class TestRTObject_impl(unittest.TestCase):
     return
 
   def portconretlistenerFunc(self, pname, cprof, ret):
-    print "portconretlistenerFunc called !!!!"
+    d_print("portconretlistenerFunc called !!!!")
     return
 
   def test_addRemovePortConnectRetListener(self):
@@ -479,7 +486,7 @@ class TestRTObject_impl(unittest.TestCase):
     return
 
   def configparamlistenerFunc(self, pname, cprof, ret):
-    print "configparamlistenerFunc called !!!!"
+    d_print("configparamlistenerFunc called !!!!")
     return
 
   def test_addRemoveConfigurationParamListener(self):
@@ -520,7 +527,7 @@ class TestRTObject_impl(unittest.TestCase):
     ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
     ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
     ec.bindComponent(rtobj)
-    print "preOnInitialize()"
+    d_print("preOnInitialize()")
     rtobj.preOnInitialize(0)
     return
 
