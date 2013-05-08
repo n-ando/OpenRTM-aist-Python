@@ -6,16 +6,36 @@
 #         Shinji Kurihara
 #         Tetsuo Ando
 #         Harumi Miyamoto
+#         Nobu Kawauchi
 #
+
+this_file=${0##*/}
+
+rtm_ver=`echo "$this_file" | sed -e "s/pkg_install_python_ubuntu-//g" -e "s/\.sh//g"`
+
+if test "$rtm_ver" = "pkg_install_python_ubuntu";then
+	rtm_ver=""
+else
+	rtm_ver="=$rtm_ver"
+fi
+
+echo "rtm_ver is $rtm_ver"
 
 #---------------------------------------
 # パッケージリスト
 #---------------------------------------
-omnipy_old="python python-omniorb2-omg omniidl4-python omniorb4-nameserver"
-omnipy="$omnipy_old python-omniorb-omg omniidl-python omniorb-nameserver"
-openrtm="openrtm-aist-python openrtm-aist-python-example"
-packages="$omnipy $openrtm"
-u_packages="$omnipy $openrtm "
+set_package_list()
+{
+	if [ "$code_name" = "hardy" ] || [ $code_name = "lucid" ]; then
+		omnipy="python python-omniorb2-omg omniidl4-python omniorb4-nameserver"
+	else
+		# oneiric, precise, quantal
+		omnipy="python python-pyorbit-omg omniidl-python omniorb-nameserver"
+	fi
+	openrtm="openrtm-aist-python$rtm_ver openrtm-aist-python-example$rtm_ver"
+	packages="$omnipy $openrtm"
+	u_packages="$omnipy $openrtm "
+}
 
 #---------------------------------------
 # ロケールの言語確認
@@ -54,11 +74,10 @@ fi
 
 }
 
-
 #---------------------------------------
-# リポジトリサーバ
+# コードネーム取得
 #---------------------------------------
-create_srclist () {
+check_codename () {
     codename=`sed -n /DISTRIB_CODENAME=/p /etc/lsb-release`
     cnames=`echo "$codename" | sed 's/DISTRIB_CODENAME=//'`
     #cnames="sarge edgy feisty gutsy hardy intrepid"
@@ -79,6 +98,12 @@ create_srclist () {
 	echo $msg3
 	exit
     fi
+}
+
+#---------------------------------------
+# リポジトリサーバ
+#---------------------------------------
+create_srclist () {
     openrtm_repo="deb http://www.openrtm.org/pub/Linux/ubuntu/ $code_name main"
 }
 
@@ -153,6 +178,9 @@ uninstall_packages () {
 #---------------------------------------
 check_lang
 check_root
+check_codename
+set_package_list
+
 if test "x$1" = "x-u" ; then
     uninstall_packages `reverse $u_packages`
 else

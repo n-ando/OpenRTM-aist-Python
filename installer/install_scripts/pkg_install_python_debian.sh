@@ -6,15 +6,25 @@
 #         Shinji Kurihara
 #         Tetsuo Ando
 #         Harumi Miyamoto
+#         Nobu Kawauchi
 #
 
 #---------------------------------------
 # パッケージリスト
 #---------------------------------------
-omnipy="python python-omniorb2-omg python-omniorb2 omniidl4-python omniorb4-nameserver"
-openrtm="openrtm-aist-python openrtm-aist-python-example"
-packages="$omnipy $openrtm"
-u_packages="$omnipy $openrtm "
+set_package_list()
+{
+	if [ "$code_name" = "sarge" ] || [ "$code_name" = "etch" ] || [ "$code_name" = "lenny" ]; then
+		omnipy="python python-omniorb2-omg python-omniorb2 omniidl4-python omniorb4-nameserver"
+	elif [ "$code_name" = "squeeze" ]; then	# 6.0
+		omnipy="python python-omniorb-omg python-omniorb omniidl-python omniorb4-nameserver"
+	else
+		omnipy="python python-omniorb-omg python-omniorb omniidl-python omniorb-nameserver"
+	fi
+	openrtm="openrtm-aist-python openrtm-aist-python-example"
+	packages="$omnipy $openrtm"
+	u_packages="$omnipy $openrtm "
+}
 
 #---------------------------------------
 # ロケールの言語確認
@@ -55,10 +65,10 @@ fi
 }
 
 #---------------------------------------
-# リポジトリサーバ
+# コードネーム取得
 #---------------------------------------
-create_srclist () {
-    cnames="sarge etch lenny"
+check_codename () {
+    cnames="sarge etch lenny squeeze wheezy"
     for c in $cnames; do
 	if test -f "/etc/apt/sources.list"; then
 	    res=`grep $c /etc/apt/sources.list`
@@ -76,6 +86,12 @@ create_srclist () {
 	echo $msg3
 	exit
     fi
+}
+
+#---------------------------------------
+# リポジトリサーバ
+#---------------------------------------
+create_srclist () {
     openrtm_repo="deb http://www.openrtm.org/pub/Linux/debian/ $code_name main"
 }
 
@@ -150,6 +166,9 @@ uninstall_packages () {
 #---------------------------------------
 check_lang
 check_root
+check_codename
+set_package_list
+
 if test "x$1" = "x-u" ; then
     uninstall_packages `reverse $u_packages`
 else
