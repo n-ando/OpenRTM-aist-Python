@@ -5,23 +5,30 @@
 # @author Noriaki Ando <n-ando@aist.go.jp>
 #         Shinji Kurihara
 #         Tetsuo Ando
+#         Nobu Kawauchi
 #
-# ¤³¤Î¥·¥§¥ë¥¹¥¯¥ê¥×¥È¤Ï¡¢ace¤ª¤è¤ÓomniORB¤Î¥Ñ¥Ã¥±¡¼¥¸¤ò¥¤¥ó¥¹¥È¡¼¥ë¤·¡¢
-# fedora¤Î³«È¯´Ä¶­¤ò¹½ÃÛ¤·¤Ş¤¹¡£
+# ã“ã®ã‚·ã‚§ãƒ«ã‚¹ã‚¯ãƒªãƒ—ãƒˆã¯ã€aceãŠã‚ˆã³omniORBã®ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã€
+# fedoraã®é–‹ç™ºç’°å¢ƒã‚’æ§‹ç¯‰ã—ã¾ã™ã€‚
 #
 # $Id$
 #
 
 #---------------------------------------
-# ¥Ñ¥Ã¥±¡¼¥¸¥ê¥¹¥È
+# ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ãƒªã‚¹ãƒˆ
 #---------------------------------------
-omnipy="python omniORB-servers omniORBpy omniORBpy-devel omniORBpy-standard"
+version_num=`cat /etc/fedora-release | awk '/Fedora/{print $3}' -`
+if [ $version_num -ge 16 ] && [ $version_num -le 18 ]; then
+	# ãƒãƒ¼ã‚¸ãƒ§ãƒ³ãŒ16,17,18ã®å ´åˆ
+	omnipy="python python-devel openssl-devel doxygen omniORB-servers omniORBpy omniORBpy-devel omniORBpy-standard"
+else
+	omnipy="python omniORB-servers omniORBpy omniORBpy-devel omniORBpy-standard"
+fi
 openrtm="OpenRTM-aist-Python OpenRTM-aist-Python-example"
 packages="$omnipy $openrtm"
 
 
 #----------------------------------------
-# root ¤«¤É¤¦¤«¤ò¥Á¥§¥Ã¥¯
+# root ã‹ã©ã†ã‹ã‚’ãƒã‚§ãƒƒã‚¯
 #----------------------------------------
 check_root () {
     if test ! `id -u` = 0 ; then
@@ -34,7 +41,7 @@ check_root () {
 }
 
 #---------------------------------------
-# ¥¤¥ó¥¹¥È¡¼¥ëºÑ¥Ñ¥Ã¥±¡¼¥¸¥ê¥¹¥È
+# ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«æ¸ˆãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ãƒªã‚¹ãƒˆ
 #---------------------------------------
 rpm_qa="/tmp/yum_list.txt"
 get_pkg_list () {
@@ -45,7 +52,7 @@ clean_pkg_list () {
 }
 
 #---------------------------------------
-# ¥ê¥İ¥¸¥È¥ê¥µ¥¤¥ÈÀßÄê¥Õ¥¡¥¤¥ë¤òÀ¸À®
+# ãƒªãƒã‚¸ãƒˆãƒªã‚µã‚¤ãƒˆè¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã‚’ç”Ÿæˆ
 #---------------------------------------
 openrtm_repo () {
 cat <<EOF
@@ -61,13 +68,13 @@ EOF
 create_repo() {
     repo="/etc/yum.repos.d/openrtm.repo"
     if test ! -f $repo ; then
-	echo "OpenRTM-aist ¤Î¥ê¥İ¥¸¥È¥ê¤¬ÅĞÏ¿¤µ¤ì¤Æ¤¤¤Ş¤»¤ó¡£"
-	echo "OpenRTM-aist ¤Î¥ê¥İ¥¸¥È¥ê: "
+	echo "OpenRTM-aist ã®ãƒªãƒã‚¸ãƒˆãƒªãŒç™»éŒ²ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚"
+	echo "OpenRTM-aist ã®ãƒªãƒã‚¸ãƒˆãƒª: "
 	echo "  http://www.openrtm.org/pub/Linux/Fedora/"
-	read -p "¤òÄÉ²Ã¤·¤Ş¤¹¡£¤è¤í¤·¤¤¤Ç¤¹¤«¡© (y/n) [y] " kick_shell
+	read -p "ã‚’è¿½åŠ ã—ã¾ã™ã€‚ã‚ˆã‚ã—ã„ã§ã™ã‹ï¼Ÿ (y/n) [y] " kick_shell
 
 	if test "x$kick_shell" = "xn" ; then
-	    echo "ÃæÃÇ¤·¤Ş¤¹¡£"
+	    echo "ä¸­æ–­ã—ã¾ã™ã€‚"
 	    exit 0
 	else
 	    openrtm_repo > /etc/yum.repos.d/openrtm.repo
@@ -76,7 +83,7 @@ create_repo() {
 }
 
 #----------------------------------------
-# ¥Ñ¥Ã¥±¡¼¥¸¥¤¥ó¥¹¥È¡¼¥ë´Ø¿ô
+# ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«é–¢æ•°
 #----------------------------------------
 install_packages () {
     for p in $*; do
@@ -113,7 +120,7 @@ install_packages () {
 
 
 #------------------------------------------------------------
-# ¥ê¥¹¥È¤òµÕ½ç¤Ë¤¹¤ë
+# ãƒªã‚¹ãƒˆã‚’é€†é †ã«ã™ã‚‹
 #------------------------------------------------------------
 reverse () {
     for i in $*; do
@@ -122,7 +129,7 @@ reverse () {
 }
 
 #----------------------------------------
-# ¥Ñ¥Ã¥±¡¼¥¸¤ò¥¢¥ó¥¤¥ó¥¹¥È¡¼¥ë¤¹¤ë
+# ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã‚’ã‚¢ãƒ³ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã™ã‚‹
 #----------------------------------------
 uninstall_packages () {
     for p in $*; do
@@ -134,7 +141,7 @@ uninstall_packages () {
 }
 
 #---------------------------------------
-# ¥á¥¤¥ó
+# ãƒ¡ã‚¤ãƒ³
 #---------------------------------------
 check_root
 if test "x$1" = "x-u" ; then
