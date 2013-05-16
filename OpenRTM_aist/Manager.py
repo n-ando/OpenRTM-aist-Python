@@ -64,6 +64,7 @@ mutex = threading.RLock()
 def handler(signum, frame):
   mgr = OpenRTM_aist.Manager.instance()
   mgr.terminate()
+  signal.alarm(2)
 
 
 
@@ -379,7 +380,7 @@ class Manager:
       return False
 
     lsvc_ = [s.strip() for s in self._config.getProperty("manager.local_service.modules").split(",")]
-
+    if len(svc_) == 0: continue
     for svc_ in lsvc_:
       basename_ = svc_.split(".")[0]+"Init"
       try:
@@ -1877,7 +1878,7 @@ class Manager:
       try:
         reffile = file(self._config.getProperty("manager.refstring_path"),'w')
       except:
-        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+        self._rtcout.RTC_WARN(OpenRTM_aist.Logger.print_exception())
         return False
       else:
         reffile.write(self._orb.object_to_string(self._mgrservant.getObjRef()))
