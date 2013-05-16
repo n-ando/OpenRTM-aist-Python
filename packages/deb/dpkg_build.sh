@@ -127,6 +127,17 @@ extract_source()
   mv ${PKG_NAME} ${BUILD_ROOT}
 }
 
+create_files()
+{
+  eval `dpkg-architecture`
+  ARCH=$DEB_HOST_ARCH
+cat << EOF >> debian/files
+openrtm-aist-python_1.1.0-1_$ARCH.deb main extra
+openrtm-aist-python-example_1.1.0-1_$ARCH.deb main extra
+openrtm-aist-python-doc_1.1.0-1_all.deb main extra
+EOF
+}
+
 copy_control_files()
 {
   chmod 444 debian/files
@@ -168,6 +179,7 @@ get_version_info
 cleanup_files
 create_source_package
 extract_source
+create_files
 copy_control_files
 
 build_package
