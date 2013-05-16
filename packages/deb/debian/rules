@@ -42,10 +42,10 @@ install: build
 	python setup.py install_core --prefix=$(CURDIR)/debian/openrtm-aist-python/usr --install-layout=deb
 	# installing examples
 	(mkdir $(CURDIR)/debian/openrtm-aist-python-example/usr/)
-	python setup.py install_example --install-dir=$(CURDIR)/debian/openrtm-aist-python-example/usr/ --install-layout=deb
+	python setup.py install_example --install-dir=$(CURDIR)/debian/openrtm-aist-python-example/usr/
 	# installing examples
 	(mkdir $(CURDIR)/debian/openrtm-aist-python-doc/usr/)
-	python setup.py install_doc --install-dir=$(CURDIR)/debian/openrtm-aist-python-doc/usr/ --install-layout=deb
+	python setup.py install_doc --install-dir=$(CURDIR)/debian/openrtm-aist-python-doc/usr/
 	dh_install -s
 
 # Build architecture-independent files here.
