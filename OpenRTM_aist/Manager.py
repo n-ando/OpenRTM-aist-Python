@@ -1738,11 +1738,11 @@ class Manager:
     self._rtcout.RTC_TRACE("Manager.shutdownNaming()")
     comps = self.getComponents()
     
-    for copm in comps:
+    for comp in comps:
       names = comp.getNamingNames()
       self._listeners.naming_.preUnbind(comp, names);
       for name in names:
-        self._namingNamager.unbindObject(name)
+        self._namingManager.unbindObject(name)
       self._listeners.naming_.postUnbind(comp, names);
 
     self._namingManager.unbindAll()
