@@ -10,7 +10,7 @@
 # - copyright
 # - dirs
 # - docs
-# - rules         
+# - rules
 #
 # the following files shoud be generated at make-dist
 # - files
@@ -18,7 +18,7 @@
 # Package build process
 #
 # 1. edit "changelog" file with appropriate package version number
-#    like "1.1.0-2." This version number will be used for actual 
+#    like "1.1.0-2." This version number will be used for actual
 #    deb package files.
 #
 # 2. Check permissions of the parent directory of distribution sourcecode
@@ -29,96 +29,158 @@
 #    This script do everithings.
 #
 
-export PATH=/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin:/usr/local/X11R6/bin:/usr/local/sbin:/usr/sbin:/sbin
 export LANG=C
 export LC_ALL=C
 
-# system information
-os=`uname -s`
-release=`uname -r`-`uname -p`
+BUILD_ROOT=""
 
-dist_name=""
-dist_key=""
-# Check the lsb distribution name
-if test -f /etc/lsb-release ; then
+cleanup_files()
+{
+  get_version_info
+  rm -f ../openrtm-aist*.deb
+  rm -f ../openrtm-aist*.dsc
+  rm -f ../openrtm-aist*.changes
+  rm -f ../openrtm-aist*.tar.gz
+  rm -rf ${BUILD_ROOT}
+}
+
+get_opt()
+{
+  if test "x$1" = "xclean"; then
+    cleanup_files
+    exit 0
+  fi
+}
+
+check_distribution()
+{
+  os=`uname -s`
+  release=`uname -r`-`uname -p`
+  dist_name=""
+  dist_key=""
+  # Check the lsb distribution name
+  if test -f /etc/lsb-release ; then
     . /etc/lsb-release
     if test "x$DISTRIB_DESCRIPTION" != "x" ; then
-	dist_name=$DISTRIB_DESCRIPTION-`uname -m`
-	dist_key=$DISTRIB_ID
+      dist_name=$DISTRIB_DESCRIPTION-`uname -m`
+      dist_key=$DISTRIB_ID
     fi
-fi
-# Check the Fedora version
-if test "x$dist_name" = "x" && test -f /etc/fedora-release ; then
+  fi
+  # Check the Fedora version
+  if test "x$dist_name" = "x" && test -f /etc/fedora-release ; then
     dist_name=`cat /etc/fedora-release`-`uname -m`
     dist_key=`sed -e 's/.[^0-9]*\([0-9]\).*/fc\1/' /etc/fedora-release`
-fi
-# Check the Debian version
-if test "x$dist_name" = "x" && test -f /etc/debian_version ; then
+  fi
+  # Check the Debian version
+  if test "x$dist_name" = "x" && test -f /etc/debian_version ; then
     dist_name="Debian"`cat /etc/debian_version`-`uname -m`
     dist_key="Debian"
-fi
-# Check the Vine version
-if test "x$dist_name" = "x" && test -f /etc/vine-release ; then
+  fi
+  # Check the Vine version
+  if test "x$dist_name" = "x" && test -f /etc/vine-release ; then
     dist_name=`cat /etc/vine-release`-`uname -m`
     dist_key=`sed -e 's/.*\([0-9]\)\.\([0-9]\).*/vl\1\2/' /etc/vine-release`
-fi
-# Check the TuboLinux version
-if test "x$dist_name" = "x" && test -f /etc/turbolinux-release ; then
+  fi
+  # Check the TuboLinux version
+  if test "x$dist_name" = "x" && test -f /etc/turbolinux-release ; then
     dist_name=`cat /etc/tubolinux-release`-`uname -m`
     dist_key=""
-fi
+  fi
 
-if test "x$dist_name" = "x" ; then
+  if test "x$dist_name" = "x" ; then
     dist_name=$os$release
-fi
-# Check the RedHat/Fedora version
-if test "x$dist_name" = "x" && test -f /etc/redhat-release ; then
+  fi
+  # Check the RedHat/Fedora version
+  if test "x$dist_name" = "x" && test -f /etc/redhat-release ; then
     dist_name=`cat /etc/redhat-release`-`uname -m`
-fi
+  fi
 
-# only fedora and vine
-if test ! "x$dist_key" = "xDebian" -a ! "x$dist_key" = "xUbuntu" ; then
+  # only fedora and vine
+  if test ! "x$dist_key" = "xDebian" -a ! "x$dist_key" = "xUbuntu" ; then
     echo $dist_key
     echo "This is not debian/ubuntu"
     exit 0
-fi
+  fi
+  DIST_KEY=$dist_key
+  DIST_NAME=`echo $dist_name | sed 's/[ |\(|\)]//g'`
+}
 
-#------------------------------------------------------------
-# create "files" file
-#------------------------------------------------------------
-if test ! -f "files" ; then
-    PKGVER=`head -n 1 changelog | sed 's/.*(\([0-9\.\-]*\).*/\1/'`
-    echo "openrtm-aist-python_"${PKGVER}"_amd64.deb main extra" > files
-    echo "openrtm-aist-python-example_"${PKGVER}"_amd64.deb main extra" >> files
-    echo "openrtm-aist-python-doc_"${PKGVER}"_all.deb main extra" >> files
-fi
+get_version_info()
+{
+    VERSION=`../../setup.py --version`
+    SHORT_VERSION=`echo $VERSION | sed 's/\.[0-9]*$//'`
+    BUILD_ROOT="buildroot"
+    PKG_NAME="OpenRTM-aist-Python-${VERSION}"
+}
 
-#------------------------------------------------------------
-# package build process
-#------------------------------------------------------------
-packagedir=`pwd`/../../
-mkdir $packagedir/debian
+create_source_package()
+{
+  cd ../../
+  ./setup.py build
+  ./setup.py sdist
+  cd -
+}
 
-rm -f $packagedir/packages/openrtm-aist*
+extract_source()
+{
+  tar xvzf ../../dist/${PKG_NAME}.tar.gz
+  mv ${PKG_NAME} ${BUILD_ROOT}
+}
 
-cp README.Debian $packagedir/debian/
-cp changelog $packagedir/debian/
-cp compat $packagedir/debian/
-cp control $packagedir/debian/
-cp copyright $packagedir/debian/
-cp dirs $packagedir/debian/
-cp docs $packagedir/debian/
-cp files $packagedir/debian/
-chmod 444 $packagedir/debian/files
-cp rules $packagedir/debian/
-chmod 755 $packagedir/debian/rules
+create_files()
+{
+  eval `dpkg-architecture`
+  ARCH=$DEB_HOST_ARCH
+cat << EOF >> debian/files
+openrtm-aist-python_1.1.0-1_$ARCH.deb main extra
+openrtm-aist-python-example_1.1.0-1_$ARCH.deb main extra
+openrtm-aist-python-doc_1.1.0-1_all.deb main extra
+EOF
+}
 
-cd $packagedir
+copy_control_files()
+{
+  chmod 444 debian/files
+  chmod 755 debian/rules
+  cp -r debian ${BUILD_ROOT}/
+}
 
-dpkg-buildpackage -W -us -uc -rfakeroot
-if test $? -ne 0; then
-  echo "dpkg-build failed"
-  exit -1
-fi
+build_package()
+{
+  if test ! -d ${BUILD_ROOT} ; then
+    echo "${BUILD_ROOT} not found. Aborting."
+    exit -1
+  fi
+  cd $BUILD_ROOT
+  dpkg-buildpackage -W -us -uc -rfakeroot
+  if test $? -ne 0; then
+    echo "dpkg-build failed"
+    exit -1
+  fi
+  cd -
+}
 
-mv $packagedir/../openrtm-aist* $packagedir/packages/
+copy_debfiles()
+{
+  mv ./openrtm-aist*.deb ..
+  mv ./openrtm-aist*.dsc ..
+  mv ./openrtm-aist*.changes ..
+  mv ./openrtm-aist*.tar.gz ..
+}
+
+#==============================
+# main
+#==============================
+get_opt $*
+
+check_distribution
+get_version_info
+
+cleanup_files
+create_source_package
+extract_source
+create_files
+copy_control_files
+
+build_package
+copy_debfiles

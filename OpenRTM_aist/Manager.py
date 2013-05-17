@@ -64,6 +64,7 @@ mutex = threading.RLock()
 def handler(signum, frame):
   mgr = OpenRTM_aist.Manager.instance()
   mgr.terminate()
+  signal.alarm(2)
 
 
 

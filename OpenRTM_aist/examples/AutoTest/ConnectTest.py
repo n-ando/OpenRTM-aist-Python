@@ -87,7 +87,7 @@ g_interface_type3 = "MyService"
 g_conprof3 = RTC.ConnectorProfile(g_name3, g_connector_id3, [g_out_ports[g_port3], g_in_ports[g_port3]], [SDOPackage.NameValue("dataport.interface_type",any.to_any(g_interface_type3))])
 
 ##--------------------------------------------------------------------
-## ρΰΆη½χθΑ΅ξ·ΐθΫόιθ¤κ°ΤλΜ¤ρΰ£
+## ‚βΆξΏκΑΌ£όΉΐπέλοξ¤τ²ΤφΞ¤‚βΌ¥
 g_diff_send_file = "./original-data"
 g_diff_recv_file = "./received-data"
 g_check_message = g_diff_recv_file + " file not found."
@@ -106,7 +106,7 @@ g_mess_footer = " > "
 ##--------------------------------------------------------------------
 ## ιζªλ¦ªρφΆλυ°ώΎΤε¤µεγΊε¤±εβΏεγΌεγΞε¦―εγΚε¤£εβ¤εγ«πª­κ°(εγ®ε¦ΎεβΏεγΪε¦Ύεγ)
 ##
-## (κΎΚθΚ²)
+## (τΐΚπΜ²)
 ## subscription_type : "flush", "new", "periodic"
 ## push_policy       : "ALL", "FIFO", "SKIP", "NEW", ""
 ## connect_direction : 0:outport -> inport, 1:inport -> outport
@@ -138,7 +138,7 @@ def make_connecter_profile(subscription_type, push_policy, connect_direction):
 ##--------------------------------------------------------------------
 ## ιζªλ¦ªρφΆλυ°ώΎΤη½χθΑ΅εγΚε¤£εβ¤εγ«ιι΄λÒ¦
 ##
-## (κΎΚθΚ²)
+## (τΐΚπΜ²)
 ## εαªεα—
 ##--------------------------------------------------------------------
 def delete_recv_file():
@@ -151,7 +151,7 @@ def delete_recv_file():
 ##--------------------------------------------------------------------
 ## ιζªλ¦ªρφΆλυ°ώΎΤλ€Άη½χθΑ΅εγΚε¤£εβ¤εγ«εα®εγ®ε¦ΎεβΏμ±ΘκΌƒ
 ##
-## (κΎΚθΚ²)
+## (τΐΚπΜ²)
 ## εαªεα—
 ## (λθ»εβ΄η€¤)  True : θΊ€οη΄εΰ  False : θΊΊζΈ€οη΄
 ##--------------------------------------------------------------------

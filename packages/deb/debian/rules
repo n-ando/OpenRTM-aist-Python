@@ -39,7 +39,7 @@ install: build
 	dh_installdirs
 
 	# installing core
-	python setup.py install_core --prefix=$(CURDIR)/debian/openrtm-aist-python/usr
+	python setup.py install_core --prefix=$(CURDIR)/debian/openrtm-aist-python/usr --install-layout=deb
 	# installing examples
 	(mkdir $(CURDIR)/debian/openrtm-aist-python-example/usr/)
 	python setup.py install_example --install-dir=$(CURDIR)/debian/openrtm-aist-python-example/usr/
