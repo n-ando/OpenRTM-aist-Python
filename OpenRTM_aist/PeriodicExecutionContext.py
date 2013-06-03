@@ -591,6 +591,21 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     return RTC.RTC_OK
 
 
+  def onStopped(self):
+    guard = OpenRTM_aist.ScopedLock(self._svcmutex)
+    self._svc = False
+    del guard
+
+    guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
+    self._workerthread._cond.acquire()
+    self._workerthread._running = True
+    self._workerthread._cond.notify()
+    self._workerthread._cond.release()
+    del guard
+    self.wait()
+    return RTC.RTC_OK
+
+
   # virtual RTC::ReturnCode_t
   # onWaitingActivated(RTC_impl::RTObjectStateMachine* comp, long int count);
   def onWaitingActivated(self, comp, count):
