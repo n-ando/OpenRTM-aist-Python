@@ -48,6 +48,24 @@ manager = None
 # @endif
 mutex = threading.RLock()
 
+##
+# @if jp
+# @brief WindowsÍÑAlarm
+# @else
+# @brief Alarm for Windows
+# @endif
+import os
+import time
+import threading
+
+class Alarm (threading.Thread):
+  def __init__ (self, timeout):
+    threading.Thread.__init__ (self)
+    self.timeout = timeout
+    self.setDaemon(True)
+  def run (self):
+    time.sleep(self.timeout)
+    os._exit(1)
 
 ##
 # @if jp
@@ -64,8 +82,12 @@ mutex = threading.RLock()
 def handler(signum, frame):
   mgr = OpenRTM_aist.Manager.instance()
   mgr.terminate()
-  signal.alarm(2)
-
+  import os
+  if os.sep == '/':
+    signal.alarm(2)
+  else:
+    alarm = Alarm(2)
+    alarm.start()
 
 
 ##
@@ -380,8 +402,8 @@ class Manager:
       return False
 
     lsvc_ = [s.strip() for s in self._config.getProperty("manager.local_service.modules").split(",")]
-    if len(svc_) == 0: continue
     for svc_ in lsvc_:
+      if len(svc_) == 0: continue
       basename_ = svc_.split(".")[0]+"Init"
       try:
         self._module.load(svc_, basename_)
@@ -792,7 +814,6 @@ class Manager:
     comp_prop = OpenRTM_aist.Properties()
     comp_id   = OpenRTM_aist.Properties()
 
-    print "comp_args:", comp_args
     if not self.procComponentArgs(comp_args, comp_id, comp_prop):
       return None
 
