@@ -343,9 +343,19 @@ def convert_file_code(file_name, char_code, crlf_code, hint=None):
     # end of conv_encoding()
   temp_fname = file_name + ".tmp"
   outfd = open(temp_fname, "w")
+  def coding_name(coding):
+    conv = {"euc_jp": "euc-jp",
+            "shift_jis": "cp932"}
+    if conv.has_key(coding):
+      return conv[coding]
+    return coding
+  sub_str = "coding: " + coding_name(char_code)
+  import re
   for line in open(file_name, "r"):
     try:
       outdata = conv_encoding(line.rstrip('\r\n'), char_code)
+      outdata = re.sub("coding: [^ ]*", sub_str, outdata)
+      outdata = re.sub("encoding: [^ ]*", sub_str, outdata)
     except Exception, e:
       print "Exception cought in " + file_name + ": " + line
       print e
@@ -564,6 +574,11 @@ class build_py(_build_py):
   """
   description = "Copying pure python modules into build directory."
   def run(self):
+    # Preparering rtcprof_python.py for Windows
+    if os_is() == "win32":
+      rtcprof_dir = os.path.join("OpenRTM_aist", "utils", "rtcprof/")
+      self.copy_file(os.path.join(rtcprof_dir, "rtcprof.py"),
+                     os.path.join(rtcprof_dir, "rtcprof_python.py"))
     _build_py.run(self)
     # copying OpenRTM-aist.pth file
     self.copy_file(os.path.join(".", "OpenRTM-aist.pth"), self.build_lib,
