@@ -351,7 +351,8 @@ def convert_file_code(file_name, char_code, crlf_code, hint=None):
     return coding
   sub_str = "coding: " + coding_name(char_code)
   import re
-  for line in open(file_name, "r"):
+  infd = open(file_name, "r")
+  for line in infd:
     try:
       outdata = conv_encoding(line.rstrip('\r\n'), char_code)
       outdata = re.sub("coding: [^ ]*", sub_str, outdata)
@@ -359,13 +360,15 @@ def convert_file_code(file_name, char_code, crlf_code, hint=None):
     except Exception, e:
       print "Exception cought in " + file_name + ": " + line
       print e
+      infd.close()
       outfd.close()
       os.remove(temp_fname)
       sys.exit(1)
     outfd.write(outdata + crlf_code)
+  infd.close()
   os.remove(file_name)
-  os.rename(temp_fname, file_name)
   outfd.close()
+  os.rename(temp_fname, file_name)
 
 #------------------------------------------------------------
 # compiling IDL files
