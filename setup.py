@@ -802,16 +802,20 @@ class sdist_zip(sdist):
     self.get_file_list()
     if self.manifest_only:
       return
+    """
     # converting character code into Shift-JIS
     import re
     for f in self.filelist.files:
       if not re.match('OpenRTM_aist.*\.py$', f): continue
       convert_file_code(f, "shift_jis", "\r\n", "euc_jp")
+    """
     self.make_distribution()
+    """
     # reverting character code
     for f in self.filelist.files:
       if not re.match('OpenRTM_aist.*\.py$', f): continue
       convert_file_code(f, "euc_jp", "\n", "shift_jis")
+    """
 
 #============================================================
 # install command classes
