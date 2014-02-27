@@ -20,9 +20,9 @@ import glob
 import makewxs
 
 data = [
-    ("docs/ClassReference-jp/html",               "*.css *.gif *.png *.html *.hhc *.hhk *.hhp"),
-    ("docs/ClassReference-en/html",               "*.css *.gif *.png *.html *.hhc *.hhk *.hhp"),
-    ("idlcompiler",                                 "idlcompile.bat idlcompile.py"),
+    ("OpenRTM_aist/docs/ClassReference-jp/html",               "*.css *.gif *.png *.html *.hhc *.hhk *.hhp"),
+    ("OpenRTM_aist/docs/ClassReference-en/html",               "*.css *.gif *.png *.html *.hhc *.hhk *.hhp"),
+    ("installer",                                 "idlcompile.bat idlcompile.py"),
     ("OpenRTM_aist/utils/rtm-naming",             "rtm-naming.py"),
     ("OpenRTM_aist/examples",                     "*.conf"),
     ("OpenRTM_aist/examples/AutoControl",         "*.py *.conf"),
@@ -38,26 +38,6 @@ data = [
     ("OpenRTM_aist/examples/TkJoyStick",          "*.py *.conf"),
     ("OpenRTM_aist/examples/TkLRFViewer",         "*.py *.conf"),
     ("OpenRTM_aist/examples/Templates",           "*.py *.xml"),
-    ("OpenRTM_aist24",                            "*.py"),
-    ("OpenRTM_aist24/ext",                        "*.py"),
-    ("OpenRTM_aist24/ext/sdo",                    "*.py"),
-    ("OpenRTM_aist24/ext/sdo/observer",           "*.py *.idl rtc.conf setup.bat"),
-    ("OpenRTM_aist24/utils/rtcd",                 "rtcd.py rtcd_python.bat rtcd_python.exe rtcd.conf"),
-    ("OpenRTM_aist24/utils/rtcprof",              "rtcprof.py rtcprof_python.bat"),
-    ("OpenRTM_aist24/utils/rtc-template",         "*.py"),
-    ("OpenRTM_aist24/RTM_IDL",                    "*.py *.idl *.pth"),
-    ("OpenRTM_aist24/RTM_IDL/device_interfaces",  "*.py *.idl"),
-    ("OpenRTM_aist24/root",                       "*.pth"),
-    ("OpenRTM_aist25",                            "*.py"),
-    ("OpenRTM_aist25/ext",                        "*.py"),
-    ("OpenRTM_aist25/ext/sdo",                    "*.py"),
-    ("OpenRTM_aist25/ext/sdo/observer",           "*.py *.idl rtc.conf setup.bat"),
-    ("OpenRTM_aist25/utils/rtcd",                 "rtcd.py rtcd_python.bat rtcd_python.exe rtcd.conf"),
-    ("OpenRTM_aist25/utils/rtcprof",              "rtcprof.py rtcprof_python.bat"),
-    ("OpenRTM_aist25/utils/rtc-template",         "*.py"),
-    ("OpenRTM_aist25/RTM_IDL",                    "*.py *.idl *.pth"),
-    ("OpenRTM_aist25/RTM_IDL/device_interfaces",  "*.py *.idl"),
-    ("OpenRTM_aist25/root",                       "*.pth"),
     ("OpenRTM_aist26",                            "*.py"),
     ("OpenRTM_aist26/ext",                        "*.py"),
     ("OpenRTM_aist26/ext/sdo",                    "*.py"),
@@ -67,7 +47,17 @@ data = [
     ("OpenRTM_aist26/utils/rtc-template",         "*.py"),
     ("OpenRTM_aist26/RTM_IDL",                    "*.py *.idl *.pth"),
     ("OpenRTM_aist26/RTM_IDL/device_interfaces",  "*.py *.idl"),
-    ("OpenRTM_aist26/root",                       "*.pth")
+    ("OpenRTM_aist26/root",                       "*.pth"),
+    ("OpenRTM_aist27",                            "*.py"),
+    ("OpenRTM_aist27/ext",                        "*.py"),
+    ("OpenRTM_aist27/ext/sdo",                    "*.py"),
+    ("OpenRTM_aist27/ext/sdo/observer",           "*.py *.idl rtc.conf setup.bat"),
+    ("OpenRTM_aist27/utils/rtcd",                 "rtcd.py rtcd_python.bat rtcd_python.exe rtcd.conf"),
+    ("OpenRTM_aist27/utils/rtcprof",              "rtcprof.py rtcprof_python.bat"),
+    ("OpenRTM_aist27/utils/rtc-template",         "*.py"),
+    ("OpenRTM_aist27/RTM_IDL",                    "*.py *.idl *.pth"),
+    ("OpenRTM_aist27/RTM_IDL/device_interfaces",  "*.py *.idl"),
+    ("OpenRTM_aist27/root",                       "*.pth")
 ]
 
 ## Resource path
@@ -82,30 +72,23 @@ else:
 ## make temporary files
 ##
 src_dir = base_dir + "OpenRTM_aist"
-temp_dir24 = base_dir + "OpenRTM_aist24"
-temp_dir25 = base_dir + "OpenRTM_aist25"
 temp_dir26 = base_dir + "OpenRTM_aist26"
+temp_dir27 = base_dir + "OpenRTM_aist27"
 dll_list = glob.glob(base_dir + "bin\\x86_win32\\*.dll")
 dll_cnt = len(dll_list)
-if os.path.exists(temp_dir24) :
-    shutil.rmtree(temp_dir24)
-if os.path.exists(temp_dir25) :
-    shutil.rmtree(temp_dir25)
 if os.path.exists(temp_dir26) :
     shutil.rmtree(temp_dir26)
-shutil.copytree(src_dir, temp_dir24)
-shutil.copytree(src_dir, temp_dir25)
+if os.path.exists(temp_dir27) :
+    shutil.rmtree(temp_dir27)
 shutil.copytree(src_dir, temp_dir26)
+shutil.copytree(src_dir, temp_dir27)
 
-temp_dir24_root = base_dir + "OpenRTM_aist24\\root"
-temp_dir25_root = base_dir + "OpenRTM_aist25\\root"
 temp_dir26_root = base_dir + "OpenRTM_aist26\\root"
-os.mkdir(temp_dir24_root)
-os.mkdir(temp_dir25_root)
+temp_dir27_root = base_dir + "OpenRTM_aist27\\root"
 os.mkdir(temp_dir26_root)
-shutil.copy2(base_dir + "OpenRTM-aist.pth", temp_dir24_root)
-shutil.copy2(base_dir + "OpenRTM-aist.pth", temp_dir25_root)
+os.mkdir(temp_dir27_root)
 shutil.copy2(base_dir + "OpenRTM-aist.pth", temp_dir26_root)
+shutil.copy2(base_dir + "OpenRTM-aist.pth", temp_dir27_root)
 
 
 def path_to_dir_id(path, prefix):

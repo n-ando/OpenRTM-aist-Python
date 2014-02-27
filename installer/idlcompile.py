@@ -2,14 +2,14 @@
 #
 # @brief IDL Compile for OpenRTM-aist-Python
 #
-# Target Python version 2.4, 2.5, 2.6
+# Target Python version 2.6, 2.7
 #
 
 import os, glob, sys, _winreg
 
 ##--------------------------------------------------------------------
 ## commandline argument
-## argvs[1]: Python version (2.4, 2.5, 2.6)
+## argvs[1]: Python version (2.6, 2.7)
 ## argvs[2]: OpenRTM examples Path
 ##--------------------------------------------------------------------
 argvs = sys.argv
@@ -87,33 +87,21 @@ def idl_compile(chk_ver, reg_key, exa_path):
 
 
 ##--------------------------------------------------------------------
-## Python 2.4
-##--------------------------------------------------------------------
-if (inst_ver == "all") or (inst_ver == "2.4"):
-  py_ver = "2.4"
-  py_key = "SOFTWARE\\Python\\PythonCore\\2.4\\InstallPath"
-  ret = idl_compile(py_ver, py_key, examples_path)
-  if ret == False:
-    print "Python %s Not Installed." % py_ver
-
-
-##--------------------------------------------------------------------
-## Python 2.5
-##--------------------------------------------------------------------
-if (inst_ver == "all") or (inst_ver == "2.5"):
-  py_ver = "2.5"
-  py_key = "SOFTWARE\\Python\\PythonCore\\2.5\\InstallPath"
-  ret = idl_compile(py_ver, py_key, examples_path)
-  if ret == False:
-    print "Python %s Not Installed." % py_ver
-
-
-##--------------------------------------------------------------------
 ## Python 2.6
 ##--------------------------------------------------------------------
 if (inst_ver == "all") or (inst_ver == "2.6"):
   py_ver = "2.6"
   py_key = "SOFTWARE\\Python\\PythonCore\\2.6\\InstallPath"
+  ret = idl_compile(py_ver, py_key, examples_path)
+  if ret == False:
+    print "Python %s Not Installed." % py_ver
+
+##--------------------------------------------------------------------
+## Python 2.7
+##--------------------------------------------------------------------
+if (inst_ver == "all") or (inst_ver == "2.7"):
+  py_ver = "2.7"
+  py_key = "SOFTWARE\\Python\\PythonCore\\2.7\\InstallPath"
   ret = idl_compile(py_ver, py_key, examples_path)
   if ret == False:
     print "Python %s Not Installed." % py_ver

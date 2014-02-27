@@ -23,9 +23,8 @@
 @rem ------------------------------------------------------------
 @set DISTRIBUTION=C:\distribution
 @set OPENRTM_PY=%DISTRIBUTION%\OpenRTM-aist-Python-1.1.0
-@set OMNIORB_PY24=%DISTRIBUTION%\omniORBpy-3.0-Python2.4
-@set OMNIORB_PY25=%DISTRIBUTION%\omniORBpy-3.4-Python2.5
 @set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.4-Python2.6
+@set OMNIORB_PY27=%DISTRIBUTION%\omniORBpy-3.7-Python2.7
 @set RTSE_ROOT=C:\distribution\OpenRTP\RTSystemEditor
 
 @rem ------------------------------------------------------------
@@ -58,9 +57,8 @@ for /F "tokens=1,2,3,4 delims=, " %%i in (langs.txt) do (
 @rem ============================================================
 @rem Make OpenRTM-aist-Python file list
 @rem ============================================================
-python omniORBpy24wxs.py
-python omniORBpy25wxs.py
 python omniORBpy26wxs.py
+python omniORBpy27wxs.py
 python OpenRTMpywxs.py
 
 @rem ------------------------------------------------------------
