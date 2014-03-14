@@ -23,7 +23,7 @@
 @rem ------------------------------------------------------------
 @set DISTRIBUTION=C:\distribution
 @set OPENRTM_PY=%DISTRIBUTION%\OpenRTM-aist-Python-1.1.0
-@set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.4-Python2.6
+@set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.5-Python2.6
 @set OMNIORB_PY27=%DISTRIBUTION%\omniORBpy-3.7-Python2.7
 @set RTSE_ROOT=C:\distribution\OpenRTP\RTSystemEditor
 

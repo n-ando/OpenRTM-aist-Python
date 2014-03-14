@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# @brief WiX wxs file generator for omniORBpy3.4-Python2.6
+# @brief WiX wxs file generator for omniORBpy3.5-Python2.6
 # @date $Date$
 # @author Norkai Ando <n-ando@aist.go.jp>
 #
@@ -20,7 +20,7 @@ import glob
 import makewxs
 
 data = [
-    ("",                                             "THIS_IS_OMNIORBPY_3_4"),
+    ("",                                             "THIS_IS_OMNIORBPY_3_5"),
     ("bin/x86_win32",                                             "*.dll *.exe"),
     ("bin/dll",                                                   "*.dll"),
     ("lib/x86_win32",                                             "*.pyd"),
@@ -124,7 +124,7 @@ data = [
 ##
 base_dir = os.getenv("OMNIORB_PY26")
 if base_dir == None:
-    base_dir = "C:\\distribution\\omniORBpy-3.4-Python2.6\\"
+    base_dir = "C:\\distribution\\omniORBpy-3.5-Python2.6\\"
 else:
     base_dir = base_dir.replace("\"", "")
     base_dir += "\\"
