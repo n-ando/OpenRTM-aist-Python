@@ -8,7 +8,12 @@
 @set TARGET=OpenRTM-aist-Python
 @set TARGET_WXS=%TARGET%.wxs
 @set TARGET_WIXOBJ=%TARGET%.wixobj
-@set TARGET_FULL=%TARGET%-%VERSION%
+echo off
+if "x%ARCH%" == "xx86_64" (
+   @set TARGET_FULL=%TARGET%-%VERSION%-RELEASE_64
+) else (
+   @set TARGET_FULL=%TARGET%-%VERSION%-RELEASE
+)
 
 @rem ------------------------------------------------------------
 @rem WixUI Customization Settings
@@ -23,8 +28,14 @@
 @rem ------------------------------------------------------------
 @set DISTRIBUTION=C:\distribution
 @set OPENRTM_PY=%DISTRIBUTION%\OpenRTM-aist-Python-1.1.0
-@set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.5-Python2.6
-@set OMNIORB_PY27=%DISTRIBUTION%\omniORBpy-3.7-Python2.7
+if "x%ARCH%" == "xx86_64" (
+   @set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.5-win64-python26
+   @set OMNIORB_PY27=%DISTRIBUTION%\omniORBpy-3.7-win64-python27
+) else (
+   @set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.5-Python2.6
+   @set OMNIORB_PY27=%DISTRIBUTION%\omniORBpy-3.7-Python2.7
+)
+
 @set RTSE_ROOT=C:\distribution\OpenRTP\RTSystemEditor
 
 @rem ------------------------------------------------------------

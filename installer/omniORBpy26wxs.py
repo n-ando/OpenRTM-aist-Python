@@ -123,8 +123,13 @@ data = [
 ## Resource path
 ##
 base_dir = os.getenv("OMNIORB_PY26")
+arch = os.getenv("ARCH")
 if base_dir == None:
+  if arch == "x86_64":
+    base_dir = "C:\\distribution\\omniORBpy-3.5-win64-Python2.6\\"
+  else:
     base_dir = "C:\\distribution\\omniORBpy-3.5-Python2.6\\"
+
 else:
     base_dir = base_dir.replace("\"", "")
     base_dir += "\\"

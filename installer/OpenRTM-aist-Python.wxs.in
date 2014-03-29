@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">   
+  <?if $(env.ARCH) = x86_64 ?>
+  <?define ProductName = "{% Product.Name %}-{% Product.Version %} for Python (64 bit)"?>
+  <?else?>
   <?define ProductName = "{% Product.Name %}-{% Product.Version %} for Python"?>
-  <Product Name="{% Product.Name %}-{% Product.Version %} for Python" 
+  <?endif ?>
+  <Product Name='$(var.ProductName)'
            Id="{% Product.Id %}"
            Language='$(var.language)'
            Codepage='$(var.codepage)'
@@ -30,6 +34,23 @@
       </DirectorySearch>
     </Property>
 
+    <?if $(env.ARCH) = x86_64 ?>
+    <Property Id="PYTHON26">
+      <RegistrySearch Id="Python26"
+                      Root="HKLM"
+                      Key="SOFTWARE\Python\PythonCore\2.6\InstallPath"
+					  Win64="yes"
+                      Type="raw" />
+    </Property>
+
+    <Property Id="PYTHON27">
+      <RegistrySearch Id="Python27"
+                      Root="HKLM"
+                      Key="SOFTWARE\Python\PythonCore\2.7\InstallPath"
+					  Win64="yes"
+                      Type="raw" />
+    </Property>
+	<?else?>
     <Property Id="PYTHON26">
       <RegistrySearch Id="Python26"
                       Root="HKLM"
@@ -43,6 +64,7 @@
                       Key="SOFTWARE\Python\PythonCore\2.7\InstallPath"
                       Type="raw" />
     </Property>
+	<?endif ?>
 
     <SetProperty Id="PYTHON26DIR" After="AppSearch" Value="[PYTHON26]">
     </SetProperty>
