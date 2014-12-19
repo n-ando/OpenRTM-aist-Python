@@ -3,7 +3,10 @@
 @rem Variable Settings
 @rem   usually only %TARGET% might be changed
 @rem ------------------------------------------------------------
-@set PATH=%WIX%\bin;%PATH%
+if not DEFINED ARCH       set ARCH=x86_64
+@set PATH_OLD=%PATH%
+@set PATH=%WIX%\bin;c:\python27;%PATH%
+@set INCLUDE_OPENRTP=YES
 @set VERSION=1.1.0
 @set TARGET=OpenRTM-aist-Python
 @set TARGET_WXS=%TARGET%.wxs
@@ -78,34 +81,40 @@ python OpenRTMpywxs.py
 @rem RTSystemEditorRCP.exe should be under %RTSE_ROOT%
 @rem
 @rem ------------------------------------------------------------
-if "x%RTSE_ROOT%" == "x" (
-   echo Envrionment variable "RTSE_ROOT" is not set. Abort.
-   goto END
-)
-if not exist "%RTSE_ROOT%\RTSystemEditorRCP.exe" (
-   echo RTSystemEditorRCP.exe does not found. Abort
-   goto END
-)
-set INCLUDE_RTSE=YES
-set INCLUDE_OPENRTP=YES
-
-if not exist OpenRTP_inc.wxs (
-   cd OpenRTP
-   copy ..\makewxs.py .
-   copy ..\yat.py .
-   echo Generating OpenRTP_inc.wxs......
-@rem   openrtpwxs.py
-@rem   set PYTHONPATH=%TMP_PYTHONPATH%
-   copy OpenRTP_inc.wxs ..
-   del makewxs.py yat.py
-   del *.yaml
-   cd ..
-)
+@rem *** RTSystemEditorRCP has been changed to use the merge module.
+@rem *** So this process has been deleted.
+@rem if "x%RTSE_ROOT%" == "x" (
+@rem    echo Envrionment variable "RTSE_ROOT" is not set. Abort.
+@rem    goto END
+@rem )
+@rem if not exist "%RTSE_ROOT%\RTSystemEditorRCP.exe" (
+@rem    echo RTSystemEditorRCP.exe does not found. Abort
+@rem    goto END
+@rem )
+@rem set INCLUDE_RTSE=YES
+@rem set INCLUDE_OPENRTP=YES
+@rem 
+@rem if not exist OpenRTP_inc.wxs (
+@rem    cd OpenRTP
+@rem    copy ..\makewxs.py .
+@rem    copy ..\yat.py .
+@rem    echo Generating OpenRTP_inc.wxs......
+@rem @rem   openrtpwxs.py
+@rem @rem   set PYTHONPATH=%TMP_PYTHONPATH%
+@rem    copy OpenRTP_inc.wxs ..
+@rem    del makewxs.py yat.py
+@rem    del *.yaml
+@rem    cd ..
+@rem )
 
 @rem ============================================================
 @rem compile wxs file and link msi
 @rem ============================================================
-candle.exe %TARGET_WXS% %WIXUI_RTM_WXS% -dlanguage=1033 -dcodepage=1252
+if "x%ARCH%" == "xx86_64" (
+   candle.exe -arch x64 %TARGET_WXS% %WIXUI_RTM_WXS% -dlanguage=1033 -dcodepage=1252
+) else (
+   candle.exe %TARGET_WXS% %WIXUI_RTM_WXS% -dlanguage=1033 -dcodepage=1252
+)
 light.exe -ext WixUIExtension -loc WixUI_en-us.wxl ^
       	       -out %TARGET_FULL%.msi %TARGET_WIXOBJ% %WIXUI_RTM_WIXOBJ%
 
@@ -122,7 +131,11 @@ for %%i in %LANGUAGES% do (
     @rem ------------------------------------------------------------
     @rem compile wxs file and link msi
     @rem
-    candle.exe %TARGET_WXS% %WIXUI_RTM_WXS% -dlanguage=!LANG[%%i]! -dcodepage=!CODE[%%i]!
+    if "x%ARCH%" == "xx86_64" (
+       candle.exe -arch x64 %TARGET_WXS% %WIXUI_RTM_WXS% -dlanguage=!LANG[%%i]! -dcodepage=!CODE[%%i]!
+    ) else (
+       candle.exe %TARGET_WXS% %WIXUI_RTM_WXS% -dlanguage=!LANG[%%i]! -dcodepage=!CODE[%%i]!
+    )
 
     if exist WixUI_!LC[%%i]!.wxl (
        light.exe -ext WixUIExtension -ext WixUtilExtension -loc WixUI_!LC[%%i]!.wxl ^
@@ -159,6 +172,7 @@ cscript WiLangId.vbs %TARGET_FULL%.msi Package %IDS%
 
 :END
 del *.yaml
+@set PATH=%PATH_OLD%
 
-pause;
+@rem pause;
 

@@ -23,17 +23,6 @@
     <!-- Property -->
     <Property Id='USERPROFILEDIR' Value='%USERPROFILE%' />
 
-    <!-- RTSE Property-->
-    <Property Id="RTSE_FILEEXISTS">
-      <DirectorySearch Id="CheckFileDir" Path="C:\Program Files\OpenRTM-aist\{% Product.ShortVersion %}">
-        <DirectorySearch Id="CheckFileDir2" Path ="OpenRTP">
-          <DirectorySearch Id="CheckFileDir3" Path ="{% Product.ShortVersion %}\RTSystemEditor">
-            <FileSearch Id="CheckFile" Name="RTSystemEditorRCP.exe" />
-          </DirectorySearch>
-        </DirectorySearch>
-      </DirectorySearch>
-    </Property>
-
     <?if $(env.ARCH) = x86_64 ?>
     <Property Id="PYTHON26">
       <RegistrySearch Id="Python26"
@@ -441,7 +430,11 @@
 
 
       <!-- Program Files -->
+      <?if $(env.ARCH) = x86 ?>
       <Directory Id="ProgramFilesFolder" SourceName="PFILE">
+      <?else?>
+      <Directory Id="ProgramFiles64Folder" SourceName="PFILE">
+      <?endif ?>
         <Directory Id="INSTALLLOCATION"
 				   Name="{% Product.Name %}">
 		  <Directory Id="Version"
@@ -843,17 +836,22 @@
             <!-- end of examples -->
             </Directory>
 
-			<!-- rtmtools components -->
-			<?if $(env.INCLUDE_OPENRTP) = YES ?>
-			<?include OpenRTP_inc.wxs ?>
-			<?endif ?>
-			<!-- end of rtmtools -->
+            <!-- rtmtools components -->
+            <?if $(env.INCLUDE_OPENRTP) = YES ?>
+            <Merge Id="Msi_RTSystemEditorRCP" Language="1041"
+                              SourceFile="RTSystemEditorRCP_$(env.ARCH).msm" DiskId="1" />
+            <?endif ?>
+            <!-- end of rtmtools -->
 
           </Directory>
         </Directory>
 
       <!-- end of Program Files Folder -->
+      <?if $(env.ARCH) = "x86" ?>
       </Directory>
+      <?else?>
+      </Directory>
+      <?endif?>
 
       <Directory Id="ProgramMenuFolder">
         <Directory Id="AppMenuFolder"
@@ -1156,21 +1154,8 @@
 
     <!-- OpenRTP tools -->
     <?if $(env.INCLUDE_OPENRTP) = YES ?>
-    <Feature Id="OpenRTP" Level="1" Title="OpenRT Platform Tool Chain"
-			 ConfigurableDirectory="INSTALLLOCATION">
-      <Condition Level ="1"><![CDATA[ (RTSE_FILEEXISTS =  "") ]]></Condition>
-      <Condition Level ="0"><![CDATA[ (RTSE_FILEEXISTS <> "") ]]></Condition>
-
-      <!-- rtse rcp -->
-      <Feature Id="RTSystemEditor" Level="1" Title="RTSystemEditor">
-	<ComponentRef Id="Openrtp" />
-	<ComponentRef Id="OpenrtpConfiguration" />
-	<ComponentRef Id="OpenrtpPlugins" />
-	<ComponentRef Id="org.eclipse.core.runtime.compatibility.registry_3.2.200.v20080610" />
-	<ComponentRef Id="META_INF" />
-	<ComponentRef Id="org.eclipse.equinox.launcher.win32.win32.x86_1.0.101.R34x_v20080731" />
-	<ComponentRef Id="META_INF_2" />
-      </Feature>
+    <Feature Id="RTSE_ONLY" Level="1" Title="RTSystemEditorRCP 1.1">
+      <MergeRef Id="Msi_RTSystemEditorRCP" />
     </Feature>
     <?endif ?>
 
