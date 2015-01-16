@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">   
-  <?if $(env.ARCH) = x86_64 ?>
-  <?define ProductName = "{% Product.Name %}-{% Product.Version %} for Python (64 bit)"?>
-  <?else?>
-  <?define ProductName = "{% Product.Name %}-{% Product.Version %} for Python"?>
-  <?endif ?>
-  <Product Name='$(var.ProductName)'
+  <Product Name='$(env.PRODUCT_NAME)'
            Id="{% Product.Id %}"
            Language='$(var.language)'
            Codepage='$(var.codepage)'
@@ -450,8 +445,8 @@
                       Name="{% file.Name %}" DiskId="1"
                       Source="{% file.Source %}">
                   {% if file.Name is rtm-naming.py %}
-                  <Shortcut Id="rtmnaming.py" Directory="ToolsMenuFolder"
-                            Name="Start Naming Service"
+                  <Shortcut Id="rtmnaming.py" Directory="CommonToolsMenuFolder"
+                            Name="Start Python Naming Service"
                             Show="normal" WorkingDirectory="bin"/>
                   {% endif %}
                 </File>
@@ -857,14 +852,16 @@
         <Directory Id="AppMenuFolder"
 				   Name="{% Product.Name %} {% Product.ShortVersion %}">
           <Directory Id="PythonMenuFolder" Name="Python">
-            <Directory Id="ToolsMenuFolder" Name="tools">
+            <Directory Id="ToolsMenuFolder" Name="Tools">
             </Directory>
-            <Directory Id="Components" Name="components">
-              <Directory Id="ExpMenuFolder" Name="examples">
+            <Directory Id="Components" Name="Components">
+              <Directory Id="ExpMenuFolder" Name="Examples">
               </Directory>
             </Directory>
-            <Directory Id="DocMenuFolder" Name="documents">
+            <Directory Id="DocMenuFolder" Name="Documents">
             </Directory>
+          </Directory>
+          <Directory Id="CommonToolsMenuFolder" Name="Tools">
           </Directory>
         </Directory>
       </Directory>

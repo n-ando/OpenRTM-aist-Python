@@ -12,11 +12,13 @@ if not DEFINED ARCH       set ARCH=x86_64
 @set TARGET_WXS=%TARGET%.wxs
 @set TARGET_WIXOBJ=%TARGET%.wixobj
 echo off
+@set TARGET_FULL=%TARGET%_%VERSION%-RELEASE_%ARCH%
 if "x%ARCH%" == "xx86_64" (
-   @set TARGET_FULL=%TARGET%-%VERSION%-RELEASE_64
+   @set OS_ARCH=64-bit OS
 ) else (
-   @set TARGET_FULL=%TARGET%-%VERSION%-RELEASE
+   @set OS_ARCH=32-bit OS
 )
+@set PRODUCT_NAME=OpenRTM-aist-%VERSION%-RELEASE (%OS_ARCH%) for Python
 
 @rem ------------------------------------------------------------
 @rem WixUI Customization Settings
