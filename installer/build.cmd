@@ -4,6 +4,7 @@
 @rem   usually only %TARGET% might be changed
 @rem ------------------------------------------------------------
 if not DEFINED ARCH       set ARCH=x86_64
+if not DEFINED INCLUDE_JRE  set INCLUDE_JRE=YES
 @set PATH_OLD=%PATH%
 @set INCLUDE_OPENRTP=YES
 @set VERSION=1.1.0

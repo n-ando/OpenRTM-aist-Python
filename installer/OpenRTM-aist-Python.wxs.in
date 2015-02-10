@@ -435,6 +435,13 @@
 		  <Directory Id="Version"
 					 Name="{% Product.ShortVersion %}">
 
+            <!-- JRE -->
+            <?if $(env.INCLUDE_JRE) = YES ?>
+            <Merge Id="Msi_JRE_OpenJDK" Language="1041"
+                  SourceFile="JRE_OpenJDK7_$(env.ARCH).msm" DiskId="1" />
+            <?endif ?>
+            <!-- end of JRE -->
+
             <!-- bin -->
             <Directory Id="bin" Name="bin">
               <Component Id="Rtm_Bin" Guid="{% RtmOpenrtm_aistUtilsRtmnaming.GUID %}">
@@ -1148,6 +1155,13 @@
       </Feature>
 
     </Feature>
+
+    <!-- JRE -->
+    <?if $(env.INCLUDE_JRE) = YES ?>
+    <Feature Id="JRE_OpenJDK" Level="1" Title="JRE for RTSystemEditorRCP 1.1">
+      <MergeRef Id="Msi_JRE_OpenJDK" />
+    </Feature>
+    <?endif ?>
 
     <!-- OpenRTP tools -->
     <?if $(env.INCLUDE_OPENRTP) = YES ?>
