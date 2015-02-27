@@ -26,14 +26,10 @@ echo "rtm_ver is $rtm_ver"
 #---------------------------------------
 set_package_list()
 {
-	if [ "$code_name" = "hardy" ] || [ $code_name = "lucid" ]; then
-		omnipy="python python-omniorb2-omg omniidl4-python omniorb4-nameserver"
-	else
-		# oneiric, precise, quantal
-		omnipy="python python-pyorbit-omg omniidl-python omniorb-nameserver"
-	fi
+	omnipy="python-pyorbit-omg omniidl-python"
+	devel="python"
 	openrtm="openrtm-aist-python$rtm_ver openrtm-aist-python-example$rtm_ver"
-	packages="$omnipy $openrtm"
+	packages="$devel $omnipy $openrtm"
 	u_packages="$omnipy $openrtm "
 }
 
@@ -104,7 +100,7 @@ check_codename () {
 # リポジトリサーバ
 #---------------------------------------
 create_srclist () {
-    openrtm_repo="deb http://www.openrtm.org/pub/Linux/ubuntu/ $code_name main"
+    openrtm_repo="deb http://openrtm.org/pub/Linux/ubuntu/ $code_name main"
 }
 
 #---------------------------------------

@@ -17,15 +17,11 @@
 # パッケージリスト
 #---------------------------------------
 version_num=`cat /etc/fedora-release | awk '/Fedora/{print $3}' -`
-if [ $version_num -ge 16 ] && [ $version_num -le 18 ]; then
-	# バージョンが16,17,18の場合
-	omnipy="python python-devel openssl-devel doxygen omniORB-servers omniORBpy omniORBpy-devel omniORBpy-standard"
-else
-	omnipy="python omniORB-servers omniORBpy omniORBpy-devel omniORBpy-standard"
-fi
+omnipy="omniORB-servers omniORBpy omniORBpy-devel omniORBpy-standard"
+devel="python"
 openrtm="OpenRTM-aist-Python OpenRTM-aist-Python-example"
-packages="$omnipy $openrtm"
-
+packages="$devel $omnipy $openrtm"
+u_packages="$omnipy $openrtm "
 
 #----------------------------------------
 # root かどうかをチェック
@@ -59,7 +55,7 @@ cat <<EOF
 [openrtm]
 name=Fedora \$releasever - \$basearch
 failovermethod=priority
-baseurl=http://www.openrtm.org/pub/Linux/Fedora/releases/\$releasever/Fedora/\$basearch/os/Packages
+baseurl=http://openrtm.org/pub/Linux/Fedora/releases/\$releasever/Fedora/\$basearch/os/Packages
 enabled=1
 gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora file:///etc/pki/rpm-gpg/RPM-GPG-KEY
@@ -145,7 +141,7 @@ uninstall_packages () {
 #---------------------------------------
 check_root
 if test "x$1" = "x-u" ; then
-    uninstall_packages `reverse $packages`
+    uninstall_packages `reverse $u_packages`
 else
     create_repo
     install_packages $packages
