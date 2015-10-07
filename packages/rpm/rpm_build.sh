@@ -29,6 +29,7 @@ check_distribution()
 {
     dist_name=""
     dist_key=""
+    FEDORA_VER=""
     # Check the lsb distribution name
     if test -f /etc/lsb-release ; then
 	. /etc/lsb-release
@@ -38,8 +39,9 @@ check_distribution()
     fi
     # Check the Fedora version
     if test "x$dist_name" = "x" && test -f /etc/fedora-release ; then
-	dist_name=`cat /etc/fedora-release`-`uname -m`
-	dist_key=`sed -e 's/.[^0-9]*\([0-9]\+\).*/fc\1/' /etc/fedora-release`
+        dist_name=`cat /etc/fedora-release`-`uname -m`
+        dist_key=`sed -e 's/.[^0-9]*\([0-9]\+\).*/fc\1/' /etc/fedora-release`
+        FEDORA_VER=$dist_key
     fi
     #Check the Debian version
     if test "x$dist_name" = "x" && test -f /etc/debian_version ; then
@@ -103,7 +105,11 @@ copy_source_package()
 
 create_spec_file()
 {
-    sed "s/__DISTNAME__/$DIST_KEY/g" openrtm-aist.spec.in > openrtm-aist.spec.1
+    if test "x$FEDORA_VER" = "xfc19" ; then
+        sed "s/__DISTNAME__/$DIST_KEY/g" openrtm-aist_fc19.spec.in > openrtm-aist.spec.1
+    else
+        sed "s/__DISTNAME__/$DIST_KEY/g" openrtm-aist.spec.in > openrtm-aist.spec.1
+    fi
     sed "s/__VERSION__/$VERSION/g" openrtm-aist.spec.1 > openrtm-aist.spec.2
     sed "s/__SHORT_VERSION__/$SHORT_VERSION/g" openrtm-aist.spec.2 > openrtm-aist.spec.3
     cp openrtm-aist.spec.3 SPECS/openrtm-aist.spec

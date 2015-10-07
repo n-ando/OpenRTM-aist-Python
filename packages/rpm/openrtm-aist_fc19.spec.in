@@ -19,7 +19,7 @@
 Name: OpenRTM-aist-Python
 Version: %{version}
 Release: %{pkgver}.%{distname}
-Summary: Python modules for OpenRTM-aist-1.0.0
+Summary: Python modules for OpenRTM-aist-1.1.0
 Group: Applications/System
 License: LGPL
 URL: http://openrtm.org
@@ -30,7 +30,9 @@ Prefix: %{_prefix}
 Buildroot: %{_tmppath}/%{pkgname}-%{version}-%{release}-root
 
 Requires: python >= 2.5
+Requires: omniORBpy
 Requires: omniORBpy-devel
+Requires: omniORBpy-standard
 
 %description
 OpenRTM-aist is a reference implementation of RTC (Robotic Technology
