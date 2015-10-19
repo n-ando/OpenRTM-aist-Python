@@ -22,8 +22,8 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 　　本ツールを実行するには、下記ソフトウエアがインストールされている事を
 　　前提とします。
 
-　　　・Python2.4, 2.5, 2.6 の何れか
-　　　・PyYAML-3.09.win32-py2.4, 2.5, 2.6 の何れか
+　　　・Python2.6,2.7 の何れか
+　　　・PyYAML-3.09.win32-py2.6,2.7 の何れか
 　　　・WiX3.5 Toolset
 　　　・環境変数の「PATH」と「PYTHONPATH」に、使用するPython情報が設定
 　　　　されている事。
@@ -36,7 +36,7 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 
 　　C:\distribution
 　　　　│
-　　　　├─ OpenRTM-aist-Python-1.0.0
+　　　　├─ OpenRTM-aist-Python-1.1.0
 　　　　│　　├─ doc　　※doxygen
 　　　　│　　│　　├─ ClassReference-jp
 　　　　│　　│　　└─ ClassReference-en
@@ -56,23 +56,15 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 　　　　│　　　　　　　　└─ rtm-naming
 　　　　│
 　　　　│
-　　　　├─ omniORBpy-3.0-Python2.4
-　　　　│　　├─ bin
-　　　　│　　│　　└─ x86_win32
-　　　　│　　└─ lib
-　　　　│　　　　　├─ Python
-　　　　│　　　　　└─ x86_win32
-　　　　│
-　　　　│
-　　　　├─ omniORBpy-3.4-Python2.5
-　　　　│　　├─ bin
-　　　　│　　│　　└─ x86_win32
-　　　　│　　└─ lib
-　　　　│　　　　　├─ Python
-　　　　│　　　　　└─ x86_win32
-　　　　│
-　　　　│
 　　　　├─ omniORBpy-3.4-Python2.6
+　　　　│　　├─ bin
+　　　　│　　│　　└─ x86_win32
+　　　　│　　└─ lib
+　　　　│　　　　　├─ Python
+　　　　│　　　　　└─ x86_win32
+　　　　│
+　　　　│
+　　　　├─ omniORBpy-3.7-Python2.7
 　　　　  　　├─ bin
 　　　　  　　│　　└─ x86_win32
 　　　　  　　└─ lib
@@ -80,25 +72,21 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 　　　　  　　　　　└─ x86_win32
 
 
-　　(1) OpenRTM-aist-Python-1.0.0 は、
+　　(1) OpenRTM-aist-Python-1.1.0 は、
 　　　　Python版OpenRTM-aistのインストール対象ファイルであり、
 　　　　doxygenにより作成されたリファレンスファイル(※doxygen)と、
         IDLコンパイルを行うためのファイル(※idlcompiler)と、
 　　　　python setup.py sdist により作成されたファイル(※sdist)を含む。
 
-　　(2) omniORBpy-3.0-Python2.4 は、
-　　　　Python2.4用omniORBpy-3.0である。
-
-　　(3) omniORBpy-3.4-Python2.5 は、
-　　　　Python2.5用omniORBpy-3.4である。
-
-　　(4) omniORBpy-3.4-Python2.6 は、
+　　(2) omniORBpy-3.4-Python2.6 は、
 　　　　Python2.6用omniORBpy-3.4である。
 
+　　(3) omniORBpy-3.7-Python2.7 は、
+　　　　Python2.7用omniORBpy-3.7である。
 
 　　※上記構成は、msi作成バッチ build.cmd で定義しており、変更可能です。
-　　　変更する場合、build.cmd, OpenRTMpywxs.py, omniORBpy24wxs.py, 
-　　　omniORBpy25wxs.py, omniORBpy26wxs.py の整合を取って下さい。
+　　　変更する場合、build.cmd, OpenRTMpywxs.py, omniORBpy26wxs.py,
+      omniORBpy27wxs.py の整合を取って下さい。
 
 
 3. ファイル構成
@@ -121,14 +109,12 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 　　　　├─ cleanup.cmd　　テンポラリファイル削除バッチ
 　　　　│
 　　　　├─ OpenRTM-aist-Python.wxs.in　OpenRTM-aist用WiXテンプレート
-　　　　├─ omniORBpy24_inc.wxs.in　　　Python2.4用WiXテンプレート
-　　　　├─ omniORBpy25_inc.wxs.in　　　Python2.5用WiXテンプレート
 　　　　├─ omniORBpy26_inc.wxs.in　　　Python2.6用WiXテンプレート
+　　　　├─ omniORBpy27_inc.wxs.in　　　Python2.7用WiXテンプレート
 　　　　│
 　　　　├─ OpenRTMpywxs.py　　　OpenRTM-aist用wxsファイルジェネレータ
-　　　　├─ omniORBpy24wxs.py　　Python2.4用wxsファイルジェネレータ
-　　　　├─ omniORBpy25wxs.py　　Python2.5用wxsファイルジェネレータ
 　　　　├─ omniORBpy26wxs.py　　Python2.6用wxsファイルジェネレータ
+　　　　├─ omniORBpy27wxs.py　　Python2.7用wxsファイルジェネレータ
 　　　　│
 　　　　├─ idlcompile.bat　　　IDLコンパイル起動バッチ
 　　　　├─ idlcompile.py 　　　IDLコンパイルスクリプト
@@ -144,9 +130,9 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 
 　　[ビルド後に使用するファイル]
 　　　　│
-　　　　├─ OpenRTM-aist-Python-1.0.0.msi　英語のインストーラー
+　　　　├─ OpenRTM-aist-Python-1.1.0.msi　英語のインストーラー
 　　　　│
-　　　　└─ OpenRTM-aist-Python-1.0.0_**-**.msi　各国語毎のインストーラー
+　　　　└─ OpenRTM-aist-Python-1.1.0_**-**.msi　各国語毎のインストーラー
 
 　　　※build.cmd を実行すると、複数のテンポラリファイルとmsiファイルが
 　　　　作成されます。
@@ -156,11 +142,11 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 4. インストール動作
 
 　(1) インストールを行う場合、インストール先PCのレジストリをチェックし、
-　　　Python2.4, 2.5, 2.6 の何れかが登録済みであるか判定します。
+　　　Python2.6, 2.7 の何れかが登録済みであるか判定します。
 　　　何れも登録されていなければ、エラーメッセージを表示して、
 　　　インストールを終了します。
 
-　(2) Python2.4, 2.5, 2.6 の何れかが登録済みである場合
+　(2) Python2.6, 2.7 の何れかが登録済みである場合
 
 　　・Pythonインストールパスの各ディレクトリへ omniORBpy を
 　　　インストールします。
@@ -185,7 +171,7 @@ OpenRTM-aist-Python Windows インストーラー作成ツールの解説
 
 　(1) アンインストールを行う場合、インストールファイルとは別に、
 　　　Pythonスクリプト実行時に作成される.pyc ファイル、
-　　　Program Files\OpenRTM-aist\1.0\examples\Python ディレクトリ、
+　　　Program Files\OpenRTM-aist\1.1\examples\Python ディレクトリ、
 　　　IDLコンパイルで作成された Python**\Lib\site-packages\OpenRTM_aist
 　　　ディレクトリなどを削除します。
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# @brief WiX wxs file generator for omniORBpy3.5-Python2.6
+# @brief WiX wxs file generator for omniORBpy3.7-Python2.7
 # @date $Date$
 # @author Norkai Ando <n-ando@aist.go.jp>
 #
@@ -20,7 +20,7 @@ import glob
 import makewxs
 
 data = [
-    ("",                                             "THIS_IS_OMNIORBPY_3_5"),
+    ("",                                             "THIS_IS_OMNIORBPY_3_7"),
     ("bin/x86_win32",                                             "*.dll *.exe"),
     ("bin/dll",                                                   "*.dll"),
     ("lib/x86_win32",                                             "*.pyd"),
@@ -122,14 +122,13 @@ data = [
 
 ## Resource path
 ##
-base_dir = os.getenv("OMNIORB_PY26")
+base_dir = os.getenv("OMNIORB_PY27")
 arch = os.getenv("ARCH")
 if base_dir == None:
   if arch == "x86_64":
-    base_dir = "C:\\distribution\\omniORBpy-3.5-win64-Python2.6\\"
+    base_dir = "C:\\distribution\\omniORBpy-3.7-win64-Python2.7\\"
   else:
-    base_dir = "C:\\distribution\\omniORBpy-3.5-Python2.6\\"
-
+    base_dir = "C:\\distribution\\omniORBpy-3.7-Python2.7\\"
 else:
     base_dir = base_dir.replace("\"", "")
     base_dir += "\\"
@@ -168,9 +167,9 @@ def path_to_comp_id(path, prefix):
 ##
 for (path, files) in data:
     # wxs component name
-    comp_name = path_to_comp_id(path, "py26")
+    comp_name = path_to_comp_id(path, "py27")
     # wxs directory name
-    dir_name = path_to_dir_id(path, "py26")
+    dir_name = path_to_dir_id(path, "py27")
 
     path = path.replace("/", "\\")
 
@@ -193,8 +192,8 @@ for (path, files) in data:
 ## make wxs file
 ##
 cmd = ["wxs",
-       "-o", "omniORBpy26_inc.wxs",
-       "-i", "omniORBpy26_inc.wxs.in"]
+       "-o", "omniORBpy27_inc.wxs",
+       "-i", "omniORBpy27_inc.wxs.in"]
 cmd += glob.glob("*.yaml")
 makewxs.main(cmd)
 

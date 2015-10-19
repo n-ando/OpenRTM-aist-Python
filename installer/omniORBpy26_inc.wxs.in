@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
-  <!-- omniORBpy3.4 supports -->
+  <!-- omniORBpy3.5 supports -->
   <!-- Python26 directory -->
       <Component Id="Py26BinX86_win32" Guid="{% Py26BinX86_win32.GUID %}">
         {% for file in Py26BinX86_win32.Files %}

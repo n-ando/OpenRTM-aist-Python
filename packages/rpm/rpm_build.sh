@@ -121,7 +121,7 @@ build_rpm()
 {
     cd SPECS
     rpm_def="_topdir $BUILD_DIR"
-    if rpmbuild --define "$rpm_def" -ba openrtm-aist.spec ; then
+    if rpmbuild --target `uname -i` --define "$rpm_def" -ba openrtm-aist.spec ; then
 	echo "Build successful"
     else
 	echo "Build failed"

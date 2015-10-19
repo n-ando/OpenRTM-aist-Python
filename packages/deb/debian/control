@@ -8,7 +8,7 @@ Homepage: http://www.openrtm.org
 
 Package: openrtm-aist-python
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, omniorb-nameserver
 Description: OpenRTM-aist is a reference implementation of RT-Middleware
  and RT-Component framework. RT-Component (RTC) is a component model
  standardized in OMG (Object Management Group) as Robotic Technology

@@ -343,19 +343,32 @@ def convert_file_code(file_name, char_code, crlf_code, hint=None):
     # end of conv_encoding()
   temp_fname = file_name + ".tmp"
   outfd = open(temp_fname, "w")
-  for line in open(file_name, "r"):
+  def coding_name(coding):
+    conv = {"euc_jp": "euc-jp",
+            "shift_jis": "cp932"}
+    if conv.has_key(coding):
+      return conv[coding]
+    return coding
+  sub_str = "coding: " + coding_name(char_code)
+  import re
+  infd = open(file_name, "r")
+  for line in infd:
     try:
       outdata = conv_encoding(line.rstrip('\r\n'), char_code)
+      outdata = re.sub("coding: [^ ]*", sub_str, outdata)
+      outdata = re.sub("encoding: [^ ]*", sub_str, outdata)
     except Exception, e:
       print "Exception cought in " + file_name + ": " + line
       print e
+      infd.close()
       outfd.close()
       os.remove(temp_fname)
       sys.exit(1)
     outfd.write(outdata + crlf_code)
+  infd.close()
   os.remove(file_name)
-  os.rename(temp_fname, file_name)
   outfd.close()
+  os.rename(temp_fname, file_name)
 
 #------------------------------------------------------------
 # compiling IDL files
@@ -564,6 +577,11 @@ class build_py(_build_py):
   """
   description = "Copying pure python modules into build directory."
   def run(self):
+    # Preparering rtcprof_python.py for Windows
+    if os_is() == "win32":
+      rtcprof_dir = os.path.join("OpenRTM_aist", "utils", "rtcprof/")
+      self.copy_file(os.path.join(rtcprof_dir, "rtcprof.py"),
+                     os.path.join(rtcprof_dir, "rtcprof_python.py"))
     _build_py.run(self)
     # copying OpenRTM-aist.pth file
     self.copy_file(os.path.join(".", "OpenRTM-aist.pth"), self.build_lib,
@@ -784,16 +802,20 @@ class sdist_zip(sdist):
     self.get_file_list()
     if self.manifest_only:
       return
+    """
     # converting character code into Shift-JIS
     import re
     for f in self.filelist.files:
       if not re.match('OpenRTM_aist.*\.py$', f): continue
       convert_file_code(f, "shift_jis", "\r\n", "euc_jp")
+    """
     self.make_distribution()
+    """
     # reverting character code
     for f in self.filelist.files:
       if not re.match('OpenRTM_aist.*\.py$', f): continue
       convert_file_code(f, "euc_jp", "\n", "shift_jis")
+    """
 
 #============================================================
 # install command classes

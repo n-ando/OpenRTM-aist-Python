@@ -14,15 +14,10 @@
 #---------------------------------------
 set_package_list()
 {
-	if [ "$code_name" = "sarge" ] || [ "$code_name" = "etch" ] || [ "$code_name" = "lenny" ]; then
-		omnipy="python python-omniorb2-omg python-omniorb2 omniidl4-python omniorb4-nameserver"
-	elif [ "$code_name" = "squeeze" ]; then	# 6.0
-		omnipy="python python-omniorb-omg python-omniorb omniidl-python omniorb4-nameserver"
-	else
-		omnipy="python python-omniorb-omg python-omniorb omniidl-python omniorb-nameserver"
-	fi
+	omnipy="python-omniorb-omg python-omniorb omniidl-python"
+	devel="python"
 	openrtm="openrtm-aist-python openrtm-aist-python-example"
-	packages="$omnipy $openrtm"
+	packages="$devel $omnipy $openrtm"
 	u_packages="$omnipy $openrtm "
 }
 
@@ -92,7 +87,7 @@ check_codename () {
 # リポジトリサーバ
 #---------------------------------------
 create_srclist () {
-    openrtm_repo="deb http://www.openrtm.org/pub/Linux/debian/ $code_name main"
+    openrtm_repo="deb http://openrtm.org/pub/Linux/debian/ $code_name main"
 }
 
 #---------------------------------------
