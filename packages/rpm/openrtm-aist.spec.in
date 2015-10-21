@@ -19,7 +19,7 @@
 Name: OpenRTM-aist-Python
 Version: %{version}
 Release: %{pkgver}.%{distname}
-Summary: Python modules for OpenRTM-aist-1.1.0
+Summary: Python modules for OpenRTM-aist
 Group: Applications/System
 License: LGPL
 URL: http://openrtm.org
@@ -88,7 +88,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root)
 %{python_sitelib}/OpenRTM-aist.pth
-%{python_sitelib}/OpenRTM_aist_Python-1.1.0-py%{python_version}.egg-info
+%{python_sitelib}/OpenRTM_aist_Python-%{version}-py%{python_version}.egg-info
 %{python_sitelib}/OpenRTM_aist
 %attr(755,root,root) %{_bindir}/*
 
@@ -109,6 +109,9 @@ rm -rf %{buildroot}
 #------------------------------------------------------------
 # changelog section
 %changelog
+* Wed Oct 21 2015  <n-ando@aist.go.jp> 1.1.1
+- 1.1.1-RELEASE
+
 * Wed May 01 2013  <n-ando@aist.go.jp> 1.1.0
 - 1.1.0-RELEASE
 

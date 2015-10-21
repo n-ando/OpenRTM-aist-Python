@@ -5,14 +5,15 @@
 @rem ------------------------------------------------------------
 if not DEFINED ARCH       set ARCH=x86_64
 if not DEFINED INCLUDE_JRE  set INCLUDE_JRE=YES
+if not DEFINED RTM_PY_VER  set RTM_PY_VER=1.1.1
+
 @set PATH_OLD=%PATH%
 @set INCLUDE_OPENRTP=YES
-@set VERSION=1.1.0
 @set TARGET=OpenRTM-aist-Python
 @set TARGET_WXS=%TARGET%.wxs
 @set TARGET_WIXOBJ=%TARGET%.wixobj
 echo off
-@set TARGET_FULL=%TARGET%_%VERSION%-RELEASE_%ARCH%
+@set TARGET_FULL=%TARGET%_%RTM_PY_VER%-RELEASE_%ARCH%
 if "x%ARCH%" == "xx86_64" (
    @set PYTHON_DIR=C:\Python27_x64
    @set OS_ARCH=64-bit OS
@@ -21,7 +22,7 @@ if "x%ARCH%" == "xx86_64" (
    @set OS_ARCH=32-bit OS
 )
 @set PATH=%WIX%bin;%PYTHON_DIR%;%PATH%
-@set PRODUCT_NAME=OpenRTM-aist-%VERSION%-RELEASE (%OS_ARCH%) for Python
+@set PRODUCT_NAME=OpenRTM-aist-%RTM_PY_VER%-RELEASE (%OS_ARCH%) for Python
 
 @rem ------------------------------------------------------------
 @rem WixUI Customization Settings
@@ -35,7 +36,7 @@ if "x%ARCH%" == "xx86_64" (
 @rem default distribution package folder
 @rem ------------------------------------------------------------
 @set DISTRIBUTION=C:\distribution
-@set OPENRTM_PY=%DISTRIBUTION%\OpenRTM-aist-Python-1.1.0
+@set OPENRTM_PY=%DISTRIBUTION%\%TARGET%-%RTM_PY_VER%
 if "x%ARCH%" == "xx86_64" (
    @set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.5-win64-python26
    @set OMNIORB_PY27=%DISTRIBUTION%\omniORBpy-3.7-win64-python27
@@ -43,8 +44,6 @@ if "x%ARCH%" == "xx86_64" (
    @set OMNIORB_PY26=%DISTRIBUTION%\omniORBpy-3.5-Python2.6
    @set OMNIORB_PY27=%DISTRIBUTION%\omniORBpy-3.7-Python2.7
 )
-
-@set RTSE_ROOT=C:\distribution\OpenRTP\RTSystemEditor
 
 @rem ------------------------------------------------------------
 @rem Supported languages
@@ -79,38 +78,6 @@ for /F "tokens=1,2,3,4 delims=, " %%i in (langs.txt) do (
 python omniORBpy26wxs.py
 python omniORBpy27wxs.py
 python OpenRTMpywxs.py
-
-@rem ------------------------------------------------------------
-@rem Generate RTSystemEditor wxs file
-@rem
-@rem RTSystemEditorRCP.exe should be under %RTSE_ROOT%
-@rem
-@rem ------------------------------------------------------------
-@rem *** RTSystemEditorRCP has been changed to use the merge module.
-@rem *** So this process has been deleted.
-@rem if "x%RTSE_ROOT%" == "x" (
-@rem    echo Envrionment variable "RTSE_ROOT" is not set. Abort.
-@rem    goto END
-@rem )
-@rem if not exist "%RTSE_ROOT%\RTSystemEditorRCP.exe" (
-@rem    echo RTSystemEditorRCP.exe does not found. Abort
-@rem    goto END
-@rem )
-@rem set INCLUDE_RTSE=YES
-@rem set INCLUDE_OPENRTP=YES
-@rem 
-@rem if not exist OpenRTP_inc.wxs (
-@rem    cd OpenRTP
-@rem    copy ..\makewxs.py .
-@rem    copy ..\yat.py .
-@rem    echo Generating OpenRTP_inc.wxs......
-@rem @rem   openrtpwxs.py
-@rem @rem   set PYTHONPATH=%TMP_PYTHONPATH%
-@rem    copy OpenRTP_inc.wxs ..
-@rem    del makewxs.py yat.py
-@rem    del *.yaml
-@rem    cd ..
-@rem )
 
 @rem ============================================================
 @rem compile wxs file and link msi
