@@ -23,6 +23,15 @@ openrtm="OpenRTM-aist-Python OpenRTM-aist-Python-example"
 packages="$devel $omnipy $openrtm"
 u_packages="$omnipy $openrtm "
 
+#---------------------------------------
+# yum / dnf コマンド切替え
+#---------------------------------------
+if [ $version_num -ge 22 ]; then
+    COMMAND="dnf"
+else
+    COMMAND="yum"
+fi
+
 #----------------------------------------
 # root かどうかをチェック
 #----------------------------------------
@@ -96,12 +105,12 @@ install_packages () {
 
 	    if test "x$ins" = "x"; then
 		echo "Now installing: " $p
-		yum install $p
+		$COMMAND install $p
 		echo "done."
 		echo ""
 	    else  
 		if echo "$ins" |grep -q '0.4.2-0' ; then
-			yum install $p
+			$COMMAND install $p
 			echo "done." 
 			echo ""
 	       else 
@@ -130,7 +139,7 @@ reverse () {
 uninstall_packages () {
     for p in $*; do
 	echo "Now uninstalling: " $p
-	yum erase $p
+	$COMMAND erase $p
 	echo "done."
 	echo ""
     done
