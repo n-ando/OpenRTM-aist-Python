@@ -453,6 +453,11 @@
 				   Name="{% Product.Name %}">
 		  <Directory Id="Version"
 					 Name="{% Product.ShortVersion %}">
+            <Component Id="ENV_ROOT" Guid="61F1F7A1-7945-11E5-A548-D670D757CAAC">
+              <CreateFolder />
+              <Environment Id='RTM_ROOT' Name='RTM_ROOT' Action='create'
+                  System='yes' Value='[Version]' />
+            </Component>
 
             <!-- JRE -->
             <?if $(env.INCLUDE_JRE) = YES ?>
@@ -1145,6 +1150,7 @@
 
       <!-- runtime -->
       <Feature Id="Rtm_Runtime" Level="1" Title="Utility">
+        <ComponentRef Id="ENV_ROOT"/>
         <ComponentRef Id="Rtm_Bin"/>
         <ComponentRef Id="Rtm_Bin2"/>
       </Feature>
