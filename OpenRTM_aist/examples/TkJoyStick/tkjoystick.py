@@ -119,7 +119,7 @@ class CanvasCircle(ToggleItem):
             circnum = 0
         else:
             circnum = max(self.width, self.height) / self.pitch
-        circrange = range(circnum)
+        circrange = range(int(circnum))
         circrange.reverse()
         for i in circrange:
             x0 = self.x - self.pitch * i
