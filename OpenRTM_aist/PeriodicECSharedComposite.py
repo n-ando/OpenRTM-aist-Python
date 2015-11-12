@@ -643,7 +643,7 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
                                          self._org.getObjRef())
 
     self._members = [[]]
-    self.bindParameter("members", self._members, "", stringToStrVec)
+    self.bindParameter("members", self._members, " ", stringToStrVec)
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("rtobject.periodic_ec_shared")
     self._configsets.addConfigurationSetListener(\
       OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET,
