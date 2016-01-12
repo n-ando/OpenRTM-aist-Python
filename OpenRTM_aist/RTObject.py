@@ -487,39 +487,36 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   def initialize(self):
     self._rtcout.RTC_TRACE("initialize()")
 
-    ec_args = self._properties.getProperty("exec_cxt.periodic.type")
-    ec_args += "?"
-    ec_args += "rate="
-    ec_args += self._properties.getProperty("exec_cxt.periodic.rate")
+    # EC creation
+    ec_args_ = []
+    if self.getContextOptions(ec_args_) != RTC.RTC_OK:
+      self._rtcout.RTC_ERROR("Valid EC options are not available. Aborting")
+      return RTC.BAD_PARAMETER
 
-    ec = OpenRTM_aist.Manager.instance().createContext(ec_args)
-    if ec is None:
-      return RTC.RTC_ERROR
+    if self.createContexts(ec_args_) != RTC.RTC_OK:
+      self._rtcout.RTC_ERROR("EC creation failed. Maybe out of resources. Aborting.")
+      return RTC.OUT_OF_RESOURCES
 
-    ec.set_rate(float(self._properties.getProperty("exec_cxt.periodic.rate")))
-    self._eclist.append(ec)
-    ecv = ec.getObjRef()
-    if CORBA.is_nil(ecv):
-      return RTC.RTC_ERROR
-
-    ec.bindComponent(self)
-
-    # at least one EC must be attached
-    if len(self._ecMine) == 0:
-      return RTC.PRECONDITION_NOT_MET
-
-    ret = self.on_initialize()
-    self._created = False
-    if ret is not RTC.RTC_OK:
-      return ret
 
     # -- entering alive state --
-    for i in range(len(self._ecMine)):
-      self._rtcout.RTC_DEBUG("EC[%d] starting.", i)
-      self._ecMine[i].start()
+    toSTR_ = lambda x: " was" if len(x) == 1 else "s were"
+    self._rtcout.RTC_INFO("%d execution context%s created.", 
+                          (len(self._ecMine), toSTR_(self._ecMine)))
+
+    ret_ = self.on_initialize()
+    self._created = False
+    if ret_ != RTC.RTC_OK:
+      self._rtcout.RTC_ERROR("on_initialize() failed.")
+      return ret_
+
+    self._rtcout.RTC_DEBUG("on_initialize() was properly done.")
+    for (idx_, ec_) in enumerate(self._ecMine):
+      self._rtcout.RTC_DEBUG("EC[%d] starting.", idx_)
+      ec_.start()
 
     # ret must be RTC_OK
-    return ret
+    assert(ret_ == RTC.RTC_OK)
+    return ret_
 
 
   ##
@@ -1142,7 +1139,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     ret = RTC.RTC_ERROR
     try:
       self.preOnInitialize(0)
+      self._rtcout.RTC_DEBUG("Calling onInitialize().")
       ret = self.onInitialize()
+      if ret != RTC.RTC_OK:
+        self._rtcout.RTC_ERROR("onInitialize() returns an ERROR (%d)", ret._v)
+      else:
+        self._rtcout.RTC_DEBUG("onInitialize() succeeded.")
+
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       ret = RTC.RTC_ERROR
@@ -1151,11 +1154,15 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
                                               "default")
 
     if self._configsets.haveConfig(active_set):
-      self._configsets.update(active_set)
+      self._rtcout.RTC_DEBUG("Active configuration set: %s exists.", active_set)
       self._configsets.activateConfigurationSet(active_set)
+      self._configsets.update(active_set)
+      self._rtcout.RTC_INFO("Initial active configuration set is %s.", active_set)
     else:
-      self._configsets.update("default")
+      self._rtcout.RTC_DEBUG("Active configuration set: %s does not exists.", active_set)
       self._configsets.activateConfigurationSet("default")
+      self._configsets.update("default")
+      self._rtcout.RTC_INFO("Initial active configuration set is default-set.")
 
     self.postOnInitialize(0,ret)
     return ret
@@ -4679,6 +4686,203 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._actionListeners.ecaction_[OpenRTM_aist.ExecutionContextActionListenerType.EC_DETACHED].notify(ec_id)
     return
 
+
+  # ReturnCode_t getInheritedECOptions(coil::Properties& default_opts);
+  def getInheritedECOptions(self, default_opts):
+    inherited_opts_ = ["sync_transition",
+                       "sync_activation",
+                       "sync_deactivation",
+                       "sync_reset",
+                       "transition_timeout",
+                       "activation_timeout",
+                       "deactivation_timeout",
+                       "reset_timeout"]
+
+    p_ = self._properties.findNode("exec_cxt")
+    if not p_:
+      self._rtcout.RTC_WARN("No exec_cxt option found.")
+      return RTC.RTC_ERROR
+
+    self._rtcout.RTC_DEBUG("Copying inherited EC options.")
+    for opt_ in inherited_opts_:
+        if p_.findNode(opt_):
+          self._rtcout.RTC_PARANOID("Option %s exists.", opt_)
+          default_opts.setProperty(opt_, p_.getProperty(opt_))
+
+    return RTC.RTC_OK
+
+  
+  ##
+  # @brief getting individual EC options from RTC's configuration file
+  #
+  # ReturnCode_t
+  # getPrivateContextOptions(std::vector<coil::Properties>& ec_args);
+  def getPrivateContextOptions(self, ec_args):
+    self._rtcout.RTC_TRACE("getPrivateContextOptions()")
+    # Component specific multiple EC option available
+    if not self._properties.findNode("execution_contexts"):
+      self._rtcout.RTC_DEBUG("No component specific EC specified.")
+      return RTC.RTC_ERROR
+
+    args_ = self._properties.getProperty("execution_contexts")
+    ecs_tmp_ = [s.strip() for s in args_.split(",")]
+    if not ecs_tmp_:
+      return RTC.RTC_ERROR
+    self._rtcout.RTC_DEBUG("Component specific e EC option available,")
+    self._rtcout.RTC_DEBUG("%s", args_)
+
+    default_opts_ = OpenRTM_aist.Properties()
+    self.getInheritedECOptions(default_opts_)
+    for ec_tmp in ecs_tmp_:
+      if OpenRTM_aist.normalize([ec_tmp]) == "none":
+        self._rtcout.RTC_INFO("EC none. EC will not be bound to the RTC.")
+        ec_args = []
+        return RTC.RTC_OK
+
+      type_and_name_ = [s.strip() for s in ec_tmp.split("(")]
+      if len(type_and_name) > 2:
+        self._rtcout.RTC_DEBUG("Invalid EC type specified: %s", ec_tmp)
+        continue
+
+      p_ = default_opts;
+
+      # create EC's properties
+      p_.setProperty("type",type_and_name_[0])
+      self._rtcout.RTC_DEBUG("p_type: %s", p_.getProperty("type"))
+      p_type_ = self._properties.findNode("ec." + p.getProperty("type"))
+      if p_type_:
+        self._rtcout.RTC_DEBUG("p_type props:")
+        self._rtcout.RTC_DEBUG(p_type_)
+        p_.mergeProperties(p_type_)
+
+      else:
+        self._rtcout.RTC_DEBUG("p_type none")
+
+      # EC name specified
+      self._rtcout.RTC_DEBUG("size: %d, name: %s",
+                             (len(type_and_name_), type_and_name_[1]))
+
+      if len(type_and_name_) == 2 and type_and_name_[1][len(type_and_name_[1]) - 1] == ')':
+        del type_and_name_[1][len(type_and_name_[1]) - 1]
+        p_.setProperty("name", type_and_name_[1])
+        p_name_ = self._properties.findNode("ec." + p.getProperty("name"))
+        if p_name_:
+          self._rtcout.RTC_DEBUG("p_name props:")
+          self._rtcout.RTC_DEBUG(p_name_)
+          p_.mergeProperties(p_name_)
+
+        else:
+          self._rtcout.RTC_DEBUG("p_name none")
+
+      ec_args.append(p_)
+      self._rtcout.RTC_DEBUG("New EC properties stored:")
+      self._rtcout.RTC_DEBUG(p_)
+
+    return RTC.RTC_OK
+
+
+  ##
+  # @brief getting global EC options from rtc.conf
+  #
+  # ReturnCode_t
+  # getGlobalContextOptions(coil::Properties& global_ec_props);
+  def getGlobalContextOptions(self, global_ec_props):
+    # exec_cxt option is obsolete
+    self._rtcout.RTC_TRACE("getGlobalContextOptions()")
+
+    prop_ = self._properties.findNode("exec_cxt.periodic")
+    if not prop_:
+      self._rtcout.RTC_WARN("No global EC options found.")
+      return RTC.RTC_ERROR
+
+    self._rtcout.RTC_DEBUG("Global EC options are specified.")
+    self._rtcout.RTC_DEBUG(prop_)
+    self.getInheritedECOptions(global_ec_props)
+    global_ec_props.mergeProperties(prop_)
+    return RTC.RTC_OK
+
+
+  ##
+  # @brief getting EC options
+  #
+  # ReturnCode_t
+  # getContextOptions(std::vector<coil::Properties>& ec_args);
+  def getContextOptions(self, ec_args):
+    self._rtcout.RTC_DEBUG("getContextOptions()")
+    global_props_ = OpenRTM_aist.Properties()
+    ret_global_  = self.getGlobalContextOptions(global_props_)
+    ret_private_ = self.getPrivateContextOptions(ec_args)
+
+    # private(X), global(X) -> error
+    # private(O), global(O) -> private
+    # private(X), global(O) -> global
+    # private(O), global(X) -> private
+    if ret_global_ != RTC.RTC_OK and ret_private_ != RTC.RTC_OK:
+      return RTC.RTC_ERROR
+
+    if ret_global_ == RTC.RTC_OK and ret_private_ != RTC.RTC_OK:
+      ec_args.append(global_props_)
+
+    return RTC.RTC_OK
+
+
+  ##
+  # @brief fiding existing EC from the factory
+  #
+  # ReturnCode_t findExistingEC(coil::Properties& ec_arg,
+  #                             RTC::ExecutionContextBase*& ec);
+  def findExistingEC(self, ec_arg, ec):
+    eclist_ = OpenRTM_aist.ExecutionContextFactory.instance().createdObjects()
+    for ec_ in eclist_:
+      if ec_.getProperties().getProperty("type") == ec_arg.getProperty("type") and \
+            ec_.getProperties().getProperty("name") == ec_arg.getProperty("name"):
+        ec[0] = ec_
+        return RTC.RTC_OK
+
+    return RTC.RTC_ERROR
+
+
+  ##
+  # @brief creating, initializing and binding context
+  #
+  # ReturnCode_t createContexts(std::vector<coil::Properties>& ec_args);
+  def createContexts(self, ec_args):
+    ret_ = RTC.RTC_OK
+    avail_ec_ = OpenRTM_aist.ExecutionContextFactory.instance().getIdentifiers()
+
+    for ec_arg_ in ec_args:
+      ec_type_ = ec_arg_.getProperty("type")
+      ec_name_ = ec_arg_.getProperty("name")
+      ec_ = [None]
+      if ec_name_ and self.findExistingEC(ec_arg_, ec_) == RTC.RTC_OK:
+        # if EC's name exists, find existing EC in the factory.
+        self._rtcout.RTC_DEBUG("EC: type=%s, name=%s already exists.",
+                               (ec_type_, ec_name_))
+      else:
+        # If EC's name is empty or no existing EC, create new EC.
+        if not ec_type_ in avail_ec_:
+          self._rtcout.RTC_WARN("EC %s is not available.", ec_type_)
+          self._rtcout.RTC_DEBUG("Available ECs: %s",
+                                 OpenRTM_aist.flatten(avail_ec_))
+          continue
+        ec_[0] = OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_type_)
+
+      if not ec_[0]:
+        # EC factory available but creation failed. Resource full?
+        self._rtcout.RTC_ERROR("EC (%s) creation failed.", ec_type_)
+        self._rtcout.RTC_DEBUG("Available EC list: %s",
+                               OpenRTM_aist.flatten(avail_ec_))
+        ret_ = RTC.RTC_ERROR
+        continue
+
+      self._rtcout.RTC_DEBUG("EC (%s) created.", ec_type_)
+      
+      ec_[0].init(ec_arg_)
+      self._eclist.append(ec_[0])
+      ec_[0].bindComponent(self)
+
+    return ret_
+
     
   ##
   # @if jp
@@ -4775,3 +4979,39 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
 
 
 # RtcBase = RTObject_impl
+"""
+    ec_args = self._properties.getProperty("exec_cxt.periodic.type")
+    ec_args += "?"
+    ec_args += "rate="
+    ec_args += self._properties.getProperty("exec_cxt.periodic.rate")
+
+    ec = OpenRTM_aist.Manager.instance().createContext(ec_args)
+    if ec is None:
+      return RTC.RTC_ERROR
+
+    ec.set_rate(float(self._properties.getProperty("exec_cxt.periodic.rate")))
+    self._eclist.append(ec)
+    ecv = ec.getObjRef()
+    if CORBA.is_nil(ecv):
+      return RTC.RTC_ERROR
+
+    ec.bindComponent(self)
+
+    # at least one EC must be attached
+    if len(self._ecMine) == 0:
+      return RTC.PRECONDITION_NOT_MET
+
+    ret = self.on_initialize()
+    self._created = False
+    if ret is not RTC.RTC_OK:
+      return ret
+
+    # -- entering alive state --
+    for i in range(len(self._ecMine)):
+      self._rtcout.RTC_DEBUG("EC[%d] starting.", i)
+      self._ecMine[i].start()
+
+    # ret must be RTC_OK
+    return ret
+"""
+

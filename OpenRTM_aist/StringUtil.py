@@ -599,17 +599,28 @@ def unique_sv(sv):
 # 文字列リストが空の場合には空白文字を返す。
 #
 # @param sv CSV変換対象文字列リスト
+# @param delimiter 接続される文字列の間の文字 (デフォルト: ", ")
 #
 # @return CSV変換結果文字列
 #
 # @else
+# @brief Create CSV file from the given string list
+#
+# Create CSV that arranged each element of the character string
+# list given by the argument.
+# If the string list is empty, the null will be returned.
+#
+# @param sv The target string list for creating CSV
+# @param delimiter Delimiter string between connected words (default: ",")
+#
+# @return String of CSV creating result
 #
 # @endif
-def flatten(sv):
+def flatten(sv, delimiter=", "):
   if len(sv) == 0:
     return ""
 
-  _str = ", ".join(sv)
+  _str = delimiter.join(sv)
 
   return _str
 

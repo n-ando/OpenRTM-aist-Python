@@ -17,7 +17,11 @@
 # パッケージリスト
 #---------------------------------------
 version_num=`cat /etc/fedora-release | awk '/Fedora/{print $3}' -`
-omnipy="omniORB-servers omniORBpy omniORBpy-devel omniORBpy-standard"
+if [ $version_num -le 19 ]; then
+    omnipy="omniORB-servers omniORBpy omniORBpy-devel omniORBpy-standard"
+else
+    omnipy="omniORB-servers python-omniORB omniORBpy-devel"
+fi
 devel="python"
 openrtm="OpenRTM-aist-Python OpenRTM-aist-Python-example"
 packages="$devel $omnipy $openrtm"

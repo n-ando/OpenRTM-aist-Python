@@ -19,6 +19,7 @@
 #
 #
 
+import sys, os
 import time
 import math
 
@@ -123,6 +124,54 @@ class Time:
   def getTime(self):
     return OpenRTM_aist.TimeValue(self.sec, self.usec)
 
+
+  # inline int settimeofday(const struct timeval *tv , const struct timezone *tz)
+  def settimeofday(self, tv, tz):
+    if sys.platform == "win32":
+      from ctypes import windll, Structure, c_ushort, byref, c_ulong, c_long
+      class SYSTEMTIME(Structure):
+        _fields_ = [('wYear', c_ushort), 
+                    ('wMonth', c_ushort), 
+                    ('wDayOfWeek', c_ushort), 
+                    ('wDay', c_ushort), 
+                    ('wHour', c_ushort), 
+                    ('wMinute', c_ushort), 
+                    ('wSecond', c_ushort), 
+                    ('wMilliseconds', c_ushort)]
+
+
+      class LARGE_INTEGER(Structure):
+        _fields_ = [('low', c_ulong), 
+                    ('high', c_long)]
+
+
+      tm = long(tv.tv_sec*1e6) + long(tv.tv_usec)
+      st = SYSTEMTIME(0,0,0,0,0,0,0,0)
+      ft = LARGE_INTEGER(tm&0xFFFFFFFFL,tm>>32)
+      # 100 nanosecond units (since 16010101)
+      ret = windll.kernel32.FileTimeToSystemTime(byref(ft),
+                                                 byref(st))
+      if not ret:
+        return -1
+
+      #windll.kernel32.SetSystemTime(byref(st))
+      print "settime Yer:", st.wYear, " Month:", st.wMonth, \
+          " DayOfWeek:", st.wDayOfWeek, " wDay:", st.wDay,  \
+          " Hour:", st.wHour, "Minute:", st.wMinute, \
+          " Second:", st.wSecond, "Milliseconds:", st.wMilliseconds
+      
+
+    else:
+      import ctypes
+      class timespec(ctypes.Structure):
+        _fields_ = [('tv_sec', ctypes.c_long),
+                    ('tv_nsec', ctypes.c_long)]
+
+      librt = ctypes.cdll.LoadLibrary('librt.so')
+      ts = timespec(long(tv.tv_sec),long(tv.tv_usec*1000))
+      #return librt.clock_settime(0, ctypes.pointer(ts))
+
+    return 0
 
 ##
 # TimeMeasure object

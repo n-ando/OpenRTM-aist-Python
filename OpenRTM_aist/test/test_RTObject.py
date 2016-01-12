@@ -27,11 +27,6 @@ from omniORB import CORBA, PortableServer
 from omniORB import any
 import unittest
 
-DEBUG=False
-def d_print(s):
-  if DEBUG:
-    print s
-
 configsample_spec = ["implementation_id", "TestComp",
          "type_name",         "TestComp",
          "description",       "Test example component",
@@ -59,52 +54,52 @@ class TestComp(OpenRTM_aist.RTObject_impl):
     OpenRTM_aist.RTObject_impl.__init__(self, orb=orb_, poa=poa_)
 
   def onInitialize(self):
-    d_print("onInitialize")
+    print "onInitialize"
     return RTC.RTC_OK
 
   def onFinalize(self):
-    d_print("onFinalize")
+    print "onFinalize"
     return RTC.RTC_OK
     
   def onStartup(self, ec_id):
-    d_print("onStartup")
+    print "onStartup"
     return RTC.RTC_OK
 
   def onShutdown(self, ec_id):
-    d_print("onSutdown")
+    print "onSutdown"
     return RTC.RTC_OK
 
   def onActivated(self, ec_id):
-    d_print("onActivated")
+    print "onActivated"
     return RTC.RTC_OK
 
   def onDeactivated(self, ec_id):
-    d_print("onDeactivated")
+    print "onDeactivated"
     return RTC.RTC_OK
 
   def onExecute(self, ec_id):
-    d_print("onExecute")
+    print "onExecute"
     return RTC.RTC_OK
 
   def onAborting(self, ec_id):
-    d_print("onAborting")
+    print "onAborting"
     return RTC.RTC_OK
 
   def onReset(self, ec_id):
-    d_print("onReset")
+    print "onReset"
     return RTC.RTC_OK
     
   def onStateUpdate(self, ec_id):
-    d_print("onStateUpdate")
+    print "onStateUpdate"
     return RTC.RTC_OK
 
   def onRateChanged(self, ec_id):
-    d_print("onRateChanged")
+    print "onRateChanged"
     return RTC.RTC_OK
 
     
 def TestCompInit(manager):
-  d_print("TestCompInit")
+  print "TestCompInit"
   global com
   profile = OpenRTM_aist.Properties(defaults_str=configsample_spec)
   manager.registerFactory(profile,
@@ -157,8 +152,8 @@ class TestRTObject_impl(unittest.TestCase):
     rtobj = TestComp(self._orb, self._poa)
     ec = rtobj.getObjRef().get_context(0)
     self.assertEqual(ec,None)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     self.assertNotEqual(rtobj.getObjRef().get_owned_contexts(),[])
     self.assertEqual(rtobj.is_alive(ec.getObjRef()),True)
@@ -171,8 +166,8 @@ class TestRTObject_impl(unittest.TestCase):
   def test_get_owned_contexts(self):
     rtobj = TestComp(self._orb, self._poa)
     self.assertEqual(rtobj.getObjRef().get_owned_contexts(),[])
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     self.assertNotEqual(rtobj.getObjRef().get_owned_contexts(),[])
     ec.remove_component(rtobj.getObjRef())
@@ -188,7 +183,7 @@ class TestRTObject_impl(unittest.TestCase):
 
   def test_get_context(self):
     rtobj = TestComp(self._orb, self._poa)
-    d_print(rtobj.getObjRef().get_context(0))
+    print rtobj.getObjRef().get_context(0)
     return
 
   def test_get_component_profile(self):
@@ -206,10 +201,10 @@ class TestRTObject_impl(unittest.TestCase):
 
   def test_attach_context(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec = OpenRTM_aist.PeriodicExecutionContext(rtobj.getObjRef(), 10)
+    ec = OpenRTM_aist.PeriodicExecutionContext()
     id = rtobj.getObjRef().attach_context(ec.getObjRef())
-    d_print("attach_context: " + str(id))
-    d_print(rtobj.getObjRef().detach_context(id))
+    print "attach_context: ", id
+    print rtobj.getObjRef().detach_context(id)
     poa = OpenRTM_aist.Manager.instance().getPOA()
     poa.deactivate_object(poa.servant_to_id(ec))
     return
@@ -255,7 +250,7 @@ class TestRTObject_impl(unittest.TestCase):
 
   def test_get_configuration(self):
     rtobj = TestComp(self._orb, self._poa)
-    d_print(rtobj.getObjRef().get_configuration())
+    print rtobj.getObjRef().get_configuration()
     return
 
   def test_get_monitoring(self):
@@ -323,26 +318,25 @@ class TestRTObject_impl(unittest.TestCase):
   # since 1.1.0
   def test_getExecutionContext(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     self.assertNotEqual(rtobj.getExecutionContext(0),None)
     return
 
   def test_getExecutionRate(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
+    ec.set_rate(1000)
     ec.bindComponent(rtobj)
-    import PeriodicExecutionContext
-    self.assertEqual(rtobj.getExecutionRate(0),
-                     1.0 / PeriodicExecutionContext.DEFAULT_PERIOD)
+    self.assertEqual(rtobj.getExecutionRate(0),1000.0)
     return
 
   def test_setExecutionRate(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     self.assertEqual(rtobj.setExecutionRate(0,10000),RTC.RTC_OK)
     self.assertEqual(rtobj.getExecutionRate(0),10000.0)
@@ -350,20 +344,20 @@ class TestRTObject_impl(unittest.TestCase):
 
   def test_isOwnExecutionContext(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     self.assertEqual(rtobj.isOwnExecutionContext(0),True)
     return
 
   def test_activate_deactivate(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.set_rate(1000.0)
     ec.bindComponent(rtobj)
-    self.assertEqual(rtobj.activate(0),RTC.RTC_OK)
     ec.start()
+    self.assertEqual(rtobj.activate(0),RTC.RTC_OK)
     time.sleep(0.1)
     ret = rtobj.deactivate(0)
     time.sleep(0.1)
@@ -373,12 +367,12 @@ class TestRTObject_impl(unittest.TestCase):
 
   def test_reset(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
-    self.assertEqual(rtobj.activate(0),RTC.RTC_OK)
     ec.start()
-    ec._comps[0]._sm._sm.goTo(RTC.ERROR_STATE)
+    self.assertEqual(rtobj.activate(0),RTC.RTC_OK)
+    ec._worker._comps[0]._sm.goTo(RTC.ERROR_STATE)
     time.sleep(0.1)
     self.assertEqual(rtobj.reset(0),RTC.RTC_OK)
     ec.stop()
@@ -408,7 +402,7 @@ class TestRTObject_impl(unittest.TestCase):
     return
 
   def prelistenerFunc(self, id):
-    d_print("prelistenerFunc called !!!!")
+    print "prelistenerFunc called !!!!"
     return
 
   def test_addRemovePreComponentActionListener(self):
@@ -428,7 +422,7 @@ class TestRTObject_impl(unittest.TestCase):
     return
 
   def postlistenerFunc(self, id, ret):
-    d_print("postlistenerFunc called !!!!")
+    print "postlistenerFunc called !!!!"
     return
 
   def test_addRemovePostComponentActionListener(self):
@@ -472,7 +466,7 @@ class TestRTObject_impl(unittest.TestCase):
     return
 
   def portconretlistenerFunc(self, pname, cprof, ret):
-    d_print("portconretlistenerFunc called !!!!")
+    print "portconretlistenerFunc called !!!!"
     return
 
   def test_addRemovePortConnectRetListener(self):
@@ -486,7 +480,7 @@ class TestRTObject_impl(unittest.TestCase):
     return
 
   def configparamlistenerFunc(self, pname, cprof, ret):
-    d_print("configparamlistenerFunc called !!!!")
+    print "configparamlistenerFunc called !!!!"
     return
 
   def test_addRemoveConfigurationParamListener(self):
@@ -524,225 +518,225 @@ class TestRTObject_impl(unittest.TestCase):
 
   def test_preOnInitialize(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
-    d_print("preOnInitialize()")
+    print "preOnInitialize()"
     rtobj.preOnInitialize(0)
     return
 
   def test_preOnFinalize(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnFinalize(0)
     return
 
   def test_preOnStartup(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnStartup(0)
     return
 
   def test_preOnShutdown(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnShutdown(0)
     return
 
   def test_preOnActivated(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnActivated(0)
     return
 
   def test_preOnDeactivated(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnDeactivated(0)
     return
 
   def test_preOnAborting(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnAborting(0)
     return
 
   def test_preOnError(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnError(0)
     return
 
   def test_preOnReset(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnReset(0)
     return
 
   def test_preOnExecute(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnExecute(0)
     return
 
   def test_preOnStateUpdate(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnStateUpdate(0)
     return
 
   def test_preOnRateChanged(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.preOnRateChanged(0)
     return
 
   def test_postOnInitialize(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnInitialize(0,True)
     return
 
   def test_postOnFinalize(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnFinalize(0,True)
     return
 
   def test_postOnStartup(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnStartup(0,True)
     return
 
   def test_postOnShutdown(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnShutdown(0,True)
     return
 
   def test_postOnActivated(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnActivated(0,True)
     return
 
   def test_postOnDeactivated(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnDeactivated(0,True)
     return
 
   def test_postOnAborting(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnAborting(0,True)
     return
 
   def test_postOnError(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnError(0,True)
     return
 
   def test_postOnReset(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnReset(0,True)
     return
 
   def test_postOnExecute(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnExecute(0,True)
     return
 
   def test_postOnStateUpdate(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnStateUpdate(0,True)
     return
 
   def test_postOnRateChanged(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.postOnRateChanged(0,True)
     return
 
   def test_onAddPort(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.onAddPort(0)
     return
 
   def test_onRemovePort(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.onRemovePort(0)
     return
 
   def test_onAttachExecutionContext(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.onAttachExecutionContext(0)
     return
 
   def test_onDetachExecutionContext(self):
     rtobj = TestComp(self._orb, self._poa)
-    ec_args = "PeriodicExecutionContext"+"?" + "rate=1000"
-    ec=OpenRTM_aist.Manager.instance().createContext(ec_args)
+    ec_args = "PeriodicExecutionContext"
+    ec=OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_args)
     ec.bindComponent(rtobj)
     rtobj.onDetachExecutionContext(0)
     return

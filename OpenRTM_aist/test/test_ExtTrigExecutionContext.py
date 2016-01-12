@@ -45,6 +45,7 @@ class TestExtTrigExecutionContext(unittest.TestCase):
     self._dfp._poa._get_the_POAManager().activate()
     self.etec = ExtTrigExecutionContext()
     #self.etec = ExtTrigExecutionContext(self._dfp._ref)
+    return
 
   def tearDown(self):
     OpenRTM_aist.Manager.instance().shutdownManager()
@@ -56,6 +57,8 @@ class TestExtTrigExecutionContext(unittest.TestCase):
   def test_run(self):
     self.assertEqual(self.etec.start(),RTC.RTC_OK)
     self.assertEqual(self.etec.add_component(self._dfp._this()),RTC.RTC_OK)
+    self.etec.start()
+    self.etec.invokeWorker()
     self.assertEqual(self.etec.activate_component(self._dfp._this()),RTC.RTC_OK)
     import time
     time.sleep(1)
@@ -72,9 +75,12 @@ class TestExtTrigExecutionContext(unittest.TestCase):
       th.join()
     self._dfp._poa.deactivate_object(self._dfp._poa.servant_to_id(self.etec))
     self._dfp._poa.deactivate_object(self._dfp._poa.servant_to_id(self._dfp))
+    self.etec.stop()
+    return
 
   def stop(self):
     self.etec.stop()
+    return
 
 ############### test #################
 if __name__ == '__main__':
