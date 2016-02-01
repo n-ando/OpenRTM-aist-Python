@@ -1032,8 +1032,9 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
     if len(provider_types) > 0:
       self._rtcout.RTC_DEBUG("dataflow_type push is supported")
       self.appendProperty("dataport.dataflow_type", "push")
-      self.appendProperty("dataport.interface_type",
-                          OpenRTM_aist.flatten(provider_types))
+      for provider_type in provider_types:
+        self.appendProperty("dataport.interface_type",provider_type)
+      
 
     self._providerTypes = provider_types
     return
@@ -1075,8 +1076,9 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
     if len(consumer_types) > 0:
       self._rtcout.RTC_PARANOID("dataflow_type pull is supported")
       self.appendProperty("dataport.dataflow_type", "pull")
-      self.appendProperty("dataport.interface_type",
-                          OpenRTM_aist.flatten(consumer_types))
+      for consumer_type in consumer_types:
+        self.appendProperty("dataport.interface_type",consumer_type)
+
 
     self._consumerTypes = consumer_types
     return
