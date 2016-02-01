@@ -34,4 +34,9 @@ def FactoryInit():
     OpenRTM_aist.InPortCorbaCdrConsumerInit()
     OpenRTM_aist.OutPortCorbaCdrConsumerInit()
     OpenRTM_aist.OutPortCorbaCdrProviderInit()
+    OpenRTM_aist.InPortDirectProviderInit()
+    OpenRTM_aist.InPortDirectConsumerInit()
+    OpenRTM_aist.OutPortDirectProviderInit()
+    OpenRTM_aist.OutPortDirectConsumerInit()
+
     

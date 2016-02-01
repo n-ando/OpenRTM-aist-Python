@@ -100,4 +100,8 @@ from OutPortPushConnector import *
 from PublisherNew import *
 from PublisherPeriodic import *
 from FactoryInit import *
+from InPortDirectConsumer import *
+from InPortDirectProvider import *
+from OutPortDirectConsumer import *
+from OutPortDirectProvider import *
 from CORBA_RTCUtil import *

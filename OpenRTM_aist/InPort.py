@@ -107,6 +107,10 @@ class InPort(OpenRTM_aist.InPortBase):
     self._OnRead         = None
     self._OnReadConvert  = None
 
+    self._directNewData = False
+    self._valueMutex = threading.RLock()
+    self._outPortConnectorList = []
+
 
   def __del__(self, InPortBase=OpenRTM_aist.InPortBase):
     InPortBase.__del__(self)
@@ -151,6 +155,13 @@ class InPort(OpenRTM_aist.InPortBase):
   def isNew(self):
     self._rtcout.RTC_TRACE("isNew()")
 
+
+    guard = OpenRTM_aist.ScopedLock(self._valueMutex)
+    if self._directNewData == True:
+      self._rtcout.RTC_TRACE("isNew() returns true because of direct write.")
+      return True
+    del guard
+    
     if len(self._connectors) == 0:
       self._rtcout.RTC_DEBUG("no connectors")
       return False
@@ -190,7 +201,8 @@ class InPort(OpenRTM_aist.InPortBase):
   # bool isEmpty()
   def isEmpty(self):
     self._rtcout.RTC_TRACE("isEmpty()")
-
+    if self._directNewData == True:
+      return False
     if len(self._connectors) == 0:
       self._rtcout.RTC_DEBUG("no connectors")
       return True
@@ -283,6 +295,31 @@ class InPort(OpenRTM_aist.InPortBase):
       self._OnRead()
       self._rtcout.RTC_TRACE("OnRead called")
 
+    guard = OpenRTM_aist.ScopedLock(self._valueMutex)
+    if self._directNewData == True:
+      
+      self._rtcout.RTC_TRACE("Direct data transfer")
+      if self._OnReadConvert is not None:
+        self._value = self._OnReadConvert(self._value)
+        self._rtcout.RTC_TRACE("OnReadConvert for direct data called")
+      self._directNewData = False
+      return self._value
+    del guard
+
+
+    if len(self._outPortConnectorList) > 0:
+      data = self._outPortConnectorList[0].read()
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
+      #self._outPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
+      self._rtcout.RTC_TRACE("ON_BUFFER_READ(InPort,OutPort), ")
+      self._rtcout.RTC_TRACE("callback called in direct mode.")
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
+      #self._outPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
+      self._rtcout.RTC_TRACE("ON_RECEIVED(InPort,OutPort), ")
+      self._rtcout.RTC_TRACE("callback called in direct mode.")
+      self._value = data
+      return self._value
+
     if len(self._connectors) == 0:
       self._rtcout.RTC_DEBUG("no connectors")
       return self._value
@@ -370,3 +407,62 @@ class InPort(OpenRTM_aist.InPortBase):
   # @endif
   def setOnReadConvert(self, on_rconvert):
     self._OnReadConvert = on_rconvert
+
+  ##
+  # @if jp
+  #
+  # @brief データをダイレクトに書き込む
+  #
+  # @param self
+  # @param data 書き込むデータ
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @param data 
+  # @endif
+  # void write(const DataType& data)
+  def write(self, data):
+    guard = OpenRTM_aist.ScopedLock(self._valueMutex)
+    self._value = data
+    self._directNewData = True
+    del guard
+
+  ##
+  # @if jp
+  # @brief ダイレクト通信用のOutPortPullConnectorを追加
+  # @param self
+  # @param outPortConnector outPortPullConnector
+  # @return OutPortのサーバント(取得に失敗した場合はNone)
+  # @else
+  # @brief Getting local peer InPort if available
+  # @param self
+  # @param profile 
+  # @return 
+  # @endif
+  #
+  # OutPortBase*
+  # setOutPortConnector(const OutPortPullConnector_impl outPortConnector)
+  def addOutPortConnector(self, outPortConnector):
+    self._outPortConnectorList.append(outPortConnector)
+    
+
+
+  ##
+  # @if jp
+  # @brief ダイレクト通信用のOutPortPullConnectorを削除
+  # @param self
+  # @param outPortConnector outPortPullConnector
+  # @else
+  # @brief Getting local peer InPort if available
+  # @param self
+  # @param profile 
+  # @return 
+  # @endif
+  #
+  # OutPortBase*
+  # setOutPortConnector(const OutPortPullConnector_impl outPortConnector)
+  def removeOutPortConnector(self, outPortConnector):
+    self._outPortConnectorList.remove(outPortConnector)
+    
