@@ -440,6 +440,7 @@ class Manager:
 
     self.initPreCreation()
 
+    self.initPreConnection()
 
     return True
 
@@ -2390,6 +2391,293 @@ class Manager:
     return
 
 
+
+
+  ##
+  # @if jp
+  #
+  # @brief 指定したRTコンポーネントの保持するポートをNamingServiceにバインドする
+  # ポートのpublish_topicというプロパティでトピック名を設定し、トピック名のコンテキストの下に登録
+  #
+  # 
+  # @param self
+  # @param comp RTコンポーネント
+  #
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param comp 
+  #
+  # @endif
+  # void publishPorts(RTObject_impl* comp)
+  def publishPorts(self, comp):
+    ports = comp.get_ports()
+    for p in ports:
+      prof = p.get_port_profile()
+      prop = OpenRTM_aist.Properties()
+      OpenRTM_aist.NVUtil.copyToProperties(prop, prof.properties)
+      
+      if (prop.hasKey("publish_topic") is None or not str(prop.getProperty("publish_topic"))) and (prop.hasKey("subscribe_topic") is None or not str(prop.getProperty("subscribe_topic"))) and (prop.hasKey("rendezvous_point") is None or not str(prop.getProperty("rendezvous_point"))):
+        continue
+
+
+      if prop.getProperty("port.port_type") == "DataOutPort":
+        name  = "dataports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt/"
+        name += prof.name
+        name += ".outport"
+      elif prop.getProperty("port.port_type") == "DataInPort":
+        name  = "dataports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt/"
+        name += prof.name
+        name += ".inport"
+      elif prop.getProperty("port.port_type") == "CorbaPort":
+        name  = "svcports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt/"
+        name += prof.name
+        name += ".svc"
+
+      else:
+        
+        self._rtcout.RTC_WARN("Unknown port type: %s" % str(prop.getProperty("port.port_type")))
+        continue
+
+      
+      port = self._poa.reference_to_servant(p)
+      
+      self._namingManager.bindPortObject(name, port)
+
+  ##
+  # @if jp
+  #
+  # @brief 指定したRTコンポーネントの保持するポートを同じトピック名以下の接続可能なポートと接続
+  #
+  # 
+  # @param self
+  # @param comp RTコンポーネント
+  #
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param comp 
+  #
+  # @endif
+  # void subscribePorts(RTObject_impl* comp)
+  def subscribePorts(self, comp):
+    ports = comp.get_ports()
+    
+    for p in ports:
+      
+      prof = p.get_port_profile()
+      prop = OpenRTM_aist.Properties()
+      OpenRTM_aist.NVUtil.copyToProperties(prop, prof.properties)
+      
+      if (prop.hasKey("publish_topic") is None or not str(prop.getProperty("publish_topic"))) and (prop.hasKey("subscribe_topic") is None or not str(prop.getProperty("subscribe_topic"))) and (prop.hasKey("rendezvous_point") is None or not str(prop.getProperty("rendezvous_point"))):
+        continue
+      
+            
+      
+      
+      if prop.getProperty("port.port_type") == "DataOutPort":
+        name  = "dataports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt"
+        
+        nsports = self.getPortsOnNameServers(name, "inport")
+        
+        self.connectDataPorts(p, nsports)
+      
+      elif prop.getProperty("port.port_type") == "DataInPort":
+        name  = "dataports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt"
+        nsports = self.getPortsOnNameServers(name, "outport")
+        self.connectDataPorts(p, nsports)
+      
+      elif prop.getProperty("port.port_type") == "CorbaPort":
+        name  = "svcports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt"
+        nsports = self.getPortsOnNameServers(name, "svc")
+        self.connectServicePorts(p, nsports)
+
+  ##
+  # @if jp
+  #
+  # @brief 与えられたパス以下の指定されたkindのポートを取得する
+  # 
+  # @param self
+  # @param nsname パス
+  # @param kind kind
+  # @return ポートのオブジェクトリファレンスのリスト
+  #
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param nsname 
+  # @param kind
+  # @return 
+  #
+  # @endif
+  # PortServiceList_var getPortsOnNameServers(std::string nsname,std::string kind)
+  def getPortsOnNameServers(self, nsname, kind):
+    ports = []
+    ns = self._namingManager._names
+    for n in ns:
+      noc = n.ns
+      if noc is None:
+        continue
+      cns = noc._cosnaming
+      
+      bl = cns.listByKind(nsname,kind)
+      
+      for b in bl:
+        if b.binding_type != CosNaming.nobject:
+          continue
+        tmp = b.binding_name[0].id + "." + b.binding_name[0].kind
+                
+        nspath = "/" + nsname + "/" + tmp
+        nspath.replace("\\","")
+        
+        obj = cns.resolveStr(nspath)
+        portsvc = obj
+        
+        if CORBA.is_nil(portsvc):
+          continue
+        
+        try:
+          p = portsvc.get_port_profile()
+          
+        except:
+          continue
+        ports.append(portsvc)
+
+    return ports
+
+  ##
+  # @if jp
+  # @brief 指定したデータポートを指定したリスト内のデータポート全てと接続する
+  # @param self
+  # @param port 対象のデータポート
+  # @param target_ports 接続対象のデータポートのリスト
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param port
+  # @param target_ports
+  # @endif
+  # void connectDataPorts(PortService_ptr port,PortServiceList_var& target_ports)
+  def connectDataPorts(self, port, target_ports):
+    for p in target_ports:
+      if port._is_equivalent(p):
+        continue
+      con_name = ""
+      p0 = port.get_port_profile()
+      p1 = p.get_port_profile()
+      con_name += p0.name
+      con_name += ":"
+      con_name += p1.name
+      prop = OpenRTM_aist.Properties()
+      if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(con_name,prop,port,p):
+        self._rtcout.RTC_ERROR("Connection error in topic connection.")
+
+
+  ##
+  # @if jp
+  # @brief 指定したサービスポートを指定したリスト内のサービスポート全てと接続する
+  # @param self
+  # @param port 対象のサービスポート
+  # @param target_ports 接続対象のサービスポートのリスト
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param port
+  # @param target_ports
+  # @endif
+  # void connectServicePorts(PortService_ptr port,PortServiceList_var& target_ports)
+  def connectServicePorts(self, port, target_ports):
+    for p in target_ports:
+      if port._is_equivalent(p):
+        continue
+      con_name = ""
+      p0 = port.get_port_profile()
+      p1 = p.get_port_profile()
+      con_name += p0.name
+      con_name += ":"
+      con_name += p1.name
+      prop = OpenRTM_aist.Properties()
+      if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(con_name,prop,port,p):
+        self._rtcout.RTC_ERROR("Connection error in topic connection.")
+
+
+  ##
+  # @if jp
+  # @brief 起動時にrtc.confで指定したポートを接続する
+  # 例:
+  # manager.components.preconnect: RTC0.port0:RTC0.port1(interface_type=corba_cdr&dataport.dataflow_type=pull&~),~
+  # @param self
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @endif
+  # void initPreConnection()
+  def initPreConnection(self):
+    self._rtcout.RTC_TRACE("Connection pre-creation: %s" % str(self._config.getProperty("manager.components.preconnect")))
+    connectors = str(self._config.getProperty("manager.components.preconnect")).split(",")
+    for c in connectors:
+      tmp = [c]
+      OpenRTM_aist.eraseHeadBlank(tmp)
+      OpenRTM_aist.eraseTailBlank(tmp)
+      c = tmp[0]
+      if len(c) == 0:
+        continue
+      conn_prop = c.split("(")
+      if len(conn_prop) < 2:
+        self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
+        continue
+      conn_prop[1] = conn_prop[1].replace(")","")
+      comp_ports = conn_prop[0].split(":")
+      if len(comp_ports) != 2:
+        self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
+        self._rtcout.RTC_ERROR("Format must be Comp0.port0:Comp1.port1")
+        continue
+      
+      comp0_name = comp_ports[0].split(".")[0]
+      comp0 = self.getComponent(comp0_name)
+      
+      if comp0 is None:
+        self._rtcout.RTC_ERROR("%s not found." % comp0_name)
+        continue
+
+      port0_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp0.getObjRef(), comp_ports[0])
+      if CORBA.is_nil(port0_var):
+        self._rtcout.RTC_DEBUG("port %s found: " % comp_ports[0])
+        continue
+
+      comp1_name = comp_ports[1].split(".")[0]
+      comp1 = self.getComponent(comp1_name)
+      
+      if comp1 is None:
+        self._rtcout.RTC_ERROR("%s not found." % comp1_name)
+        continue
+
+      port1_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp1.getObjRef(), comp_ports[1])
+      if CORBA.is_nil(port1_var):
+        self._rtcout.RTC_DEBUG("port %s found: " % comp_ports[1])
+        continue
+      
+      prop = OpenRTM_aist.Properties()
+      opt_props = conn_prop[1].split("&")
+      for o in opt_props:
+        temp = o.split("=")
+        if len(temp) == 2:
+          prop.setProperty("dataport."+temp[0],temp[1])
+      if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(c, prop, port0_var, port1_var):
+        self._rtcout.RTC_ERROR("Connection error: %s" % c)
+      
 
 
 
