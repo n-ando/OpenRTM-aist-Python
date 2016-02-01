@@ -439,7 +439,7 @@ class Manager:
       self._initProc(self)
 
     self.initPreCreation()
-
+    self.initPreActivation()
     self.initPreConnection()
 
     return True
@@ -2463,6 +2463,38 @@ class Manager:
 
 
 
+  ##
+  # @if jp
+  # @brief 起動時にrtc.confで指定したRTCをアクティベーションする
+  # 例:
+  # manager.components.preactivate RTC1,RTC2~
+  # @param self
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @endif
+  # void initPreActivation()
+  def initPreActivation(self):
+    
+    self._rtcout.RTC_TRACE("Components pre-activation: %s" % str(self._config.getProperty("manager.components.preactivate")))
+    comps = str(self._config.getProperty("manager.components.preactivate")).split(",")
+    for c in comps:
+      tmp = [c]
+      OpenRTM_aist.eraseHeadBlank(tmp)
+      OpenRTM_aist.eraseTailBlank(tmp)
+      c = tmp[0]
+      if c:
+        comp = self.getComponent(c)
+        
+        if comp is None:
+          self._rtcout.RTC_ERROR("%s not found." % c)
+          continue
+        ret = OpenRTM_aist.CORBA_RTCUtil.activate(comp.getObjRef())
+        if ret != RTC.RTC_OK:
+          self._rtcout.RTC_ERROR("%s activation filed." % c)
+        else:
+          self._rtcout.RTC_INFO("%s activated." % c)
 
 
   ##
