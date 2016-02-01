@@ -104,4 +104,8 @@ from InPortDirectConsumer import *
 from InPortDirectProvider import *
 from OutPortDirectConsumer import *
 from OutPortDirectProvider import *
+from InPortSHMConsumer import *
+from InPortSHMProvider import *
+from OutPortSHMConsumer import *
+from OutPortSHMProvider import *
 from CORBA_RTCUtil import *

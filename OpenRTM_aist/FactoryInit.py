@@ -38,5 +38,8 @@ def FactoryInit():
     OpenRTM_aist.InPortDirectConsumerInit()
     OpenRTM_aist.OutPortDirectProviderInit()
     OpenRTM_aist.OutPortDirectConsumerInit()
-
+    OpenRTM_aist.InPortSHMProviderInit()
+    OpenRTM_aist.InPortSHMConsumerInit()
+    OpenRTM_aist.OutPortSHMProviderInit()
+    OpenRTM_aist.OutPortSHMConsumerInit()
     
