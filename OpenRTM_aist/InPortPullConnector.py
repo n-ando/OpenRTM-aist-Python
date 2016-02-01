@@ -128,8 +128,6 @@ class InPortPullConnector(OpenRTM_aist.InPortConnector):
     OpenRTM_aist.InPortConnector.__init__(self, info, buffer)
     self._consumer = consumer
     self._listeners = listeners
-
-
     if buffer == 0:
       self._buffer = self.createBuffer(self._profile)
 
@@ -137,7 +135,6 @@ class InPortPullConnector(OpenRTM_aist.InPortConnector):
       raise
         
     self._buffer.init(info.properties.getNode("buffer"))
-    self._consumer.init(info.properties)
     self._consumer.setBuffer(self._buffer)
     self._consumer.setListener(info, self._listeners)
     self.onConnect()
@@ -199,8 +196,6 @@ class InPortPullConnector(OpenRTM_aist.InPortConnector):
     self._rtcout.RTC_TRACE("InPortPullConnector.read()")
     if not self._consumer:
       return self.PORT_ERROR
-
-
 
     cdr_data = [None]
     ret = self._consumer.get(cdr_data)
@@ -324,7 +319,3 @@ class InPortPullConnector(OpenRTM_aist.InPortConnector):
     if self._listeners and self._profile:
       self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_DISCONNECT].notify(self._profile)
     return
-
-  
-
-

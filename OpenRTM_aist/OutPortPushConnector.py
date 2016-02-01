@@ -132,9 +132,6 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
     self._consumer = consumer
     self._listeners = listeners
 
-    self._directInPort = None
-    self._inPortListeners = None
-
     # publisher/buffer creation. This may throw std::bad_alloc;
     self._publisher = self.createPublisher(info)
     if not self._buffer:
@@ -237,25 +234,6 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
   def write(self, data):
     self._rtcout.RTC_TRACE("write()")
 
-    if self._directInPort is not None:
-      if self._directInPort.isNew():
-        self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_OVERWRITE].notify(self._profile, data)
-        self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_OVERWRITE].notify(self._profile, data)
-        self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_FULL].notify(self._profile, data)
-        self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_FULL].notify(self._profile, data)
-        self._rtcout.RTC_TRACE("ONBUFFER_OVERWRITE(InPort,OutPort), ")
-        self._rtcout.RTC_TRACE("ON_RECEIVER_FULL(InPort,OutPort) ")
-        self._rtcout.RTC_TRACE("callback called in direct mode.")
-      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE].notify(self._profile, data)
-      self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE].notify(self._profile, data)
-      self._rtcout.RTC_TRACE("ON_BUFFER_WRITE(InPort,OutPort), ")
-      self._rtcout.RTC_TRACE("callback called in direct mode.")
-      self._directInPort.write(data)
-      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
-      self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
-      self._rtcout.RTC_TRACE("ON_RECEIVED(InPort,OutPort), ")
-      self._rtcout.RTC_TRACE("callback called in direct mode.")
-      return self.PORT_OK
     # data -> (conversion) -> CDR stream
     cdr_data = None
     if self._endian is not None:
@@ -448,26 +426,3 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
     if self._listeners and self._profile:
       self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_DISCONNECT].notify(self._profile)
     return
-
-  ##
-  # @if jp
-  # @brief データをダイレクトに書き込むためのInPortのサーバントを設定する
-  #
-  # @param self
-  # @param directInPort InPortのサーバント
-  # @return True: 設定に成功 False: 既に設定済みのため失敗
-  # @else
-  # @brief 
-  #
-  # @param self
-  # @param directInPort 
-  # @return 
-  # @endif
-  #
-  # bool setInPort(InPortBase* directInPort);
-  def setInPort(self, directInPort):
-    if self._directInPort is not None:
-      return False
-    self._directInPort = directInPort
-    self._inPortListeners = self._directInPort._listeners
-    return True

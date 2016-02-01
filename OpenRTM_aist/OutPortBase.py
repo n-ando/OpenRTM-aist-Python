@@ -1073,9 +1073,9 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
     if len(provider_types) > 0:
       self._rtcout.RTC_DEBUG("dataflow_type pull is supported")
       self.appendProperty("dataport.dataflow_type", "pull")
-      for provider_type in provider_types:
-        self.appendProperty("dataport.interface_type",provider_type)
-      
+      self.appendProperty("dataport.interface_type",
+                          OpenRTM_aist.flatten(provider_types))
+
     self._providerTypes = provider_types
 
 
@@ -1115,9 +1115,9 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
     if len(consumer_types) > 0:
       self._rtcout.RTC_PARANOID("dataflow_type push is supported")
       self.appendProperty("dataport.dataflow_type", "push")
-      for consumer_type in consumer_types:
-        self.appendProperty("dataport.interface_type",consumer_type)
-          
+      self.appendProperty("dataport.interface_type",
+                          OpenRTM_aist.flatten(consumer_types))
+    
     self._consumerTypes = consumer_types
 
 
@@ -1180,7 +1180,6 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
     
     if consumer != 0:
       self._rtcout.RTC_DEBUG("consumer created")
-      
       consumer.init(prop.getNode("consumer"))
 
       if not consumer.subscribeInterface(cprof.properties):
@@ -1232,22 +1231,6 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
       elif provider_ is not None:
         self._rtcout.RTC_TRACE("OutPortPullConnector created")
 
-      #interface_type = str(prop.getNode("interface_type")).replace(":","")
-      #interface_type = OpenRTM_aist.StringUtil.normalize([interface_type])
-      
-      if OpenRTM_aist.StringUtil.normalize([prop.getProperty("interface_type")]) == "direct":
-        
-        inport = self.getLocalInPort(profile)
-        
-        if inport is None:
-          self._rtcout.RTC_TRACE("interface_type is direct, ")
-          self._rtcout.RTC_TRACE("but a peer InPort servant could not be obtained.")
-          del connector
-          return 0
-        
-        connector.setInPort(inport)
-
-
       self._connectors.append(connector)
       self._rtcout.RTC_PARANOID("connector push backed: %d", len(self._connectors))
       return connector
@@ -1260,37 +1243,3 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
 
     self._rtcout.RTC_FATAL("never comes here: createConnector()")
     return 0
-
-
-  ##
-  # @if jp
-  # @brief ローカルのピアInPortを取得
-  # @param self
-  # @param profile コネクタプロファイル
-  # @return InPortのサーバント(取得に失敗した場合はNone)
-  # @else
-  # @brief Getting local peer InPort if available
-  # @param self
-  # @param profile 
-  # @return 
-  # @endif
-  #
-  # InPortBase*
-  # getLocalInPort(const ConnectorInfo& profile)
-  def getLocalInPort(self, profile):
-    self._rtcout.RTC_DEBUG("Trying direct port connection.")
-    orb = OpenRTM_aist.Manager.instance().getORB()
-    self._rtcout.RTC_DEBUG("Current connector profile: name=%s, id=%s" % (profile.name, profile.id))
-    for p in profile.ports:
-      obj = orb.string_to_object(p)
-      if self.getPortRef()._is_equivalent(obj):
-        continue
-      self._rtcout.RTC_DEBUG("Peer port found: %s." % p)
-      try:
-        poa = OpenRTM_aist.Manager.instance().getPOA()
-        inport = poa.reference_to_servant(obj)
-        self._rtcout.RTC_DEBUG("InPortBase servant pointer is obtained.")
-        return inport
-      except:
-        self._rtcout.RTC_DEBUG("Peer port might be a remote port")
-    return None

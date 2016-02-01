@@ -1032,9 +1032,8 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
     if len(provider_types) > 0:
       self._rtcout.RTC_DEBUG("dataflow_type push is supported")
       self.appendProperty("dataport.dataflow_type", "push")
-      for provider_type in provider_types:
-        self.appendProperty("dataport.interface_type",provider_type)
-      
+      self.appendProperty("dataport.interface_type",
+                          OpenRTM_aist.flatten(provider_types))
 
     self._providerTypes = provider_types
     return
@@ -1076,9 +1075,8 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
     if len(consumer_types) > 0:
       self._rtcout.RTC_PARANOID("dataflow_type pull is supported")
       self.appendProperty("dataport.dataflow_type", "pull")
-      for consumer_type in consumer_types:
-        self.appendProperty("dataport.interface_type",consumer_type)
-
+      self.appendProperty("dataport.interface_type",
+                          OpenRTM_aist.flatten(consumer_types))
 
     self._consumerTypes = consumer_types
     return
@@ -1151,7 +1149,6 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
     
     if consumer != 0:
       self._rtcout.RTC_DEBUG("consumer created")
-      
       consumer.init(prop.getNode("consumer"))
 
       if not consumer.subscribeInterface(cprof.properties):
@@ -1219,11 +1216,6 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
       elif consumer_ is not None:
         self._rtcout.RTC_TRACE("InPortPullConnector created")
 
-      
-
-
-
-
       # guard = OpenRTM_aist.ScopedLock(self._connector_mutex)
       self._connectors.append(connector)
       self._rtcout.RTC_PARANOID("connector push backed: %d", len(self._connectors))
@@ -1235,5 +1227,3 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
 
     self._rtcout.RTC_FATAL("never comes here: createConnector()")
     return 0
-
-
