@@ -19,6 +19,7 @@
 
 
 from omniORB import CORBA
+import OpenRTM_aist
 
 ##
 # @if jp
@@ -218,6 +219,8 @@ class CorbaConsumer(CorbaConsumerBase):
       CorbaConsumerBase.__init__(self)
       self._var = None
 
+    self._sev = None
+
 
   ##
   # @if jp
@@ -278,6 +281,8 @@ class CorbaConsumer(CorbaConsumerBase):
       self._var = obj._narrow(self._interfaceType)
     else:
       self._var = self._objref
+    
+    
 
     if not CORBA.is_nil(self._var):
       return True
@@ -312,6 +317,17 @@ class CorbaConsumer(CorbaConsumerBase):
   #
   # @endif
   def _ptr(self):
+    #print dir(self._var)
+    if self._sev is not None:
+      return self._sev
+    try:
+      mgr = OpenRTM_aist.Manager.instance()
+      self._sev = mgr._poa.reference_to_servant(self._var)
+      if self._sev is not None:
+        return self._sev
+    except:
+      return self._var
+      
     return self._var
 
 
@@ -331,3 +347,4 @@ class CorbaConsumer(CorbaConsumerBase):
   def releaseObject(self):
     CorbaConsumerBase.releaseObject(self)
     self._var = CORBA.Object._nil
+    self._sev = None
