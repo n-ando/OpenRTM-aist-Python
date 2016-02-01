@@ -972,7 +972,8 @@ class Manager:
       self._namingManager.bindObject(name, comp)
     self._listeners.naming_.postBind(comp, names)
 
-
+    self.publishPorts(comp)
+    self.subscribePorts(comp)
 
     return True
 
@@ -1327,7 +1328,6 @@ class Manager:
 
 
     
-
     return
 
 
