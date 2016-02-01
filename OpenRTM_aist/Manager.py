@@ -1327,7 +1327,20 @@ class Manager:
                                       tm)
 
 
-    
+    lmpm_ = [s.strip() for s in self._config.getProperty("manager.preload.modules").split(",")]
+    for mpm_ in lmpm_:
+      tmp = [mpm_]
+      OpenRTM_aist.eraseHeadBlank(tmp)
+      OpenRTM_aist.eraseTailBlank(tmp)
+      mpm_ = tmp[0]
+      if len(mpm_) == 0:
+        continue
+      basename_ = mpm_.split(".")[0]+"Init"
+      try:
+        self._module.load(mpm_, basename_)
+      except:
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+
     return
 
 
