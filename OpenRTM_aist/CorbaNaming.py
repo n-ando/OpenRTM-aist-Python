@@ -1244,3 +1244,83 @@ class CorbaNaming:
       print _exc_str
 
     return
+
+  ##
+  # @if jp
+  # @brief 与えられたパス以下の指定されたkindのバインディングを取得する
+  # @param self
+  # @param string_name パス
+  # @param string_kind kind
+  # @return バインディングのリスト
+  # @else
+  #
+  # @brief Get all the binding with specified kind under given naming path
+  # @param self
+  # @param string_name path
+  # @param string_kind kind
+  # @return 
+  # @endif
+  # BindingList_var listByKind(const char* string_name,const char* string_kind)
+  def listByKind(self, string_name, string_kind):
+    if not string_name:
+      return []
+    if not string_kind:
+      return []
+    kind = string_kind
+    tmp_bl = self.listBinding(string_name)
+    bl = []
+    tmp_len = len(tmp_bl)
+    list_len = 0
+    for b in tmp_bl:
+      if b.binding_type == CosNaming.nobject:
+        last_index = len(b.binding_name)-1
+        tmp = b.binding_name[last_index].kind
+        if kind != tmp:
+          continue
+        bl.append(b)
+
+    return bl
+        
+  ##
+  # @if jp
+  # @brief 与えられた Naming パス以下のすべてのバインディングを取得する
+  # @param self
+  # @param string_name Namingパス
+  # @return バインディングのリスト
+  # @else
+  #
+  # @brief Get all the binding under given naming path
+  # @param self
+  # @param string_name 
+  # @return 
+  # @endif
+  # BindingList_var list(const char* string_name)
+  def listBinding(self, string_name):
+    if not string_name:
+      return
+    obj = self.resolveStr(string_name)
+    #obj = self.getRootContext()
+    if CORBA.is_nil(obj):
+        return []
+    nc = obj._narrow(obj)
+    if CORBA.is_nil(nc):
+      return []
+    max_list_size = 65536
+    
+    bl, bi = obj.list(max_list_size)
+    
+    
+    max_remaining = max_list_size - len(bl)
+    more_bindings = CORBA.is_nil(bi)
+    
+    
+    if not more_bindings:
+      while not more_bindings and (max_remaining > 0):
+        
+        (tmp_bl, more_bindings) = bi.next_n(max_remaining)
+        for i in tmp_bl:
+          bl.append(i)
+          
+          max_remaining = max_list_size - len(tmp_bl[0])
+        
+    return bl
