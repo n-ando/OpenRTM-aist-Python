@@ -166,6 +166,31 @@ class NamingOnCorba(NamingBase):
   ##
   # @if jp
   #
+  # @brief 指定した CORBA オブジェクトのNamingServiceへバインド
+  # 
+  # 指定した CORBA オブジェクトを指定した名称で CORBA NamingService へ
+  # バインドする。
+  # 
+  # @param self
+  # @param name バインド時の名称
+  # @param port バインド対象オブジェクト
+  #
+  # @else
+  #
+  # @endif
+  def bindPortObject(self, name, port):
+    self._rtcout.RTC_TRACE("bindPortObject(name = %s, port)", name)
+    try:
+      self._cosnaming.rebindByString(name, port.getPortRef(), True)
+    except:
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+
+    return
+
+
+  ##
+  # @if jp
+  #
   # @brief 指定した CORBA オブジェクトをNamingServiceからアンバインド
   # 
   # 指定した CORBA オブジェクトを CORBA NamingService からアンバインドする。
@@ -205,6 +230,9 @@ class NamingOnCorba(NamingBase):
   def isAlive(self):
     self._rtcout.RTC_TRACE("isAlive()")
     return self._cosnaming.isAlive()
+
+
+
 
 
 ##
@@ -251,8 +279,10 @@ class NamingManager:
     self._namesMutex = threading.RLock()
     self._compNames = []
     self._mgrNames  = []
+    self._portNames = []
     self._compNamesMutex = threading.RLock()
     self._mgrNamesMutex = threading.RLock()
+    self._portNamesMutex = threading.RLock()
 
 
   ##
@@ -274,7 +304,7 @@ class NamingManager:
     self._rtcout.RTC_TRACE("NamingManager::registerNameServer(%s, %s)",
                            (method, name_server))
     name = self.createNamingObj(method, name_server)
-    self._names.append(self.Names(method, name_server, name))
+    self._names.append(self.NameServer(method, name_server, name))
 
 
   ##
@@ -317,6 +347,35 @@ class NamingManager:
           self._names[i].ns = 0
 
     self.registerMgrName(name, mgr)
+
+  ##
+  # @if jp
+  #
+  # @brief 指定したポートのNamingServiceへバインド
+  # 
+  # @param self
+  # @param name バインド時の名称
+  # @param port バインド対象のポート
+  #
+  # @else
+  #
+  # @param self
+  # @param name 
+  # @param port 
+  #
+  # @endif
+  # void bindPortObject(const char* name, PortBase* port)
+  def bindPortObject(self, name, port):
+    self._rtcout.RTC_TRACE("NamingManager::bindPortObject(%s)", name)
+    guard = OpenRTM_aist.ScopedLock(self._namesMutex)
+    for i in range(len(self._names)):
+      if self._names[i].ns:
+        try:
+          self._names[i].ns.bindPortObject(name, port)
+        except:
+          del self._names[i].ns
+          self._names[i].ns = 0
+    self.registerPortName(name, port)
 
 
   ##
@@ -386,6 +445,7 @@ class NamingManager:
         self._names[i].ns.unbindObject(name)
     self.unregisterCompName(name)
     self.unregisterMgrName(name)
+    self.unregisterPortName(name)
 
 
   ##
@@ -414,6 +474,13 @@ class NamingManager:
     for i in range(len_):
       idx = (len_ - 1) - i
       self.unbindObject(self._mgrNames[idx].name)
+
+
+    guard = OpenRTM_aist.ScopedLock(self._portNamesMutex)
+    len_ = len(self._portNames)
+    for i in range(len_):
+      idx = (len_ - 1) - i
+      self.unbindObject(self._portNames[idx].name)
 
 
   ##
@@ -525,7 +592,31 @@ class NamingManager:
     self._mgrNames.append(self.Mgr(name, mgr))
     return
 
+  ##
+  # @if jp
+  #
+  # @brief NameServer に登録するポートの設定
+  # 
+  #
+  # @param self
+  # @param name ポートの登録時名称
+  # @param port 登録対象オブジェクト
+  # 
+  # @else
+  # @param self
+  # @param name 
+  # @param port 
+  #
+  # @endif
+  def registerPortName(self, name, port):
+    for i in range(len(self._portNames)):
+      if self._portNames[i].name == name:
+        self._portNames[i].port = port
+        return
 
+    self._portNames.append(self.Port(name, port))
+    return
+  
   ##
   # @if jp
   #
@@ -555,6 +646,31 @@ class NamingManager:
       idx = (len_ -1) - i
       if self._mgrNames[idx].name == name:
         del self._mgrNames[idx]
+        return
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief NameServer に登録するポートの設定解除
+  # 
+  #
+  # @param self
+  # @param name 設定解除対象ポートの名称
+  # 
+  # @else
+  #
+  # @param self
+  # @param name
+  #
+  # @endif
+  def unregisterPortName(self, name):
+    len_ = len(self._portNames)
+    for i in range(len_):
+      idx = (len_ -1) - i
+      if self._portNames[idx].name == name:
+        del self._portNames[idx]
         return
     return
 
@@ -604,15 +720,34 @@ class NamingManager:
     return
 
 
+  ##
+  # @if jp
+  #
+  # @brief 登録したネームサービスのリストを取得する
+  # 
+  # @return ネームサービスのリスト
+  # 
+  # @else
+  #
+  # @brief 
+  # 
+  # @return
+  # 
+  # @endif
+  #
+  # std::vector<NamingService*>& getNameServices();
+  def getNameServices(self):
+    return self._names
+
   # Name Servers' method/name and object
   ##
   # @if jp
-  # @class Names
+  # @class NameServer
   # @brief NameServer 管理用クラス
   # @else
   #
   # @endif
-  class Names:
+  class NameServer:
     def __init__(self, meth, name, naming):
       self.method = meth
       self.nsname = name
@@ -637,3 +772,16 @@ class NamingManager:
     def __init__(self, n, obj):
       self.name = n
       self.mgr = obj
+
+
+  ##
+  # @if jp
+  # @class Port
+  # @brief ポート管理用クラス
+  # @else
+  #
+  # @endif
+  class Port:
+    def __init__(self, n, obj):
+      self.name = n
+      self.port = obj
