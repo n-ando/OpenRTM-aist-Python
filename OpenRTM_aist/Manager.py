@@ -26,6 +26,7 @@ from types import IntType, ListType
 import OpenRTM_aist
 import RTC
 import SDOPackage
+import CosNaming
 
 
 #------------------------------------------------------------
@@ -437,16 +438,8 @@ class Manager:
     if self._initProc:
       self._initProc(self)
 
-    comps = [s.strip() for s in self._config.getProperty("manager.components.precreate").split(",")]
-    for i in range(len(comps)):
-      if comps[i] is None or comps[i] == "":
-        continue
-      tmp = [comps[i]]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      comps[i] = tmp[0]
+    self.initPreCreation()
 
-      self.createComponent(comps[i])
 
     return True
 
@@ -978,6 +971,8 @@ class Manager:
       self._namingManager.bindObject(name, comp)
     self._listeners.naming_.postBind(comp, names)
 
+
+
     return True
 
   
@@ -1329,6 +1324,9 @@ class Manager:
                                       OpenRTM_aist.Manager.cleanupComponents,
                                       tm)
 
+
+    
+
     return
 
 
@@ -1492,6 +1490,7 @@ class Manager:
       args = OpenRTM_aist.split(self.createORBOptions(), " ")
       args.insert(0,"manager")
       argv = OpenRTM_aist.toArgv(args)
+      
       self._orb = CORBA.ORB_init(argv)
 
       self._poa = self._orb.resolve_initial_references("RootPOA")
@@ -2390,6 +2389,36 @@ class Manager:
       
     return
 
+
+
+
+
+
+
+  ##
+  # @if jp
+  # @brief 起動時にrtc.confで指定したRTCを生成する
+  # 例:
+  # manager.components.precreate RTC1,RTC2~
+  # @param self
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @endif
+  # void initPreCreation()
+  def initPreCreation(self):
+    comps = [s.strip() for s in self._config.getProperty("manager.components.precreate").split(",")]
+    for i in range(len(comps)):
+      if comps[i] is None or comps[i] == "":
+        continue
+      tmp = [comps[i]]
+      OpenRTM_aist.eraseHeadBlank(tmp)
+      OpenRTM_aist.eraseTailBlank(tmp)
+      comps[i] = tmp[0]
+
+      self.createComponent(comps[i])
+    
 
 
   #============================================================
