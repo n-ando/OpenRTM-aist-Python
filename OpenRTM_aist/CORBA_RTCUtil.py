@@ -44,11 +44,11 @@ def get_component_profile(rtc):
 ##
 # @if jp
 #
-# @brief コンポーネントが終了しているかを判定
+# @brief コンポーネントのオブジェクトリファレンスが存在しているかを判定
 #
 # 
 # @param rtc RTコンポーネント
-# @return True:終了済み False:生存
+# @return True:生存、False:終了済み
 #
 # @else
 #
@@ -59,11 +59,12 @@ def get_component_profile(rtc):
 # @endif
 def is_existing(rtc):
   try:
-    rtc._non_existent()
-    return False
-  except CORBA.SystemException, ex:
+    if rtc._non_existent():
+      return False
     return True
-  return True
+  except CORBA.SystemException, ex:
+    return False
+  return False
 
 
 ##
@@ -1010,7 +1011,7 @@ def connect_by_name(name, prop, rtc0, portName0, rtc1, portName1):
 # @endif
 def disconnect(connector_prof):
   ports = connector_prof.ports
-  return disconnect_by_connector_id(ports[0], connector_prof.connector_id)
+  return disconnect_by_portref_connector_id(ports[0], connector_prof.connector_id)
   
   
 
@@ -1020,9 +1021,39 @@ def disconnect(connector_prof):
 # @brief 対象のポートで指定した名前のコネクタを切断
 #
 # 
-# @param port 対象のポート
+# @param port_ref 対象のポート
 # @param name コネクタ名
 # @return portがnilの場合はBAD_PARAMETERを返す
+# nilではない場合はdisconnect関数の戻り値を返す。RTC_OKの場合は切断が成功
+#
+# @else
+#
+# @brief 
+# @param port_ref 
+# @param name 
+# @return 
+#
+# @endif
+def disconnect_by_portref_connector_name(port_ref, name):
+  if CORBA.is_nil(port_ref):
+    return RTC.BAD_PARAMETER
+  conprof = port_ref.get_connector_profiles()
+  for c in conprof:
+    if c.name == name:
+      return disconnect(c)
+  return RTC.BAD_PARAMETER
+
+
+
+##
+# @if jp
+#
+# @brief 対象の名前のポートで指定した名前のコネクタを切断
+#
+# 
+# @param port_name 対象のポート名
+# @param name コネクタ名
+# @return portが存在しない場合はBAD_PARAMETERを返す
 # nilではない場合はdisconnect関数の戻り値を返す。RTC_OKの場合は切断が成功
 #
 # @else
@@ -1031,16 +1062,9 @@ def disconnect(connector_prof):
 # @param 
 #
 # @endif
-def disconnect_by_connector_name(port, name):
-  if CORBA.is_nil(port):
-    return RTC.BAD_PARAMETER
-  conprof = port.get_connector_profiles()
-  for c in conprof:
-    if c.name == name:
-      return disconnect(c)
+def disconnect_by_portname_connector_name(port_name, name):
+  
   return RTC.BAD_PARAMETER
-
-
 
 
 ##
@@ -1060,11 +1084,59 @@ def disconnect_by_connector_name(port, name):
 # @param 
 #
 # @endif
-def disconnect_by_connector_id(port, id):
-  if CORBA.is_nil(port):
+def disconnect_by_portref_connector_id(port_ref, id):
+  if CORBA.is_nil(port_ref):
     return RTC.BAD_PARAMETER
-  return port.disconnect(id)
+  return port_ref.disconnect(id)
 
+
+##
+# @if jp
+#
+# @brief 対象の名前のポートで指定したIDのコネクタを切断
+#
+# 
+# @param port_name 対象のポート名
+# @param name コネクタID
+# @return portがnilの場合はBAD_PARAMETERを返す
+# nilではない場合はdisconnect関数の戻り値を返す。RTC_OKの場合は切断が成功
+#
+# @else
+#
+# @brief 
+# @param port_name 
+# @param name 
+# @return 
+#
+# @endif
+def disconnect_by_portname_connector_id(port_name, id):
+  
+  return RTC.BAD_PARAMETER
+  
+
+##
+# @if jp
+#
+# @brief 対象のポートのコネクタを全て切断
+#
+# 
+# @param port_ref ポートのオブジェクトリファレンス
+# @return portがnilの場合はBAD_PARAMETERを返す
+# 切断できた場合はRTC_OKを返す
+#
+# @else
+#
+# @brief 
+# @param port
+# @return 
+#
+# @endif
+def disconnect_all_by_ref(port_ref):
+  if CORBA.is_nil(port_ref):
+    return RTC.BAD_PARAMETER
+  return port_ref.disconnect_all()
+  
+  
 
 ##
 # @if jp
@@ -1103,25 +1175,29 @@ def disconnect_by_port_name(localport, othername):
 ##
 # @if jp
 #
-# @brief 指定したRTコンポーネントのコンフィギュレーション取得
+# @brief 対象のRTコンポーネントの指定した名前のコンフィギュレーションセットをkey-valueで取得
 #
 # 
 # @param rtc 対象のRTコンポーネント
-# @return rtcがnilの場合はNoneを返す。
-# nilではない場合はコンフィギュレーションを返す。
+# @param conf_name コンフィギュレーションセット名
+# @return コンフィギュレーションセット
 #
 # @else
 #
 # @brief 
-# @param
+# @param rtc 
+# @param conf_name 
 # @return 
 #
 # @endif
-def get_configuration(rtc):
-  if CORBA.is_nil(rtc):
-    return SDOPackage.Configuration._nil
+def get_configuration(rtc, conf_name):
+  conf = rtc.get_configuration()
   
-  return rtc.get_configuration()
+  confset = conf.get_configuration_set(conf_name)
+  confData = confset.configuration_data
+  prop = OpenRTM_aist.Properties()
+  OpenRTM_aist.NVUtil.copyToProperties(prop, confData)
+  return prop
 
 
 ##
@@ -1138,7 +1214,7 @@ def get_configuration(rtc):
 # @else
 #
 # @brief 
-# @param rtc
+# @param conf
 # @param confset_name
 # @param value_name
 # @param ret
@@ -1172,10 +1248,11 @@ def get_parameter_by_key(rtc, confset_name, value_name):
 # @else
 #
 # @brief 
-# @param  
+# @param rtc
+# @return 
 #
 # @endif
-def get_current_configuration_name(rtc):
+def get_active_configuration_name(rtc):
   conf = rtc.get_configuration()
   confset = conf.get_active_configuration_set()
   return confset.id
@@ -1183,7 +1260,7 @@ def get_current_configuration_name(rtc):
 ##
 # @if jp
 #
-# @brief アクティブなコンフィギュレーションセットを取得
+# @brief アクティブなコンフィギュレーションセットをkey-valueで取得する
 #
 # 
 # @param rtc 対象のRTコンポーネント
@@ -1214,7 +1291,8 @@ def get_active_configuration(rtc):
 #
 # @brief コンフィギュレーションパラメータを設定
 #
-# 
+#
+# @param rtc 対象のRTコンポーネント
 # @param confset_name コンフィギュレーションセット名
 # @param value_name パラメータ名
 # @param value パラメータ
@@ -1222,7 +1300,8 @@ def get_active_configuration(rtc):
 #
 # @else
 #
-# @brief 
+# @brief
+# @param rtc
 # @param confset_name
 # @param value_name
 # @param value
@@ -1233,6 +1312,66 @@ def set_configuration(rtc, confset_name, value_name, value):
   conf = rtc.get_configuration()
   
   confset = conf.get_configuration_set(confset_name)
+
+  set_configuration_parameter(conf, confset, value_name, value)
+  
+  conf.activate_configuration_set(confset_name)
+  return True
+
+
+##
+# @if jp
+#
+# @brief アクティブなコンフィギュレーションセットのパラメータを設定
+#
+#
+# @param rtc 対象のRTコンポーネント
+# @param value_name パラメータ名
+# @param value パラメータ
+# @return True:設定に成功、False:設定に失敗
+#
+# @else
+#
+# @brief
+# @param rtc 
+# @param confset_name
+# @param value_name
+# @param value
+# @return
+#
+# @endif
+def set_active_configuration(rtc, value_name, value):
+  conf = rtc.get_configuration()
+  
+  confset = conf.get_active_configuration_set()
+  set_configuration_parameter(conf, confset, value_name, value)
+   
+  conf.activate_configuration_set(confset.id)
+  return True
+
+
+##
+# @if jp
+#
+# @brief アクティブなコンフィギュレーションセットのパラメータを設定
+#
+#
+# @param rtc 対象のRTコンポーネント
+# @param value_name パラメータ名
+# @param value パラメータ
+# @return True:設定に成功、False:設定に失敗
+#
+# @else
+#
+# @brief
+# @param rtc 
+# @param confset_name
+# @param value_name
+# @param value
+# @return
+#
+# @endif
+def set_configuration_parameter(conf, confset, value_name, value):
   confData = confset.configuration_data
   prop = OpenRTM_aist.Properties()
   OpenRTM_aist.NVUtil.copyToProperties(prop, confData)
@@ -1241,8 +1380,4 @@ def set_configuration(rtc, confset_name, value_name, value):
   confset.configuration_data = confData
   conf.set_configuration_set_values(confset)
   
-  conf.activate_configuration_set(confset_name)
-  return True
-    
-    
-    
+  
