@@ -308,17 +308,14 @@ class InPort(OpenRTM_aist.InPortBase):
 
 
     if len(self._outPortConnectorList) > 0:
-      data = self._outPortConnectorList[0].read()
-      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
-      #self._outPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
-      self._rtcout.RTC_TRACE("ON_BUFFER_READ(InPort,OutPort), ")
-      self._rtcout.RTC_TRACE("callback called in direct mode.")
-      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
-      #self._outPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
-      self._rtcout.RTC_TRACE("ON_RECEIVED(InPort,OutPort), ")
-      self._rtcout.RTC_TRACE("callback called in direct mode.")
-      self._value = data
-      return self._value
+      ret, data = self._outPortConnectorList[0].read()
+      
+      if ret:
+        self._value = data
+        if self._OnReadConvert is not None:
+          self._value = self._OnReadConvert(self._value)
+          self._rtcout.RTC_TRACE("OnReadConvert for direct data called")
+        return self._value
 
     if len(self._connectors) == 0:
       self._rtcout.RTC_DEBUG("no connectors")
