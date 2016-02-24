@@ -20,6 +20,8 @@ import traceback
 import sys
 
 import OpenRTM_aist
+import CORBA
+import RTM
 
 
 ##
@@ -60,6 +62,8 @@ class NamingBase:
   def bindObject(self, name, rtobj):
     pass
 
+  def bindPortObject(self, name, port):
+    pass
 
   ##
   # @if jp
@@ -96,6 +100,25 @@ class NamingBase:
   # virtual bool isAlive() = 0;
   def isAlive(self):
     pass
+
+  ##
+  # @if jp
+  #
+  # @brief rtcloc形式でRTCのオブジェクトリファレンスを取得する
+  # 
+  # @return RTCのオブジェクトリファレンス
+  #
+  # @else
+  #
+  # @brief 
+  # 
+  # @return 
+  #
+  # @endif
+  #
+  # virtual RTCList string_to_component(string name) = 0;
+  def string_to_component(self, name):
+    return []
 
 
 ##
@@ -238,6 +261,205 @@ class NamingOnCorba(NamingBase):
 ##
 # @if jp
 #
+# @class NamingOnManager
+# @brief Manager 用 NamingServer 管理クラス
+#
+#
+# @since 1.2.0
+#
+# @else
+#
+# @biref 
+#
+# @endif
+class NamingOnManager(NamingBase):
+  """
+  """
+
+  ##
+  # @if jp
+  #
+  # @brief コンストラクタ
+  #
+  # コンストラクタ
+  #
+  # @param self
+  # @param orb ORB
+  # @param names NamingServer 名称
+  #
+  # @else
+  #
+  # @endif
+  def __init__(self, orb):
+    self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf('manager.namingonmanager')
+    self._cosnaming = None
+    #self.isMaster = isMaster
+    #self.masters = masters
+    #self.slaves = slaves
+    self._orb = orb
+    
+
+  ##
+  # @if jp
+  #
+  # @brief 
+  # 
+  # 
+  # 
+  # @param self
+  # @param name バインド時の名称
+  # @param rtobj or mgr バインド対象オブジェクト
+  #
+  # @else
+  #
+  # @endif
+  def bindObject(self, name, rtobj):
+    """self._rtcout.RTC_TRACE("bindObject(name = %s, rtobj or mgr)", name)
+    print isinstance(rtobj, OpenRTM.ManagerServant)
+    if isinstance(rtobj, OpenRTM.ManagerServant):
+      
+      self.manager = rtobj"""
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief 
+  # 
+  # 
+  # @param self
+  # @param name バインド時の名称
+  # @param port バインド対象オブジェクト
+  #
+  # @else
+  #
+  # @endif
+  def bindPortObject(self, name, port):
+    self._rtcout.RTC_TRACE("bindPortObject(name = %s, port)", name)
+    
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief 
+  # 
+  # 
+  # @param self
+  # @param name アンバインド対象オブジェクト
+  #
+  # @else
+  #
+  # @endif
+  def unbindObject(self, name):
+    self._rtcout.RTC_TRACE("unbindObject(name  = %s)", name)
+    
+    return
+
+
+  ##
+  # @if jp
+  #
+  # @brief 
+  # 
+  # @return true:生存している, false:生存していない
+  #
+  # @else
+  #
+  # @brief Check if the name service is alive
+  # 
+  # @return true: alive, false:non not alive
+  #
+  # @endif
+  #
+  # virtual bool isAlive();
+  def isAlive(self):
+    self._rtcout.RTC_TRACE("isAlive()")
+    return True
+
+  ##
+  # @if jp
+  #
+  # @brief rtcloc形式でRTCのオブジェクトリファレンスを取得する
+  #
+  # @param name rtcloc形式でのRTC名
+  # rtcloc://localhost:2809/example/ConsoleIn
+  # @return RTCのオブジェクトリファレンス
+  #
+  # @else
+  #
+  # @brief 
+  # 
+  # @return 
+  #
+  # @endif
+  #
+  # virtual RTCList string_to_component();
+  def string_to_component(self, name):
+    rtc_list = []
+    tmp = name.split("//")
+    if len(tmp) > 1:
+      tag = tmp[0]
+      url = tmp[1]
+      r = url.split("/")
+      if len(r) > 1:
+        host = r[0]
+        rtc_name = url.replace(host+"/","")
+        
+        mgr = self.getManager(host)
+        if mgr:
+          rtc_list = mgr.get_components_by_name(rtc_name)
+
+          slaves = mgr.get_slave_managers()
+          for ms in slaves:
+            rtc_list.extend(ms.get_components_by_name(rtc_name))
+
+        return rtc_list
+    return rtc_list
+
+  ##
+  # @if jp
+  #
+  # @brief 指定マネージャ名、ポート名でManagerのオブジェクトリファレンスを取得
+  # 
+  # @return Managerのオブジェクトリファレンス
+  #
+  # @else
+  #
+  # @brief 
+  # 
+  # @return 
+  #
+  # @endif
+  #
+  # virtual Manager_ptr getManager(string name);
+  def getManager(self, name):
+    try:
+      mgrloc = "corbaloc:iiop:"
+      
+      manager_name = "manager"
+      mgrloc += name
+      mgrloc += "/" + manager_name
+      
+      mobj = self._orb.string_to_object(mgrloc)
+      mgr = mobj._narrow(RTM.Manager)
+      
+      self._rtcout.RTC_DEBUG("corbaloc: %s", mgrloc)
+      return mgr
+    except CORBA.SystemException:
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+    except:
+      self._rtcout.RTC_ERROR("Unknown exception cought.")
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+    return RTM.Manager._nil
+        
+
+
+##
+# @if jp
+#
 # @class NamingManager
 # @brief NamingServer 管理クラス
 #
@@ -291,7 +513,7 @@ class NamingManager:
   # @brief NameServer の登録
   #
   # 指定した形式の NameServer を登録する。
-  # 現在指定可能な形式は CORBA のみ。
+  # CORBAとManagerが指定可能
   #
   # @param self
   # @param method NamingService の形式
@@ -305,7 +527,7 @@ class NamingManager:
                            (method, name_server))
     name = self.createNamingObj(method, name_server)
     self._names.append(self.NameServer(method, name_server, name))
-
+    
 
   ##
   # @if jp
@@ -538,6 +760,11 @@ class NamingManager:
                               (method, name_server))
         return None
 
+
+    elif mth == "manager":
+      
+      name = OpenRTM_aist.NamingOnManager(self._manager.getORB())
+      return name
     return None
 
 
@@ -738,6 +965,31 @@ class NamingManager:
   # std::vector<NamingService*>& getNameServices();
   def getNameServices(self):
     return self._names
+
+  ##
+  # @if jp
+  #
+  # @brief rtcloc形式でRTCのオブジェクトリファレンスを取得
+  #
+  # @param name rtcloc形式でのRTC名
+  # rtcloc://localhost:2809/example/ConsoleIn
+  # @return RTCのオブジェクトリファレンスのリスト
+  # 
+  # @else
+  #
+  # @brief 
+  # 
+  # @return
+  # 
+  # @endif
+  #
+  # RTCList string_to_component(string name);
+  def string_to_component(self, name):
+    for n in self._names:
+      comps = n.ns.string_to_component(name)
+      if len(comps) > 0:
+        return comps
+    return []
 
   # Name Servers' method/name and object
   ##

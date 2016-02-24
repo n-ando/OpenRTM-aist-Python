@@ -75,6 +75,7 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "manager.auto_shutdown_duration",   "10.0",
                  "manager.name",                     "manager",
                  "manager.command",                  "rtcd",
+                 "manager.nameservers",               "default",
                  "manager.language",                 "Python",
                  "manager.local_service.enabled_services","ALL",
                  "sdo.service.provider.enabled_service",  "ALL",

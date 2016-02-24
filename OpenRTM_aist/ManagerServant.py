@@ -953,6 +953,46 @@ class ManagerServant(RTM__POA.Manager):
 
     return RTM.Manager._nil
 
+  ##
+  # @if jp
+  # @brief 指定名のRTCを取得
+  # @param self
+  # @param name RTC名
+  # @return RTCのリスト
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param name
+  # @return 
+  # @endif
+  # RTCList get_components_by_name(string name)
+  def get_components_by_name(self, name):
+    self._rtcout.RTC_TRACE("get_components_by_name()")
+    rtcs = self._mgr.getComponents()
+    crtcs = []
+    tmp = [name]
+    name = OpenRTM_aist.eraseHeadBlank(tmp)
+    rtc_name = tmp[0].split("/")
+    for rtc in rtcs:
+      if len(rtc_name) == 1:
+        if rtc.getInstanceName() == rtc_name[0]:
+          crtcs.append(rtc.getObjRef())
+      else:
+        if rtc_name[0] == "*":
+          if rtc.getInstanceName() == rtc_name[1]:
+            crtcs.append(rtc.getObjRef())
+        else:
+          if rtc.getCategory() == rtc_name[0]:
+            if rtc.getInstanceName() == rtc_name[1]:
+              crtcs.append(rtc.getObjRef())
+    
+      
+        
+        
+    return crtcs
+
+
 
   class is_equiv:
     def __init__(self, mgr):

@@ -2541,6 +2541,8 @@ class Manager:
       if noc is None:
         continue
       cns = noc._cosnaming
+      if cns is None:
+        continue
       
       bl = cns.listByKind(nsname,kind)
       
