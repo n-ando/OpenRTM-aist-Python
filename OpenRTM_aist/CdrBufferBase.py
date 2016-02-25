@@ -2,8 +2,8 @@
 # -*- coding: euc-jp -*-
 
 ##
-# @file  InPortConsumer.py
-# @brief InPortConsumer class
+# @file  CdrBufferBase.py
+# @brief CdrBufferBase class
 # @date  $Date: 2007-12-31 03:08:03 $
 # @author Noriaki Ando <n-ando@aist.go.jp> and Shinji Kurihara
 #

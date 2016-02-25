@@ -1089,52 +1089,51 @@ class ComponentActionListeners:
   """
 
   def __init__(self):
-    pass
 
-  ##
-  # @if jp
-  # @brief PreComponentActionListenerTypeリスナ配列
-  # PreComponentActionListenerTypeリスナを格納
-  # @else
-  # @brief PreComponentActionListenerType listener array
-  # The PreComponentActionListenerType listener is stored. 
-  # @endif
-  preaction_num = PreComponentActionListenerType.PRE_COMPONENT_ACTION_LISTENER_NUM
-  preaction_ = [PreComponentActionListenerHolder() 
-                for i in range(preaction_num)]
+    ##
+    # @if jp
+    # @brief PreComponentActionListenerTypeリスナ配列
+    # PreComponentActionListenerTypeリスナを格納
+    # @else
+    # @brief PreComponentActionListenerType listener array
+    # The PreComponentActionListenerType listener is stored. 
+    # @endif
+    self.preaction_num = PreComponentActionListenerType.PRE_COMPONENT_ACTION_LISTENER_NUM
+    self.preaction_ = [PreComponentActionListenerHolder() 
+                for i in range(self.preaction_num)]
 
-  ##
-  # @if jp
-  # @brief PostComponentActionListenerTypeリスナ配列
-  # PostComponentActionListenerTypeリスナを格納
-  # @else
-  # @brief PostComponentActionListenerType listener array
-  # The PostComponentActionListenerType listener is stored.
-  # @endif
-  postaction_num = PostComponentActionListenerType.POST_COMPONENT_ACTION_LISTENER_NUM
-  postaction_ = [PostComponentActionListenerHolder()
-                 for i in range(postaction_num)]
+    ##
+    # @if jp
+    # @brief PostComponentActionListenerTypeリスナ配列
+    # PostComponentActionListenerTypeリスナを格納
+    # @else
+    # @brief PostComponentActionListenerType listener array
+    # The PostComponentActionListenerType listener is stored.
+    # @endif
+    self.postaction_num = PostComponentActionListenerType.POST_COMPONENT_ACTION_LISTENER_NUM
+    self.postaction_ = [PostComponentActionListenerHolder()
+                 for i in range(self.postaction_num)]
 
-  ##
-  # @if jp
-  # @brief PortActionListenerTypeリスナ配列
-  # PortActionListenerTypeリスナを格納
-  # @else
-  # @brief PortActionListenerType listener array
-  # The PortActionListenerType listener is stored.
-  # @endif
-  portaction_num = PortActionListenerType.PORT_ACTION_LISTENER_NUM
-  portaction_ = [PortActionListenerHolder()
-                 for i in range(portaction_num)]
+    ##
+    # @if jp
+    # @brief PortActionListenerTypeリスナ配列
+    # PortActionListenerTypeリスナを格納
+    # @else
+    # @brief PortActionListenerType listener array
+    # The PortActionListenerType listener is stored.
+    # @endif
+    self.portaction_num = PortActionListenerType.PORT_ACTION_LISTENER_NUM
+    self.portaction_ = [PortActionListenerHolder()
+                 for i in range(self.portaction_num)]
   
-  ##
-  # @if jp
-  # @brief ExecutionContextActionListenerTypeリスナ配列
-  # ExecutionContextActionListenerTypeリスナを格納
-  # @else
-  # @brief ExecutionContextActionListenerType listener array
-  # The ExecutionContextActionListenerType listener is stored.
-  # @endif
-  ecaction_num = ExecutionContextActionListenerType.EC_ACTION_LISTENER_NUM
-  ecaction_ = [ExecutionContextActionListenerHolder()
-               for i in range(ecaction_num)]
+    ##
+    # @if jp
+    # @brief ExecutionContextActionListenerTypeリスナ配列
+    # ExecutionContextActionListenerTypeリスナを格納
+    # @else
+    # @brief ExecutionContextActionListenerType listener array
+    # The ExecutionContextActionListenerType listener is stored.
+    # @endif
+    self.ecaction_num = ExecutionContextActionListenerType.EC_ACTION_LISTENER_NUM
+    self.ecaction_ = [ExecutionContextActionListenerHolder()
+               for i in range(self.ecaction_num)]
