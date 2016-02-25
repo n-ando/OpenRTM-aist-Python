@@ -650,7 +650,13 @@ class Manager:
   def registerFactory(self, profile, new_func, delete_func):
     self._rtcout.RTC_TRACE("Manager.registerFactory(%s)", profile.getProperty("type_name"))
     try:
-      factory = OpenRTM_aist.FactoryPython(profile, new_func, delete_func)
+      policy_name = self._config.getProperty("manager.components.naming_policy")
+      
+      if not policy_name:
+        policy_name = "process_unique"
+      policy = OpenRTM_aist.NumberingPolicyFactory.instance().createObject(policy_name)
+      
+      factory = OpenRTM_aist.FactoryPython(profile, new_func, delete_func, policy)
       self._factory.registerObject(factory)
       return True
     except:

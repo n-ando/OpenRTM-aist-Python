@@ -30,7 +30,6 @@ from RingBuffer import *
 from CdrBufferBase import *
 from CdrRingBuffer import *
 from DataPortStatus import *
-from NumberingPolicy import *
 from Listener import *
 from ListenerHolder import *
 from LocalServiceBase import *
@@ -109,3 +108,8 @@ from InPortSHMProvider import *
 from OutPortSHMConsumer import *
 from OutPortSHMProvider import *
 from CORBA_RTCUtil import *
+from NumberingPolicyBase import *
+from NumberingPolicy import *
+from NodeNumberingPolicy import *
+from NamingServiceNumberingPolicy import *
+

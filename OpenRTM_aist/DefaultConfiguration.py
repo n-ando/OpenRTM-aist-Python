@@ -77,6 +77,7 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "manager.command",                  "rtcd",
                  "manager.nameservers",               "default",
                  "manager.language",                 "Python",
+                 "manager.components.naming_policy", "process_unique",
                  "manager.local_service.enabled_services","ALL",
                  "sdo.service.provider.enabled_service",  "ALL",
                  "sdo.service.consumer.enabled_service",  "ALL",

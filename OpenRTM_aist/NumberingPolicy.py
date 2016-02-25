@@ -17,6 +17,9 @@
 import string
 import OpenRTM_aist
 
+
+
+
 ##
 # @if jp
 #
@@ -34,7 +37,7 @@ import OpenRTM_aist
 # @else
 #
 # @endif
-class NumberingPolicy:
+class NumberingPolicy(OpenRTM_aist.NumberingPolicyBase):
   """
   """
 
@@ -87,7 +90,7 @@ class NumberingPolicy:
   def onDelete(self, obj):
     pass
 
-
+  
 
 ##
 # @if jp
@@ -204,5 +207,10 @@ class DefaultNumberingPolicy(NumberingPolicy):
         return i
       i += 1
     raise NumberingPolicy.ObjectNotFound()
-       
+
+
+def DefaultNumberingPolicyInit():
+  OpenRTM_aist.NumberingPolicyFactory.instance().addFactory("process_unique",
+                                                      OpenRTM_aist.DefaultNumberingPolicy,
+                                                      OpenRTM_aist.Delete)
 
