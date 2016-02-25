@@ -14,10 +14,9 @@ import sys
 from omniORB import any
 import OpenRTM_aist
 import OpenRTM
+import OpenRTM__POA
 
-import mmap
-from omniORB import cdrUnmarshal
-import CORBA
+import threading
 
 ##
 # @if jp
@@ -57,7 +56,11 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
     OpenRTM_aist.OutPortCorbaCdrConsumer.__init__(self)
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("OutPortSHMConsumer")
 
-    self._shmem = None
+    self._shmem = OpenRTM_aist.SharedMemory()
+      
+    self._mutex = threading.RLock()
+    self._outportcdr = None
+
     return
 
   ##
@@ -76,8 +79,8 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
   def __del__(self, CorbaConsumer=OpenRTM_aist.CorbaConsumer):
     self._rtcout.RTC_PARANOID("~OutPortSHMConsumer()")
     CorbaConsumer.__del__(self)
+    self._outportcdr.close_memory(True)
     
-    pass
 
 
   ##
@@ -100,8 +103,7 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
     self._rtcout.RTC_TRACE("init()")
     
     self._properties = prop
-    self.shm_address = prop.getProperty("shared_memory.address")
-    
+        
     return
 
 
@@ -114,7 +116,8 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
   #
   # 設定されたデータを読み出す。
   #
-  # CORBAでデータサイズだけ送受信して、データは共有メモリから読み込む
+  # データのサイズは共有メモリも先頭8byteから取得する
+  # データは共有メモリから読み込む
   #
   # @param data 読み出したデータを受け取るオブジェクト
   #
@@ -134,17 +137,23 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
   # virtual ReturnCode get(cdrMemoryStream& data);
   def get(self, data):
     self._rtcout.RTC_PARANOID("get()")
-
+    
     try:
-      outportcdr = self.getObject()._narrow(OpenRTM.OutPortCdr)
-      ret,cdr_data = outportcdr.get()
+      outportcdr = self.getObject()._narrow(OpenRTM__POA.SharedMemory)
+      
+      if self._outportcdr is None:
+        outportcdr.setInterface(self._shmem._this())
+        self._outportcdr = outportcdr
+
+      guard = OpenRTM_aist.ScopedLock(self._mutex)
+      ret = outportcdr.get()
       
       if ret == OpenRTM.PORT_OK:
         self._rtcout.RTC_DEBUG("get() successful")
 
-        data_size = cdrUnmarshal(CORBA.TC_ushort, cdr_data)
-        self._shmem = mmap.mmap(0, data_size, self.shm_address, mmap.ACCESS_READ)
-        shm_data = self._shmem.read(data_size)
+        
+        
+        shm_data = self._shmem.read()
         
 
         data[0] = shm_data
@@ -155,7 +164,7 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
           self._rtcout.RTC_INFO("InPort buffer is full.")
           self.onBufferFull(data[0])
           self.onReceiverFull(data[0])
-          
+        
         self._buffer.put(data[0])
         self._buffer.advanceWptr()
         self._buffer.advanceRptr()

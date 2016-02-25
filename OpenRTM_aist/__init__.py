@@ -103,6 +103,7 @@ from InPortDirectConsumer import *
 from InPortDirectProvider import *
 from OutPortDirectConsumer import *
 from OutPortDirectProvider import *
+from SharedMemory import *
 from InPortSHMConsumer import *
 from InPortSHMProvider import *
 from OutPortSHMConsumer import *

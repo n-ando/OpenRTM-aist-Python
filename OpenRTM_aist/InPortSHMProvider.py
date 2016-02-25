@@ -14,9 +14,7 @@ from omniORB import any
 
 import OpenRTM_aist
 import OpenRTM__POA,OpenRTM
-import mmap
-from omniORB import cdrUnmarshal
-import CORBA
+
 
 ##
 # @if jp
@@ -34,7 +32,7 @@ import CORBA
 #
 # @endif
 #
-class InPortSHMProvider(OpenRTM_aist.InPortCorbaCdrProvider):
+class InPortSHMProvider(OpenRTM_aist.InPortProvider, OpenRTM_aist.SharedMemory):
     
   """
   """
@@ -58,10 +56,12 @@ class InPortSHMProvider(OpenRTM_aist.InPortCorbaCdrProvider):
   # @endif
   #
   def __init__(self):
-    OpenRTM_aist.InPortCorbaCdrProvider.__init__(self)
+    OpenRTM_aist.InPortProvider.__init__(self)
+    OpenRTM_aist.SharedMemory.__init__(self)
 
     # PortProfile setting
     self.setInterfaceType("shared_memory")
+    self._objref = self._this()
     
     
     
@@ -69,10 +69,16 @@ class InPortSHMProvider(OpenRTM_aist.InPortCorbaCdrProvider):
 
     self._profile = None
     self._listeners = None
-    self._shmem = None
+
+    orb = OpenRTM_aist.Manager.instance().getORB()
+    self._properties.append(OpenRTM_aist.NVUtil.newNV("dataport.corba_cdr.inport_ior",
+                                                      orb.object_to_string(self._objref)))
+    self._properties.append(OpenRTM_aist.NVUtil.newNV("dataport.corba_cdr.inport_ref",
+                                                      self._objref))
     
-    self.shm_address = str(OpenRTM_aist.uuid1())
-    self._properties.append(OpenRTM_aist.NVUtil.newNV("dataport.shared_memory.address",self.shm_address))
+
+    
+    
     
 
     return
@@ -98,22 +104,32 @@ class InPortSHMProvider(OpenRTM_aist.InPortCorbaCdrProvider):
     oid = OpenRTM_aist.Manager.instance().getPOA.servant_to_id(self)
     OpenRTM_aist.Manager.instance().getPOA.deactivate_object(oid)
     
+      
+      
     return
 
   
   # void init(coil::Properties& prop)
   def init(self, prop):
-    
-    #print prop
+          
     pass
 
+  def setBuffer(self, buffer):
+    self._buffer = buffer
+    return
+
+  def setListener(self, info, listeners):
+    self._profile = info
+    self._listeners = listeners
+    return
 
 
   ##
   # @if jp
   # @brief バッファにデータを書き込む
   #
-  # CORBAでデータサイズだけ受信して、共有メモリからデータを取り出しバッファに書き込む
+  # データのサイズは共有メモリも先頭8byteから取得する
+  # 共有メモリからデータを取り出しバッファに書き込む
   #
   # @param data 書込対象データ
   #
@@ -128,31 +144,30 @@ class InPortSHMProvider(OpenRTM_aist.InPortCorbaCdrProvider):
   #
   # ::OpenRTM::PortStatus put(const ::OpenRTM::CdrData& data)
   #  throw (CORBA::SystemException);
-  def put(self, data):
-    #print self._connector.profile().properties
-    #self._connector.profile().properties.setProperty("dataport.dataflow_type","push")
+  def put(self):
+    
     try:
       self._rtcout.RTC_PARANOID("InPortCorbaCdrProvider.put()")
             
+      
+      
+
+      
+      shm_data = self.read()
+
       if not self._buffer:
-        self.onReceiverError(data)
+        self.onReceiverError(shm_data)
         return OpenRTM.PORT_ERROR
 
-      self._rtcout.RTC_PARANOID("received data size: %d", len(data))
+      self._rtcout.RTC_PARANOID("received data size: %d", len(shm_data))
 
-      self.onReceived(data)
+      self.onReceived(shm_data)
 
       if not self._connector:
         return OpenRTM.PORT_ERROR
 
-      data_size = cdrUnmarshal(CORBA.TC_ushort, data)
 
-      #if self._shmem is None:
-      self._shmem = mmap.mmap(0, data_size, self.shm_address, mmap.ACCESS_READ)
-      #shm_data = cdrUnmarshal(any.to_any(self._connector._dataType).typecode(), self._shmem.read(16),self._connector._endian)
-      shm_data = self._shmem.read(data_size)
-      #print dir(self._connector._provider._this())
-      #print self._connector._provider._this()
+
       ret = self._connector.write(shm_data)
       
 
@@ -167,6 +182,52 @@ class InPortSHMProvider(OpenRTM_aist.InPortCorbaCdrProvider):
       
       
     return self.convertReturn(ret, data)
+      
+      
+  def onBufferWrite(self, data):
+    if self._listeners is not None and self._profile is not None:
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE].notify(self._profile, data)
+    return
+
+  def onBufferFull(self, data):
+    if self._listeners is not None and self._profile is not None:
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_FULL].notify(self._profile, data)
+    return
+
+  def onBufferWriteTimeout(self, data):
+    if self._listeners is not None and self._profile is not None:
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE_TIMEOUT].notify(self._profile, data)
+    return
+
+  def onBufferWriteOverwrite(self, data):
+    if self._listeners is not None and self._profile is not None:
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_OVERWRITE].notify(self._profile, data)
+    return
+
+  def onReceived(self, data):
+    if self._listeners is not None and self._profile is not None:
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
+    return
+
+  def onReceiverFull(self, data):
+    if self._listeners is not None and self._profile is not None:
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_FULL].notify(self._profile, data)
+    return
+
+  def onReceiverTimeout(self, data):
+    if self._listeners is not None and self._profile is not None:
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_TIMEOUT].notify(self._profile, data)
+    return
+
+  def onReceiverError(self, data):
+    if self._listeners is not None and self._profile is not None:
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_ERROR].notify(self._profile, data)
+    return
+
+      
+
+      
+      
 
   
 

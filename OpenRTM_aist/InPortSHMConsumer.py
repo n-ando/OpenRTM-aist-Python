@@ -14,9 +14,9 @@ from omniORB import any
 from omniORB import CORBA
 import OpenRTM_aist
 import OpenRTM
-import mmap, os
-from omniORB import cdrMarshal
-import CORBA
+import OpenRTM__POA
+
+import threading
 
 ##
 # @if jp
@@ -62,8 +62,14 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
     OpenRTM_aist.InPortCorbaCdrConsumer.__init__(self)
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("InPortSHMConsumer")
     self._properties = None
-    self._shmem = None
-    self.shm_address = ""
+    
+    self._shm_address = str(OpenRTM_aist.uuid1())
+    
+    self._shmem = OpenRTM_aist.SharedMemory()
+    
+
+    self._mutex = threading.RLock()
+      
     return
 
   ##
@@ -88,8 +94,8 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
   def __del__(self, CorbaConsumer=OpenRTM_aist.CorbaConsumer):
     self._rtcout.RTC_PARANOID("~InPortSHMConsumer()")
     CorbaConsumer.__del__(self)
-    if self._shmem:
-      self._shmem.close()
+    self._shmem.close(True)
+    
     return
 
   ##
@@ -115,10 +121,13 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
     self._properties = prop
     
     
-    self.shm_address = prop.getProperty("shared_memory.address")
-    if self.shm_address:
-      if self._shmem is None:
-        self._shmem = mmap.mmap(0, 256, self.shm_address, mmap.ACCESS_WRITE)
+    
+    
+    ds = prop.getProperty("shem_default_size")
+    self._memory_size = self._shmem.string_to_MemorySize(ds)
+
+
+    
     return
 
   ##
@@ -127,8 +136,8 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
   #
   # 接続先のポートへデータを送信する
   # 
-  #
-  # CORBAでデータサイズだけ送信して、データは共有メモリに書き込む
+  # データのサイズは共有メモリも先頭8byteから取得する
+  # データは共有メモリに書き込む
   #
   # @param self
   # @param data 送信するデータ
@@ -150,16 +159,20 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
     try:
       ref_ = self.getObject()
       if ref_:
-        inportcdr = ref_._narrow(OpenRTM.InPortCdr)
-        #print dir(ref_)
-        if self._shmem is not None:
-          self._shmem.seek(os.SEEK_SET)
-          
-          self._shmem.write(data)
-          data_size = len(data)
-          mar_data_size = cdrMarshal(CORBA.TC_ushort, data_size)
-          
-          return self.convertReturnCode(inportcdr.put(mar_data_size))
+        inportcdr = ref_._narrow(OpenRTM__POA.SharedMemory)
+        
+        guard = OpenRTM_aist.ScopedLock(self._mutex)
+        
+
+        self._shmem.setInterface(inportcdr)
+        if self._shmem._shmem is None:
+          self._shmem.create_memory(self._memory_size, self._shm_address)
+        self._shmem.write(data)
+        
+        
+        ret = inportcdr.put()
+        del guard
+        return self.convertReturnCode(ret)
       return self.CONNECTION_LOST
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
