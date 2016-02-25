@@ -1022,7 +1022,7 @@ def disconnect(connector_prof):
 #
 # 
 # @param port_ref 対象のポート
-# @param name コネクタ名
+# @param conn_name コネクタ名
 # @return portがnilの場合はBAD_PARAMETERを返す
 # nilではない場合はdisconnect関数の戻り値を返す。RTC_OKの場合は切断が成功
 #
@@ -1030,16 +1030,16 @@ def disconnect(connector_prof):
 #
 # @brief 
 # @param port_ref 
-# @param name 
+# @param conn_name 
 # @return 
 #
 # @endif
-def disconnect_by_portref_connector_name(port_ref, name):
+def disconnect_by_portref_connector_name(port_ref, conn_name):
   if CORBA.is_nil(port_ref):
     return RTC.BAD_PARAMETER
   conprof = port_ref.get_connector_profiles()
   for c in conprof:
-    if c.name == name:
+    if c.name == conn_name:
       return disconnect(c)
   return RTC.BAD_PARAMETER
 
@@ -1052,7 +1052,7 @@ def disconnect_by_portref_connector_name(port_ref, name):
 #
 # 
 # @param port_name 対象のポート名
-# @param name コネクタ名
+# @param conn_name コネクタ名
 # @return portが存在しない場合はBAD_PARAMETERを返す
 # nilではない場合はdisconnect関数の戻り値を返す。RTC_OKの場合は切断が成功
 #
@@ -1062,8 +1062,16 @@ def disconnect_by_portref_connector_name(port_ref, name):
 # @param 
 #
 # @endif
-def disconnect_by_portname_connector_name(port_name, name):
+def disconnect_by_portname_connector_name(port_name, conn_name):
+  port_ref = get_Port_by_rtcloc(port_name)
+  if port_ref == RTC.PortService._nil:
+    return RTC.BAD_PARAMETER
   
+  conprof = port_ref.get_connector_profiles()
+  for c in conprof:
+    if c.name == conn_name:
+      return disconnect(c)
+    
   return RTC.BAD_PARAMETER
 
 
@@ -1084,10 +1092,10 @@ def disconnect_by_portname_connector_name(port_name, name):
 # @param 
 #
 # @endif
-def disconnect_by_portref_connector_id(port_ref, id):
+def disconnect_by_portref_connector_id(port_ref, conn_id):
   if CORBA.is_nil(port_ref):
     return RTC.BAD_PARAMETER
-  return port_ref.disconnect(id)
+  return port_ref.disconnect(conn_id)
 
 
 ##
@@ -1109,9 +1117,12 @@ def disconnect_by_portref_connector_id(port_ref, id):
 # @return 
 #
 # @endif
-def disconnect_by_portname_connector_id(port_name, id):
+def disconnect_by_portname_connector_id(port_name, conn_id):
+  port_ref = get_Port_by_rtcloc(port_name)
+  if port_ref == RTC.PortService._nil:
+    return RTC.BAD_PARAMETER
   
-  return RTC.BAD_PARAMETER
+  return port_ref.disconnect(conn_id)
   
 
 ##
@@ -1135,8 +1146,62 @@ def disconnect_all_by_ref(port_ref):
   if CORBA.is_nil(port_ref):
     return RTC.BAD_PARAMETER
   return port_ref.disconnect_all()
+
+
+##
+# @if jp
+#
+# @brief 指定ポート名のポートのコネクタを全て切断
+#
+# 
+# @param port_name ポート名
+# @return portが存在しない場合はBAD_PARAMETERを返す
+# 切断できた場合はRTC_OKを返す
+#
+# @else
+#
+# @brief 
+# @param port
+# @return 
+#
+# @endif
+def disconnect_all_by_name(port_name):
+  port_ref = get_Port_by_rtcloc(port_name)
+  if port_ref == RTC.PortService._nil:
+    return RTC.BAD_PARAMETER
+  return port_ref.disconnect_all()
+
+
+##
+# @if jp
+#
+# @brief 指定した名前のポートを取得
+#
+# 
+# @param port_name ポート名
+# @return ポートのオブジェクトリファレンス
+# portが存在しない場合はnilを返す
+#
+# @else
+#
+# @brief 
+# @param port_name
+# @return 
+#
+# @endif
+def get_Port_by_rtcloc(port_name):
+  mgr = OpenRTM_aist.Manager.instance()
+  nm = mgr._namingManager
+  p = port_name.split(".")
+  if len(p) < 2:
+    return RTC.PortService._nil
+  rtcs = nm.string_to_component(p[0])
   
+  if len(rtcs) < 1:
+    return RTC.PortService._nil
+  pn = port_name.split("/")
   
+  return get_port_by_name(rtcs[0],pn[-1])
 
 ##
 # @if jp
