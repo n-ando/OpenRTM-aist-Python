@@ -256,7 +256,51 @@ class NamingOnCorba(NamingBase):
 
 
 
+  ##
+  # @if jp
+  #
+  # @brief rtcname形式でRTCのオブジェクトリファレンスを取得する
+  # 
+  # @return RTCのオブジェクトリファレンス
+  #
+  # @else
+  #
+  # @brief 
+  # 
+  # @return 
+  #
+  # @endif
+  #
+  # virtual RTCList string_to_component(string name) = 0;
+  def string_to_component(self, name):
+    rtc_list = []
+    tmp = name.split("//")
+    if len(tmp) > 1:
+      if tmp[0] == "rtcname:":
+        tag = tmp[0]
+        url = tmp[1]
+        r = url.split("/")
+        if len(r) > 1:
+          host = r[0]
+          rtc_name = url.replace(host+"/","")
+          try:
+            if host == "*":
+              cns = self._cosnaming
+            else:
+              orb = OpenRTM_aist.Manager.instance().getORB()
+              cns = OpenRTM_aist.CorbaNaming(orb,host)
+            rtc_name += ".rtc"
+            obj = cns.resolveStr(rtc_name)
+            if CORBA.is_nil(obj):
+              return []
+            rtc_list.append(obj)
+            return rtc_list
+          except:
+            return []
 
+
+      
+    return rtc_list
 
 
 
