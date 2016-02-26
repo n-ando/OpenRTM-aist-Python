@@ -2648,6 +2648,7 @@ class Manager:
   def initPreConnection(self):
     self._rtcout.RTC_TRACE("Connection pre-creation: %s" % str(self._config.getProperty("manager.components.preconnect")))
     connectors = str(self._config.getProperty("manager.components.preconnect")).split(",")
+    
     for c in connectors:
       tmp = [c]
       OpenRTM_aist.eraseHeadBlank(tmp)
@@ -2660,32 +2661,61 @@ class Manager:
         self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
         continue
       conn_prop[1] = conn_prop[1].replace(")","")
-      comp_ports = conn_prop[0].split(":")
+      comp_ports = conn_prop[0].split("^")
       if len(comp_ports) != 2:
         self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
         self._rtcout.RTC_ERROR("Format must be Comp0.port0:Comp1.port1")
         continue
       
       comp0_name = comp_ports[0].split(".")[0]
-      comp0 = self.getComponent(comp0_name)
+      port0_name = comp_ports[0]
+      if len(comp0_name.split("//")) < 2:
+        comp0 = self.getComponent(comp0_name)
+        if comp0 is None:
+          self._rtcout.RTC_ERROR("%s not found." % comp0_name)
+          continue
+        comp0_ref = comp0.getObjRef()
+      else:
+        rtcs = self._namingManager.string_to_component(comp0_name)
+        
+        if len(rtcs) == 0:
+          self._rtcout.RTC_ERROR("%s not found." % comp0_name)
+          continue
+        comp0_ref = rtcs[0]
+        port0_name = comp_ports[0].split("/")[-1]
       
-      if comp0 is None:
-        self._rtcout.RTC_ERROR("%s not found." % comp0_name)
-        continue
-
-      port0_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp0.getObjRef(), comp_ports[0])
+        
+      
+      port0_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp0_ref, port0_name)
+      
       if CORBA.is_nil(port0_var):
         self._rtcout.RTC_DEBUG("port %s found: " % comp_ports[0])
         continue
 
       comp1_name = comp_ports[1].split(".")[0]
-      comp1 = self.getComponent(comp1_name)
+      port1_name = comp_ports[1]
       
-      if comp1 is None:
-        self._rtcout.RTC_ERROR("%s not found." % comp1_name)
-        continue
+      
 
-      port1_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp1.getObjRef(), comp_ports[1])
+
+      if len(comp1_name.split("//")) < 2:
+        comp1 = self.getComponent(comp1_name)
+        if comp1 is None:
+          self._rtcout.RTC_ERROR("%s not found." % comp1_name)
+          continue
+        comp1_ref = comp1.getObjRef()
+      else:
+        rtcs = self._namingManager.string_to_component(comp1_name)
+        
+        if len(rtcs) == 0:
+          self._rtcout.RTC_ERROR("%s not found." % comp1_name)
+          continue
+        comp1_ref = rtcs[0]
+        port1_name = comp_ports[1].split("/")[-1]
+
+
+      port1_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp1_ref, port1_name)
+      
       if CORBA.is_nil(port1_var):
         self._rtcout.RTC_DEBUG("port %s found: " % comp_ports[1])
         continue
@@ -2696,6 +2726,7 @@ class Manager:
         temp = o.split("=")
         if len(temp) == 2:
           prop.setProperty("dataport."+temp[0],temp[1])
+      
       if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(c, prop, port0_var, port1_var):
         self._rtcout.RTC_ERROR("Connection error: %s" % c)
       
