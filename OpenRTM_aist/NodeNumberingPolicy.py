@@ -115,29 +115,16 @@ class NodeNumberingPolicy(OpenRTM_aist.NumberingPolicy):
   # @endif
   def find(self, name):
     rtcs = []
-    mgr_servant = self._mgr._mgrservant
-    master_mgr = None
-    if mgr_servant.is_master():
-      master_mgr = mgr_servant.getObjRef()
-    else:
-      masters = mgr_servant.get_master_managers()
-      if len(masters) > 0:
-        master_mgr = masters[0]
-      else:
-        master_mgr = mgr_servant.getObjRef()
+    rtc_name = "rtcloc://*/*/"
+    rtc_name += name
     
-    rtcs = master_mgr.get_components_by_name(name)
+    rtcs = self._mgr._namingManager.string_to_component(rtc_name)
+    
     if len(rtcs) > 0:
       return True
-    slaves = master_mgr.get_slave_managers()
-    for ms in slaves:
-      rtcs = ms.get_components_by_name(name)
-      if len(rtcs) > 0:
-        return True
+    else:
+      return False
     
-    
-    
-    return False
 
 
 

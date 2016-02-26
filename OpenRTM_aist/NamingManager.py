@@ -258,6 +258,8 @@ class NamingOnCorba(NamingBase):
 
 
 
+
+
 ##
 # @if jp
 #
@@ -290,13 +292,14 @@ class NamingOnManager(NamingBase):
   # @else
   #
   # @endif
-  def __init__(self, orb):
+  def __init__(self, orb, mgr):
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf('manager.namingonmanager')
     self._cosnaming = None
     #self.isMaster = isMaster
     #self.masters = masters
     #self.slaves = slaves
     self._orb = orb
+    self._mgr = mgr
     
 
   ##
@@ -400,23 +403,25 @@ class NamingOnManager(NamingBase):
   def string_to_component(self, name):
     rtc_list = []
     tmp = name.split("//")
+    
     if len(tmp) > 1:
-      tag = tmp[0]
-      url = tmp[1]
-      r = url.split("/")
-      if len(r) > 1:
-        host = r[0]
-        rtc_name = url.replace(host+"/","")
-        
-        mgr = self.getManager(host)
-        if mgr:
-          rtc_list = mgr.get_components_by_name(rtc_name)
+      if tmp[0] == "rtcloc:":
+        tag = tmp[0]
+        url = tmp[1]
+        r = url.split("/")
+        if len(r) > 1:
+          host = r[0]
+          rtc_name = url.replace(host+"/","")
+          
+          mgr = self.getManager(host)
+          if mgr:
+            rtc_list = mgr.get_components_by_name(rtc_name)
 
-          slaves = mgr.get_slave_managers()
-          for ms in slaves:
-            rtc_list.extend(ms.get_components_by_name(rtc_name))
+            slaves = mgr.get_slave_managers()
+            for ms in slaves:
+              rtc_list.extend(ms.get_components_by_name(rtc_name))
 
-        return rtc_list
+          return rtc_list
     return rtc_list
 
   ##
@@ -436,6 +441,17 @@ class NamingOnManager(NamingBase):
   #
   # virtual Manager_ptr getManager(string name);
   def getManager(self, name):
+    if name == "*":
+      mgr_sev = self._mgr._mgrservant
+      if mgr_sev.is_master():
+        mgr = mgr_sev.getObjRef()
+      else:
+        masters = mgr_sev.get_master_managers()
+        if len(masters) > 0:
+          mgr = masters[0]
+        else:
+          mgr = mgr_sev.getObjRef()
+      return mgr
     try:
       mgrloc = "corbaloc:iiop:"
       
@@ -762,8 +778,7 @@ class NamingManager:
 
 
     elif mth == "manager":
-      
-      name = OpenRTM_aist.NamingOnManager(self._manager.getORB())
+      name = OpenRTM_aist.NamingOnManager(self._manager.getORB(), self._manager)
       return name
     return None
 
