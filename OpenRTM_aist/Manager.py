@@ -2755,12 +2755,19 @@ class Manager:
       OpenRTM_aist.eraseTailBlank(tmp)
       c = tmp[0]
       if c:
-        comp = self.getComponent(c)
-        
-        if comp is None:
-          self._rtcout.RTC_ERROR("%s not found." % c)
-          continue
-        ret = OpenRTM_aist.CORBA_RTCUtil.activate(comp.getObjRef())
+        if len(c.split("//")) < 2:
+          comp = self.getComponent(c)
+          if comp is None:
+            self._rtcout.RTC_ERROR("%s not found." % c)
+            continue
+          comp_ref = comp.getObjRef()
+        else:
+          rtcs = self._namingManager.string_to_component(c)
+          if len(rtcs) == 0:
+            self._rtcout.RTC_ERROR("%s not found." % c)
+            continue
+          comp_ref = rtcs[0]
+        ret = OpenRTM_aist.CORBA_RTCUtil.activate(comp_ref)
         if ret != RTC.RTC_OK:
           self._rtcout.RTC_ERROR("%s activation filed." % c)
         else:
