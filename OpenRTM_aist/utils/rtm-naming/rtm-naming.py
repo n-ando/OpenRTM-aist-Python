@@ -91,6 +91,12 @@ def omninames(port = "", endpoint = ""):
     if os.path.exists(bak_file):
         del_file(bak_file)
 
+    dat_fname = "omninames-" + hostname + ".dat"
+    dat_file = os.path.join(log_path, dat_fname)
+
+    if os.path.exists(dat_file):
+        del_file(dat_file)
+
     if port == "":
         port = default_port
 
