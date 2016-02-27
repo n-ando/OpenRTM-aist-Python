@@ -266,25 +266,26 @@ def reset(rtc, ec_id=0):
 # 
 # @param rtc 対象のRTコンポーネント
 # @param ec_id 実行コンテキストのID
-# @param ret RTCの状態
+# @param state RTCの状態
 # @return rtc、ecがnilの場合はFalseを返す。
-# nilではない場合はret[0]に状態を代入してTrueを返す。
+# nilではない場合はstate[0]に状態を代入してTrueを返す。
 #
 # @else
 #
 # @brief 
 # @param rtc
 # @param ec_id
+# @param state 
 # @return 
 #
 # @endif
-def get_state(rtc, ec_id=0, ret=[None]):
+def get_state(rtc, ec_id=0, state=[None]):
   if CORBA.is_nil(rtc):
     return False
   ec = get_actual_ec(rtc, ec_id)
   if CORBA.is_nil(ec):
     return False
-  ret[0] = ec.get_component_state(rtc)
+  state[0] = ec.get_component_state(rtc)
   return True
 
 ##
@@ -659,20 +660,20 @@ def get_svcport_names(rtc):
 #
 # 
 # @param rtc RTコンポーネント
-# @param name ポート名
+# @param port_name ポート名
 # @return ポート
 #
 # @else
 #
 # @brief 
 # @param rtc 
-# @param name
+# @param port_name
 # @return 
 #
 # @endif
 #
-# RTC::PortService_var get_port_by_name(const RTC::RTObject_ptr rtc, std::string name)
-def get_port_by_name(rtc, name):
+# RTC::PortService_var get_port_by_name(const RTC::RTObject_ptr rtc, std::string port_name)
+def get_port_by_name(rtc, port_name):
   if CORBA.is_nil(rtc):
     return RTC.PortService._nil
   ports = rtc.get_ports()
@@ -680,7 +681,7 @@ def get_port_by_name(rtc, name):
     pp = p.get_port_profile()
     s = pp.name
     
-    if name == s:
+    if port_name == s:
       return p
 
   return RTC.PortService._nil
