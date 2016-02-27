@@ -10,7 +10,7 @@
 
 import string
 import OpenRTM_aist
-import CosNaming
+
 
 
 
@@ -94,35 +94,7 @@ class NamingServiceNumberingPolicy(OpenRTM_aist.NumberingPolicy):
   def onDelete(self, obj):
     pass
 
-  ##
-  # @if jp
-  #
-  # @brief RTCの検索
-  #
-  # ネーミングサービスからRTCをインスタンス名から検索し、
-  # 一致するRTCがある場合はTrueを返す
-  # 
-  # @param self
-  # @param context 現在検索中のコンテキスト
-  # @param name RTCのインスタンス名
-  #
-  # @return 判定
-  #
-  # @else
-  #
-  # @endif
-  def find_RTC_by_Name(self, context, name):
-    length = 500
-    bl,bi = context.list(length)
-    for i in bl:
-      if i.binding_type == CosNaming.ncontext:
-        next_context = context.resolve(i.binding_name)
-        if self.find_RTC_by_Name(next_context, name):
-          return True
-      elif i.binding_type == CosNaming.nobject:
-        if i.binding_name[0].id == name and i.binding_name[0].kind == "rtc":
-          return True
-    return False
+  
         
     
 
@@ -143,17 +115,15 @@ class NamingServiceNumberingPolicy(OpenRTM_aist.NumberingPolicy):
   #
   # @endif
   def find(self, name):
-    ns = self._mgr._namingManager._names
-    for n in ns:
-      noc = n.ns
-      if noc is None:
-        continue
-      cns = noc._cosnaming
-      if cns is None:
-        continue
-      root_cxt = cns.getRootContext()
-      return self.find_RTC_by_Name(root_cxt, name)
-
+    rtcs = []
+    rtc_name = "rtcname://*/*/"
+    rtc_name += name
+    rtcs = self._mgr._namingManager.string_to_component(rtc_name)
+    
+    if len(rtcs) > 0:
+      return True
+    else:
+      return False
 
 
 def NamingServiceNumberingPolicyInit():

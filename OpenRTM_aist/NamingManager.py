@@ -22,6 +22,8 @@ import sys
 import OpenRTM_aist
 import CORBA
 import RTM
+import RTC
+import CosNaming
 
 
 ##
@@ -255,6 +257,42 @@ class NamingOnCorba(NamingBase):
     return self._cosnaming.isAlive()
 
 
+  ##
+  # @if jp
+  #
+  # @brief RTCの検索
+  #
+  # ネーミングサービスからRTCをインスタンス名から検索し、
+  # 一致するRTCのリストを取得する
+  # 
+  # @param self
+  # @param context 現在検索中のコンテキスト
+  # @param name RTCのインスタンス名
+  # @param rtcs RTCのリスト
+  #
+  # @return
+  #
+  # @else
+  #
+  # @endif
+  def get_RTC_by_Name(self, context, name, rtcs):
+    length = 500
+    bl,bi = context.list(length)
+    for i in bl:
+      if i.binding_type == CosNaming.ncontext:
+        next_context = context.resolve(i.binding_name)
+        self.get_RTC_by_Name(next_context, name, rtcs)
+      elif i.binding_type == CosNaming.nobject:
+        
+        if i.binding_name[0].id == name and i.binding_name[0].kind == "rtc":
+          try:
+            cc = OpenRTM_aist.CorbaConsumer()
+            cc.setObject(context.resolve(i.binding_name))
+            obj = cc.getObject()._narrow(RTC.RTObject)
+            rtcs.append(obj)
+          except:
+            self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+    
 
   ##
   # @if jp
@@ -282,19 +320,28 @@ class NamingOnCorba(NamingBase):
         r = url.split("/")
         if len(r) > 1:
           host = r[0]
-          rtc_name = url.replace(host+"/","")
+          
+          rtc_name = url[len(host)+1:]
+          
           try:
             if host == "*":
               cns = self._cosnaming
             else:
               orb = OpenRTM_aist.Manager.instance().getORB()
               cns = OpenRTM_aist.CorbaNaming(orb,host)
-            rtc_name += ".rtc"
-            obj = cns.resolveStr(rtc_name)
-            if CORBA.is_nil(obj):
-              return []
-            rtc_list.append(obj)
-            return rtc_list
+            names = rtc_name.split("/")
+            
+            if len(names) == 2 and names[0] == "*":
+              root_cxt = cns.getRootContext()
+              self.get_RTC_by_Name(root_cxt, names[1], rtc_list)
+              return rtc_list
+            else:
+              rtc_name += ".rtc"
+              obj = cns.resolveStr(rtc_name)
+              if CORBA.is_nil(obj):
+                return []
+              rtc_list.append(obj)
+              return rtc_list
           except:
             return []
 
@@ -455,7 +502,7 @@ class NamingOnManager(NamingBase):
         r = url.split("/")
         if len(r) > 1:
           host = r[0]
-          rtc_name = url.replace(host+"/","")
+          rtc_name = url[len(host)+1:]
           
           mgr = self.getManager(host)
           if mgr:
