@@ -414,7 +414,7 @@ def set_default_rate(rtc, rate):
 ##
 # @if jp
 #
-# @brief RTCの指定IDの実行コンテキストの周期を設定
+# @brief RTCの指定IDの実行コンテキストの周期を取得
 #
 # 
 # @param rtc 対象のRTコンポーネント
@@ -687,6 +687,7 @@ def get_port_by_name(rtc, port_name):
   return RTC.PortService._nil
 
 
+
 ##
 # @if jp
 #
@@ -703,7 +704,7 @@ def get_port_by_name(rtc, port_name):
 # @return
 #
 # @endif
-def get_connector_names(port):
+def get_connector_names_by_portref(port):
   names = []
   if CORBA.is_nil(port):
     return names
@@ -711,6 +712,35 @@ def get_connector_names(port):
   for c in conprof:
     names.append(c.name)
   return names
+
+##
+# @if jp
+#
+# @brief 対象のRTCの指定したポートのコネクタの名前のリストを取得
+#
+# @param rtc RTコンポーネント
+# @param port_name ポート名
+# @return コネクタ名のリスト
+#
+# @else
+#
+# @brief
+# @param rtc
+# @param port_name
+# @return
+#
+# @endif
+def get_connector_names(rtc, port_name):
+  names = []
+  port = get_port_by_name(rtc, port_name)
+  if CORBA.is_nil(port):
+    return names
+  conprof = port.get_connector_profiles()
+  for c in conprof:
+    names.append(c.name)
+  return names
+
+
   
 
 
@@ -730,7 +760,7 @@ def get_connector_names(port):
 # @return
 #
 # @endif
-def get_connector_ids(port):
+def get_connector_ids_by_portref(port):
   ids = []
   if CORBA.is_nil(port):
     return ids
@@ -739,6 +769,36 @@ def get_connector_ids(port):
     ids.append(c.connector_id)
   return ids
 
+
+
+
+##
+# @if jp
+#
+# @brief 対象のRTCの指定したポートのコネクタのIDのリストを取得
+#
+# 
+# @param rtc RTコンポーネント
+# @param port_name ポート名
+# @return コネクタのIDのリスト
+#
+# @else
+#
+# @brief 
+# @param rtc
+# @param port_name
+# @return
+#
+# @endif
+def get_connector_ids(rtc, port_name):
+  ids = []
+  port = get_port_by_name(rtc, port_name)
+  if CORBA.is_nil(port):
+    return ids
+  conprof = port.get_connector_profiles()
+  for c in conprof:
+    ids.append(c.connector_id)
+  return ids
 
 ##
 # @if jp
@@ -975,18 +1035,18 @@ class find_port:
 #
 # @endif
 #
-# RTC::ReturnCode_t connect_by_name(std::string name, coil::Properties prop,RTC::RTObject_ptr rtc0,const std::string portName0,RTC::RTObject_ptr rtc1,const std::string portName1)
-def connect_by_name(name, prop, rtc0, portName0, rtc1, portName1):
+# RTC::ReturnCode_t connect_by_name(std::string name, coil::Properties prop,RTC::RTObject_ptr rtc0,const std::string port_name0,RTC::RTObject_ptr rtc1,const std::string port_name1)
+def connect_by_name(name, prop, rtc0, port_name0, rtc1, port_name1):
   if CORBA.is_nil(rtc0):
     return RTC.BAD_PARAMETER
   if CORBA.is_nil(rtc1):
     return RTC.BAD_PARAMETER
 
-  port0 = get_port_by_name(rtc0, portName0)
+  port0 = get_port_by_name(rtc0, port_name0)
   if CORBA.is_nil(port0):
     return RTC.BAD_PARAMETER
 
-  port1 = get_port_by_name(rtc1, portName1)
+  port1 = get_port_by_name(rtc1, port_name1)
   if CORBA.is_nil(port1):
     return RTC.BAD_PARAMETER
 
@@ -1064,7 +1124,7 @@ def disconnect_by_portref_connector_name(port_ref, conn_name):
 #
 # @endif
 def disconnect_by_portname_connector_name(port_name, conn_name):
-  port_ref = get_port_by_rtcloc(port_name)
+  port_ref = get_port_by_url(port_name)
   if port_ref == RTC.PortService._nil:
     return RTC.BAD_PARAMETER
   
@@ -1119,7 +1179,7 @@ def disconnect_by_portref_connector_id(port_ref, conn_id):
 #
 # @endif
 def disconnect_by_portname_connector_id(port_name, conn_id):
-  port_ref = get_port_by_rtcloc(port_name)
+  port_ref = get_port_by_url(port_name)
   if port_ref == RTC.PortService._nil:
     return RTC.BAD_PARAMETER
   
@@ -1167,7 +1227,7 @@ def disconnect_all_by_ref(port_ref):
 #
 # @endif
 def disconnect_all_by_name(port_name):
-  port_ref = get_port_by_rtcloc(port_name)
+  port_ref = get_port_by_url(port_name)
   if port_ref == RTC.PortService._nil:
     return RTC.BAD_PARAMETER
   return port_ref.disconnect_all()
@@ -1190,9 +1250,9 @@ def disconnect_all_by_name(port_name):
 # @return 
 #
 # @endif
-def get_port_by_rtcloc(port_name):
+def get_port_by_url(port_name):
   mgr = OpenRTM_aist.Manager.instance()
-  nm = mgr._namingManager
+  nm = mgr.getNaming()
   p = port_name.split(".")
   if len(p) < 2:
     return RTC.PortService._nil
@@ -1419,10 +1479,11 @@ def set_active_configuration(rtc, value_name, value):
 ##
 # @if jp
 #
-# @brief アクティブなコンフィギュレーションセットのパラメータを設定
+# @brief コンフィギュレーションパラメータの設定
 #
 #
-# @param rtc 対象のRTコンポーネント
+# @param conf コンフィギュレーション
+# @param confset コンフィギュレーションセット
 # @param value_name パラメータ名
 # @param value パラメータ
 # @return True:設定に成功、False:設定に失敗
@@ -1430,8 +1491,8 @@ def set_active_configuration(rtc, value_name, value):
 # @else
 #
 # @brief
-# @param rtc 
-# @param confset_name
+# @param conf
+# @param confset
 # @param value_name
 # @param value
 # @return
