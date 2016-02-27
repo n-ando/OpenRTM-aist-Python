@@ -40,7 +40,7 @@ import OpenRTM__POA
 #
 # @endif
 #
-class SharedMemory(OpenRTM__POA.SharedMemory):
+class SharedMemory(OpenRTM__POA.PortSharedMemory):
   default_size = 8
   default_memory_size = 2*1024*1024
 

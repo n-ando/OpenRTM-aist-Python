@@ -23,12 +23,12 @@ module OpenRTM
     UNKNOWN_ERROR
   };
 
-  interface SharedMemory
+  interface PortSharedMemory
   {
     void open_memory(in long memory_size, in string shm_address);
     void create_memory(in long memory_size, in string shm_address);
     void close_memory(in boolean unlink);
-    void setInterface(in SharedMemory sm);
+    void setInterface(in PortSharedMemory sm);
     PortStatus put();
     PortStatus get();
   };

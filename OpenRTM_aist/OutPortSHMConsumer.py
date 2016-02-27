@@ -139,7 +139,7 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
     self._rtcout.RTC_PARANOID("get()")
     
     try:
-      outportcdr = self.getObject()._narrow(OpenRTM__POA.SharedMemory)
+      outportcdr = self.getObject()._narrow(OpenRTM__POA.PortSharedMemory)
       
       if self._outportcdr is None:
         outportcdr.setInterface(self._shmem._this())

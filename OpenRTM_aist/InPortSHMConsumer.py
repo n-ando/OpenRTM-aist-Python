@@ -159,7 +159,7 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
     try:
       ref_ = self.getObject()
       if ref_:
-        inportcdr = ref_._narrow(OpenRTM__POA.SharedMemory)
+        inportcdr = ref_._narrow(OpenRTM__POA.PortSharedMemory)
         
         guard = OpenRTM_aist.ScopedLock(self._mutex)
         
