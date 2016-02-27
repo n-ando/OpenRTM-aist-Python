@@ -94,7 +94,7 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
   def __del__(self, CorbaConsumer=OpenRTM_aist.CorbaConsumer):
     self._rtcout.RTC_PARANOID("~InPortSHMConsumer()")
     CorbaConsumer.__del__(self)
-    self._shmem.close(True)
+    self._shmem.close_memory(True)
     
     return
 

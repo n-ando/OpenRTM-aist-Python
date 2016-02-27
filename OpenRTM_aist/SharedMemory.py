@@ -253,30 +253,8 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   #
   # @endif
   #
-  # void close_memory(int memory_size, string shm_address);
-  def close_memory(self, unlink):
-    self.close(unlink)
-
-  ##
-  # @if jp
-  # @brief マッピングした共有メモリをアンマップする
-  # 
-  #
-  #
-  # @param self
-  # @param unlink Linuxで/dev/shm以下に作成したファイルを削除する場合にTrueにする
-  #
-  # @else
-  # @brief
-  #
-  # @param self
-  # @param unlink
-  #
-  #
-  # @endif
-  #
-  # void close(int memory_size, string shm_address);
-  def close(self, unlink=False):
+  # void close_memory(boolean unlink);
+  def close_memory(self, unlink=False):
     self._rtcout.RTC_TRACE("open()")
     if self._shmem:
       self._shmem.close()
@@ -289,6 +267,9 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
 
       if self._smInterface:
         self._smInterface.close_memory(False)
+
+  
+    
 
 
   
