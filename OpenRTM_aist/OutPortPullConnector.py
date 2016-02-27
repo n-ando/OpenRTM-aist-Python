@@ -356,12 +356,12 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
   # @endif
   #
   # bool setPorts(InPortBase* directInPort, OutPortBase* outPort);
-  def setPorts(self, directInPort, outPort):
+  def setInPort(self, directInPort):
     if self._directInPort is not None:
       return False
     self._directInPort = directInPort
     self._inPortListeners = self._directInPort._listeners
-    self._outPortListeners = outPort._listeners
+    
     self._directInPort.addOutPortConnector(self)
     return True
 
@@ -383,7 +383,7 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
   def read(self):
     guard = OpenRTM_aist.ScopedLock(self._valueMutex)
     if not self.isNew():
-        self._outPortListeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_EMPTY].notify(self._profile)
+        self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_EMPTY].notify(self._profile)
         self._inPortListeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_SENDER_EMPTY].notify(self._profile)
         self._rtcout.RTC_TRACE("ON_BUFFER_EMPTY(OutPort), ")
         self._rtcout.RTC_TRACE("ON_SENDER_EMPTY(InPort) ")
@@ -396,10 +396,10 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
     del guard
     
     
-    self._outPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
+    self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
     self._rtcout.RTC_TRACE("ON_BUFFER_READ(OutPort), ")
     self._rtcout.RTC_TRACE("callback called in direct mode.")
-    self._outPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_SEND].notify(self._profile, data)
+    self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_SEND].notify(self._profile, data)
     self._rtcout.RTC_TRACE("ON_SEND(OutPort), ")
     self._rtcout.RTC_TRACE("callback called in direct mode.")
     self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)

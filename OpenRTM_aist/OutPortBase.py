@@ -1242,10 +1242,8 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
           self._rtcout.RTC_TRACE("but a peer InPort servant could not be obtained.")
           del connector
           return 0
-        if consumer_ is not None:
-          connector.setInPort(inport)
-        elif provider_ is not None:
-          connector.setPorts(inport, self)
+
+        connector.setInPort(inport)
         #if consumer_ is not None:
         #  connector.setInPort(inport)
         #elif provider_ is not None:
