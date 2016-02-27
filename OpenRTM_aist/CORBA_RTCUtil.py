@@ -1063,7 +1063,7 @@ def disconnect_by_portref_connector_name(port_ref, conn_name):
 #
 # @endif
 def disconnect_by_portname_connector_name(port_name, conn_name):
-  port_ref = get_Port_by_rtcloc(port_name)
+  port_ref = get_port_by_rtcloc(port_name)
   if port_ref == RTC.PortService._nil:
     return RTC.BAD_PARAMETER
   
@@ -1118,7 +1118,7 @@ def disconnect_by_portref_connector_id(port_ref, conn_id):
 #
 # @endif
 def disconnect_by_portname_connector_id(port_name, conn_id):
-  port_ref = get_Port_by_rtcloc(port_name)
+  port_ref = get_port_by_rtcloc(port_name)
   if port_ref == RTC.PortService._nil:
     return RTC.BAD_PARAMETER
   
@@ -1166,7 +1166,7 @@ def disconnect_all_by_ref(port_ref):
 #
 # @endif
 def disconnect_all_by_name(port_name):
-  port_ref = get_Port_by_rtcloc(port_name)
+  port_ref = get_port_by_rtcloc(port_name)
   if port_ref == RTC.PortService._nil:
     return RTC.BAD_PARAMETER
   return port_ref.disconnect_all()
@@ -1189,7 +1189,7 @@ def disconnect_all_by_name(port_name):
 # @return 
 #
 # @endif
-def get_Port_by_rtcloc(port_name):
+def get_port_by_rtcloc(port_name):
   mgr = OpenRTM_aist.Manager.instance()
   nm = mgr._namingManager
   p = port_name.split(".")
@@ -1444,5 +1444,5 @@ def set_configuration_parameter(conf, confset, value_name, value):
   OpenRTM_aist.NVUtil.copyFromProperties(confData,prop)
   confset.configuration_data = confData
   conf.set_configuration_set_values(confset)
-  
+  return True
   
