@@ -118,7 +118,7 @@ class NodeNumberingPolicy(OpenRTM_aist.NumberingPolicy):
     rtc_name = "rtcloc://*/*/"
     rtc_name += name
     
-    rtcs = self._mgr._namingManager.string_to_component(rtc_name)
+    rtcs = self._mgr.getNaming().string_to_component(rtc_name)
     
     if len(rtcs) > 0:
       return True

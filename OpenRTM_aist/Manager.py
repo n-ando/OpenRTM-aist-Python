@@ -2541,7 +2541,7 @@ class Manager:
   # PortServiceList_var getPortsOnNameServers(std::string nsname,std::string kind)
   def getPortsOnNameServers(self, nsname, kind):
     ports = []
-    ns = self._namingManager._names
+    ns = self._namingManager.getNameServices()
     for n in ns:
       noc = n.ns
       if noc is None:
@@ -2637,7 +2637,7 @@ class Manager:
   # @if jp
   # @brief 起動時にrtc.confで指定したポートを接続する
   # 例:
-  # manager.components.preconnect: RTC0.port0:RTC0.port1(interface_type=corba_cdr&dataport.dataflow_type=pull&~),~
+  # manager.components.preconnect: RTC0.port0^RTC0.port1(interface_type=corba_cdr&dataport.dataflow_type=pull&~),~
   # @param self
   # @else
   #
@@ -2798,6 +2798,43 @@ class Manager:
 
       self.createComponent(comps[i])
     
+  ##
+  # @if jp
+  # @brief ManagerServantを取得する
+  # 
+  # 
+  # @param self
+  # @return ManagerServant
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @return
+  # @endif
+  # ManagerServant* getManagerServant()
+  def getManagerServant(self):
+    self._rtcout.RTC_TRACE("Manager.getManagerServant()")
+    return self._mgrservant
+
+
+  ##
+  # @if jp
+  # @brief NamingManagerを取得する
+  # 
+  # 
+  # @param self
+  # @return NamingManager
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @return
+  # @endif
+  # NamingManager* getNaming()
+  def getNaming(self):
+    self._rtcout.RTC_TRACE("Manager.getNaming()")
+    return self._namingManager
+
 
 
   #============================================================

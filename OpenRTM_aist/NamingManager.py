@@ -386,9 +386,6 @@ class NamingOnManager(NamingBase):
   def __init__(self, orb, mgr):
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf('manager.namingonmanager')
     self._cosnaming = None
-    #self.isMaster = isMaster
-    #self.masters = masters
-    #self.slaves = slaves
     self._orb = orb
     self._mgr = mgr
     
@@ -408,8 +405,8 @@ class NamingOnManager(NamingBase):
   #
   # @endif
   def bindObject(self, name, rtobj):
-    """self._rtcout.RTC_TRACE("bindObject(name = %s, rtobj or mgr)", name)
-    print isinstance(rtobj, OpenRTM.ManagerServant)
+    self._rtcout.RTC_TRACE("bindObject(name = %s, rtobj or mgr)", name)
+    """print isinstance(rtobj, OpenRTM.ManagerServant)
     if isinstance(rtobj, OpenRTM.ManagerServant):
       
       self.manager = rtobj"""
@@ -533,7 +530,7 @@ class NamingOnManager(NamingBase):
   # virtual Manager_ptr getManager(string name);
   def getManager(self, name):
     if name == "*":
-      mgr_sev = self._mgr._mgrservant
+      mgr_sev = self._mgr.getManagerServant()
       if mgr_sev.is_master():
         mgr = mgr_sev.getObjRef()
       else:
