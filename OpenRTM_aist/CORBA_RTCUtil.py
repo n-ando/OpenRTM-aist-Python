@@ -263,23 +263,23 @@ def reset(rtc, ec_id=0):
 #
 # @brief 対象のRTコンポーネントの指定した実行コンテキストでの状態を取得
 #
-# 
+#
+# @param state RTCの状態
 # @param rtc 対象のRTコンポーネント
 # @param ec_id 実行コンテキストのID
-# @param state RTCの状態
 # @return rtc、ecがnilの場合はFalseを返す。
 # nilではない場合はstate[0]に状態を代入してTrueを返す。
 #
 # @else
 #
-# @brief 
+# @brief
+# @param state 
 # @param rtc
 # @param ec_id
-# @param state 
 # @return 
 #
 # @endif
-def get_state(rtc, ec_id=0, state=[None]):
+def get_state(state, rtc, ec_id=0):
   if CORBA.is_nil(rtc):
     return False
   ec = get_actual_ec(rtc, ec_id)
@@ -308,9 +308,9 @@ def get_state(rtc, ec_id=0, state=[None]):
 #
 # @endif
 def is_in_inactive(rtc, ec_id=0):
-  ret = [None]
-  if get_state(rtc, ec_id, ret):
-    if ret[0] == RTC.INACTIVE_STATE:
+  state = [None]
+  if get_state(state, rtc, ec_id):
+    if state[0] == RTC.INACTIVE_STATE:
       return True
   return False
 
@@ -334,9 +334,9 @@ def is_in_inactive(rtc, ec_id=0):
 #
 # @endif
 def is_in_active(rtc, ec_id=0):
-  ret = [None]
-  if get_state(rtc, ec_id, ret):
-    if ret[0] == RTC.ACTIVE_STATE:
+  state = [None]
+  if get_state(state, rtc, ec_id):
+    if state[0] == RTC.ACTIVE_STATE:
       return True
   return False
 
@@ -360,9 +360,9 @@ def is_in_active(rtc, ec_id=0):
 #
 # @endif
 def is_in_error(rtc, ec_id=0):
-  ret = [None]
-  if get_state(rtc, ec_id, ret):
-    if ret[0] == RTC.ERROR_STATE:
+  state = [None]
+  if get_state(state,rtc, ec_id):
+    if state[0] == RTC.ERROR_STATE:
       return True
   return False
 
