@@ -81,6 +81,9 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
     CorbaConsumer.__del__(self)
     if self._outportcdr:
       self._outportcdr.close_memory(True)
+    oid = OpenRTM_aist.Manager.instance().getPOA().servant_to_id(self._shmem)
+    OpenRTM_aist.Manager.instance().getPOA().deactivate_object(oid)
+
     
 
 

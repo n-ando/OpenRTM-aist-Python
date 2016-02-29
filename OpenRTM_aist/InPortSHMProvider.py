@@ -101,8 +101,8 @@ class InPortSHMProvider(OpenRTM_aist.InPortProvider, OpenRTM_aist.SharedMemory):
   # @endif
   #
   def __del__(self):
-    oid = OpenRTM_aist.Manager.instance().getPOA.servant_to_id(self)
-    OpenRTM_aist.Manager.instance().getPOA.deactivate_object(oid)
+    oid = OpenRTM_aist.Manager.instance().getPOA().servant_to_id(self)
+    OpenRTM_aist.Manager.instance().getPOA().deactivate_object(oid)
     
       
       

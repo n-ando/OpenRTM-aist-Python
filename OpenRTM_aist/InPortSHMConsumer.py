@@ -96,6 +96,9 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
     CorbaConsumer.__del__(self)
     self._shmem.close_memory(True)
     
+    oid = OpenRTM_aist.Manager.instance().getPOA().servant_to_id(self._shmem)
+    OpenRTM_aist.Manager.instance().getPOA().deactivate_object(oid)
+    
     return
 
   ##
