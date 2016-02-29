@@ -164,8 +164,7 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
       self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
       return OpenRTM.UNKNOWN_ERROR
 
-    if self._shmem is None:
-      self.create_memory(self._memory_size, self._shm_address)
+    self.create_memory(self._memory_size, self._shm_address)
     self.write(cdr[0])
     
     return self.convertReturn(ret, cdr[0])

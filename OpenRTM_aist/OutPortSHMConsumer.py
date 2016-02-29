@@ -79,7 +79,8 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
   def __del__(self, CorbaConsumer=OpenRTM_aist.CorbaConsumer):
     self._rtcout.RTC_PARANOID("~OutPortSHMConsumer()")
     CorbaConsumer.__del__(self)
-    self._outportcdr.close_memory(True)
+    if self._outportcdr:
+      self._outportcdr.close_memory(True)
     
 
 
@@ -106,7 +107,14 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
         
     return
 
-
+  def setObject(self, obj):
+    if OpenRTM_aist.CorbaConsumer.setObject(self, obj):
+      ref_ = self.getObject()
+      if ref_:
+        outportcdr = self.getObject()._narrow(OpenRTM__POA.PortSharedMemory)
+        outportcdr.setInterface(self._shmem._this())
+        return True
+    return False
   
 
 
@@ -141,9 +149,7 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
     try:
       outportcdr = self.getObject()._narrow(OpenRTM__POA.PortSharedMemory)
       
-      if self._outportcdr is None:
-        outportcdr.setInterface(self._shmem._this())
-        self._outportcdr = outportcdr
+      self._outportcdr = outportcdr
 
       guard = OpenRTM_aist.ScopedLock(self._mutex)
       ret = outportcdr.get()

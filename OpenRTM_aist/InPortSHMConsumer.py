@@ -130,6 +130,17 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
     
     return
 
+  def setObject(self, obj):
+    if OpenRTM_aist.CorbaConsumer.setObject(self, obj):
+      ref_ = self.getObject()
+      if ref_:
+        inportcdr = ref_._narrow(OpenRTM__POA.PortSharedMemory)
+        self._shmem.setInterface(inportcdr)
+        
+        return True
+    return False
+      
+      
   ##
   # @if jp
   # @brief 接続先へのデータ送信
@@ -163,10 +174,7 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
         
         guard = OpenRTM_aist.ScopedLock(self._mutex)
         
-
-        self._shmem.setInterface(inportcdr)
-        if self._shmem._shmem is None:
-          self._shmem.create_memory(self._memory_size, self._shm_address)
+        self._shmem.create_memory(self._memory_size, self._shm_address)
         self._shmem.write(data)
         
         
