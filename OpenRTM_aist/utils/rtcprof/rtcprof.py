@@ -51,6 +51,7 @@ def main():
   # Manager initialization
   OpenRTM_aist.Manager.init(opts)
   mgr = OpenRTM_aist.Manager.instance()
+  mgr.shutdown()
 
   # loaded profile = old profiles - new profiles
   # for old
