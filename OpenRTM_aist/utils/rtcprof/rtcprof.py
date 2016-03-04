@@ -47,11 +47,12 @@ def main():
   opts.append("logger.enable:NO")
   opts.append("-o")
   opts.append("manager.corba_servant:NO")
+  opts.append("-o")
+  opts.append("timer.enable:NO")
 
   # Manager initialization
   OpenRTM_aist.Manager.init(opts)
   mgr = OpenRTM_aist.Manager.instance()
-  mgr.shutdown()
 
   # loaded profile = old profiles - new profiles
   # for old
