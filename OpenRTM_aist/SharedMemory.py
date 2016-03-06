@@ -224,7 +224,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     self._shm_address = shm_address
     if self._shmem is None:
       if platform.system() == "Windows":
-        self._shmem = mmap.mmap(0, self._memory_size, self._shm_address, mmap.ACCESS_READ)
+        self._shmem = mmap.mmap(0, self._memory_size, self._shm_address, mmap.ACCESS_WRITE)
       else:
         O_RDWR = 2
         self.fd = self.rt.shm_open(self._shm_address,O_RDWR,0)

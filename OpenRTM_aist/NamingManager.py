@@ -298,8 +298,9 @@ class NamingOnCorba(NamingBase):
   # @if jp
   #
   # @brief rtcname形式でRTCのオブジェクトリファレンスを取得する
-  # 
-  # @return RTCのオブジェクトリファレンス
+  #
+  # @param name RTC名
+  # @return RTCのオブジェクトリファレンスのリスト
   #
   # @else
   #
