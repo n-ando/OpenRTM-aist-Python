@@ -1012,6 +1012,27 @@ class ManagerServant(RTM__POA.Manager):
     return RTM.Manager._nil
 
 
+
+
+  ##
+  # @if jp
+  # @brief モジュール名からパラメータを取り出す
+  # &param_name=value　もしくは ?param_name=value
+  #　のvalueを取り出す
+  # 
+  # @param self
+  # @param param_name パラメータ名
+  # @param module_name モジュール名
+  # @return パラメータ
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param param_name
+  # @param module_name
+  # @return 
+  # @endif
+  # RTC::RTObject_ptr get_parameter_by_modulename(string param_name, string &module_name)
   def get_parameter_by_modulename(self, param_name, module_name):
     arg = module_name[0]
     pos0 = arg.find("&"+param_name+"=")
