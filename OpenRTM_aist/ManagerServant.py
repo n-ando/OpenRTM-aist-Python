@@ -295,91 +295,44 @@ class ManagerServant(RTM__POA.Manager):
   def create_component(self, module_name):
     self._rtcout.RTC_TRACE("create_component(%s)", module_name)
 
-    arg = module_name
-    pos0 = arg.find("&manager=")
-    pos1 = arg.find("?manager=")
+    
+    rtc = self.create_component_by_address(module_name)
+    if not CORBA.is_nil(rtc):
+      return rtc
+    
+    rtc = self.create_component_by_mgrname(module_name)
+    
+    if not CORBA.is_nil(rtc):
+      return rtc
+    
 
-    if pos0 == -1 and pos1 == -1:
-      # create on this manager
-      rtc = self._mgr.createComponent(module_name)
-      if not rtc:
-        return RTC.RTObject._nil
+
+    
+    if self._isMaster:
+      guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
+      for slave in self._slaves:
+        try:
+          rtc = slave.create_component(module_name)
+          if not CORBA.is_nil(rtc):
+            return rtc
+        except:
+          self._rtcout.RTC_ERROR("Unknown exception cought.")
+          self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+      del guard
+
+
+    # create on this manager
+    
+    rtc = self._mgr.createComponent(module_name)
+    if rtc:
       return rtc.getObjRef()
-
-    # create other manager
-
-    # extract manager's location
-    # since Python2.5 
-    # pos = (lambda x: pos0 if x == -1 else pos1)(pos0)
-    if pos0 == -1:
-      pos = pos1
-    else:
-      pos = pos0
     
-    endpos = arg.find('&', pos + 1)
-    if endpos == -1:
-      mgrstr = arg[(pos + 1):]
-    else:
-      mgrstr = arg[(pos + 1): endpos]
-    self._rtcout.RTC_VERBOSE("Manager arg: %s", mgrstr)
-    mgrvstr = mgrstr.split(":")
-    if len(mgrvstr) != 2:
-      self._rtcout.RTC_WARN("Invalid manager name: %s", mgrstr)
-      return RTC.RTObject._nil
 
-    eqpos = mgrstr.find("=")
-    if eqpos == -1:
-      self._rtcout.RTC_WARN("Invalid argument: %s", module_name)
-      return RTC.RTObject._nil
-
-    mgrstr = mgrstr[eqpos + 1:]
-    self._rtcout.RTC_DEBUG("Manager is %s", mgrstr)
-
-    # find manager
-    mgrobj = self.findManager(mgrstr)
-    if CORBA.is_nil(mgrobj):
-      cmd = "rtcd_python -p "
-      cmd += mgrvstr[1] # port number
-
-      self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
-      ret = OpenRTM_aist.launch_shell(cmd)
-      if ret == -1:
-        self._rtcout.RTC_DEBUG("%s: failed", cmd)
-        return RTC.RTObject._nil
-
-      # find manager
-      time.sleep(0.01)
-      count = 0
-      while CORBA.is_nil(mgrobj):
-        mgrobj = self.findManager(mgrstr)
-        count += 1
-        if count > 1000:
-          break
-        time.sleep(0.01)
-
-    if CORBA.is_nil(mgrobj):
-      self._rtcout.RTC_WARN("Manager cannot be found.")
-      return RTC.RTObject._nil
     
-    # create component on the manager
-    if endpos == -1:
-      arg = arg[:pos]
-    else:
-      arg = arg[:pos] + arg[endpos:]
-    self._rtcout.RTC_DEBUG("Creating component on %s",  mgrstr)
-    self._rtcout.RTC_DEBUG("arg: %s", arg)
-    try:
-      rtobj = mgrobj.create_component(arg)
-      self._rtcout.RTC_DEBUG("Component created %s",  arg)
-      return rtobj
-    except CORBA.SystemException:
-      self._rtcout.RTC_DEBUG("Exception was caught while creating component.")
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      return RTC.RTObject._nil
-    except:
-      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-
     return RTC.RTObject._nil
+
+
+    
 
   
   ##
@@ -921,6 +874,7 @@ class ManagerServant(RTM__POA.Manager):
     return True
 
 
+
   ##
   # @if jp
   # @brief Managerのリファレンスを検索する。
@@ -991,6 +945,279 @@ class ManagerServant(RTM__POA.Manager):
         
         
     return crtcs
+
+  ##
+  # @if jp
+  # @brief 指定名のマネージャを取得
+  # マネージャがマスターの場合は登録されているスレーブマネージャから検索する
+  # マネージャがスレーブの場合は登録されているマスターマネージャからスレーブマネージャを検索する
+  # @param self
+  # @param manager_name マネージャ名
+  # @return マネージャ
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param manager_name
+  # @return 
+  # @endif
+  # RTC::Manager_ptr findManager_by_name(string manager_name)
+  def findManager_by_name(self, manager_name):
+    self._rtcout.RTC_TRACE("findManager_by_name(manager_name = %s)", manager_name)
+    prop = self._mgr.getConfig()
+    name = prop.getProperty("manager.instance_name")
+    if name == manager_name:
+      return self.getObjRef()
+    if self._isMaster:
+      guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
+      for slave in self._slaves:
+        try:
+          prof = slave.get_configuration()
+          prop = OpenRTM_aist.Properties()
+          OpenRTM_aist.NVUtil.copyToProperties(prop, prof)
+          name = prop.getProperty("manager.instance_name")
+          if name == manager_name:
+            return slave
+        
+        except:
+          self._rtcout.RTC_ERROR("Unknown exception cought.")
+          self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+      del guard
+    else:
+      guard = OpenRTM_aist.ScopedLock(self._masterMutex)
+      for master in self._masters:
+        for slave in master.get_slave_managers():
+          try:
+            prof = slave.get_configuration()
+            prop = OpenRTM_aist.Properties()
+            OpenRTM_aist.NVUtil.copyToProperties(prop, prof)
+            name = prop.getProperty("manager.instance_name")
+            if name == manager_name:
+              return slave
+          except:
+            self._rtcout.RTC_ERROR("Unknown exception cought.")
+            self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+        try:
+          prof = master.get_configuration()
+          prop = OpenRTM_aist.Properties()
+          OpenRTM_aist.NVUtil.copyToProperties(prop, prof)
+          name = prop.getProperty("manager.instance_name")
+          if name == manager_name:
+            return master
+        except:
+          self._rtcout.RTC_ERROR("Unknown exception cought.")
+          self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+      del guard
+
+    return RTM.Manager._nil
+
+
+  ##
+  # @if jp
+  # @brief 指定のマネージャでRTCを起動する
+  # comp&manager_name=mgr
+  # のようにRTC名&manager_name=マネージャ名と指定する
+  # @param self
+  # @param module_name 起動するRTC、マネージャ名
+  # @return RTC
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param module_name
+  # @return 
+  # @endif
+  # RTC::RTObject_ptr create_component_by_mgrname(string module_name)
+  def create_component_by_mgrname(self, module_name):
+    arg = module_name
+    pos0 = arg.find("&manager_name=")
+    pos1 = arg.find("?manager_name=")
+
+    if pos0 == -1 and pos1 == -1:
+      return RTC.RTObject._nil
+
+    if pos0 == -1:
+      pos = pos1
+    else:
+      pos = pos0
+
+    endpos = arg.find('&', pos + 1)
+    if endpos == -1:
+      mgrstr = arg[(pos + 1):]
+    else:
+      mgrstr = arg[(pos + 1): endpos]
+    self._rtcout.RTC_VERBOSE("Manager arg: %s", mgrstr)
+
+
+    eqpos = mgrstr.find("=")
+    if eqpos == -1:
+      self._rtcout.RTC_WARN("Invalid argument: %s", module_name)
+      return RTC.RTObject._nil
+
+    mgrstr = mgrstr[eqpos + 1:]
+    self._rtcout.RTC_DEBUG("Manager is %s", mgrstr)
+
+    mgrobj = self.findManager_by_name(mgrstr)
+    
+    if CORBA.is_nil(mgrobj):
+      self._rtcout.RTC_WARN("%s cannot be found.", mgrstr)
+      config = copy.deepcopy(self._mgr.getConfig())
+      cmd = "rtcd_python"
+      cmd += " -o " + "manager.is_master:NO"
+      cmd += " -o " + "manager.corba_servant:YES"
+      cmd += " -o " + "corba.master_manager:" + config.getProperty("corba.master_manager")
+      cmd += " -o " + "manger.name:" + config.getProperty("manger.name")
+      cmd += " -o " + "manager.instance_name:" + mgrstr
+      
+      
+
+      self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
+      ret = OpenRTM_aist.launch_shell(cmd)
+      
+      if ret == -1:
+        self._rtcout.RTC_DEBUG("%s: failed", cmd)
+        return RTC.RTObject._nil
+      time.sleep(0.01)
+      count = 0
+      while CORBA.is_nil(mgrobj):
+        mgrobj = self.findManager_by_name(mgrstr)
+        count += 1
+        if count > 1000:
+          break
+        time.sleep(0.01)
+      
+      if CORBA.is_nil(mgrobj):
+        self._rtcout.RTC_WARN("Manager cannot be found.")
+        return RTC.RTObject._nil
+      
+      
+    
+    
+
+    if endpos == -1:
+      arg = arg[:pos]
+    else:
+      arg = arg[:pos] + arg[endpos:]
+      
+    self._rtcout.RTC_DEBUG("Creating component on %s",  mgrstr)
+    self._rtcout.RTC_DEBUG("arg: %s", arg)
+    
+    
+    try:
+      
+      rtobj = mgrobj.create_component(arg)
+      
+      return rtobj
+    except CORBA.SystemException:
+      self._rtcout.RTC_DEBUG("Exception was caught while creating component.")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      return RTC.RTObject._nil
+    except:
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+      return RTC.RTObject._nil
+    return RTC.RTObject._nil
+    
+    
+
+  ##
+  # @if jp
+  # @brief 指定のマネージャでRTCを起動する
+  # comp&manager_address=localhost:2810
+  # のようにRTC名&manager_address=マネージャのホスト名、ポート番号を指定する
+  # @param self
+  # @param module_name 起動するRTC、マネージャのホストアドレス
+  # @return RTC
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param module_name
+  # @return 
+  # @endif
+  # RTC::RTObject_ptr create_component_by_address(string module_name)
+  def create_component_by_address(self, module_name):
+
+    arg = module_name
+    pos0 = arg.find("&manager_address=")
+    pos1 = arg.find("?manager_address=")
+
+    if pos0 == -1 and pos1 == -1:
+      return RTC.RTObject._nil
+    
+    # create other manager
+
+    # extract manager's location
+    # since Python2.5 
+    # pos = (lambda x: pos0 if x == -1 else pos1)(pos0)
+    if pos0 == -1:
+      pos = pos1
+    else:
+      pos = pos0
+    
+    endpos = arg.find('&', pos + 1)
+    if endpos == -1:
+      mgrstr = arg[(pos + 1):]
+    else:
+      mgrstr = arg[(pos + 1): endpos]
+    self._rtcout.RTC_VERBOSE("Manager arg: %s", mgrstr)
+    mgrvstr = mgrstr.split(":")
+    if len(mgrvstr) != 2:
+      self._rtcout.RTC_WARN("Invalid manager name: %s", mgrstr)
+      return RTC.RTObject._nil
+
+    eqpos = mgrstr.find("=")
+    if eqpos == -1:
+      self._rtcout.RTC_WARN("Invalid argument: %s", module_name)
+      return RTC.RTObject._nil
+
+    mgrstr = mgrstr[eqpos + 1:]
+    self._rtcout.RTC_DEBUG("Manager is %s", mgrstr)
+
+    # find manager
+    mgrobj = self.findManager(mgrstr)
+    if CORBA.is_nil(mgrobj):
+      cmd = "rtcd_python -p "
+      cmd += mgrvstr[1] # port number
+
+      self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
+      ret = OpenRTM_aist.launch_shell(cmd)
+      if ret == -1:
+        self._rtcout.RTC_DEBUG("%s: failed", cmd)
+        return RTC.RTObject._nil
+
+      # find manager
+      time.sleep(0.01)
+      count = 0
+      while CORBA.is_nil(mgrobj):
+        mgrobj = self.findManager(mgrstr)
+        count += 1
+        if count > 1000:
+          break
+        time.sleep(0.01)
+
+    if CORBA.is_nil(mgrobj):
+      self._rtcout.RTC_WARN("Manager cannot be found.")
+      return RTC.RTObject._nil
+    
+    # create component on the manager
+    if endpos == -1:
+      arg = arg[:pos]
+    else:
+      arg = arg[:pos] + arg[endpos:]
+    self._rtcout.RTC_DEBUG("Creating component on %s",  mgrstr)
+    self._rtcout.RTC_DEBUG("arg: %s", arg)
+    try:
+      rtobj = mgrobj.create_component(arg)
+      self._rtcout.RTC_DEBUG("Component created %s",  arg)
+      return rtobj
+    except CORBA.SystemException:
+      self._rtcout.RTC_DEBUG("Exception was caught while creating component.")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      return RTC.RTObject._nil
+    except:
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+
+    return RTC.RTObject._nil
 
 
 
