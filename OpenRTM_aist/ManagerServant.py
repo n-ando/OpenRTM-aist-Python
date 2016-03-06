@@ -1012,6 +1012,50 @@ class ManagerServant(RTM__POA.Manager):
     return RTM.Manager._nil
 
 
+  def get_parameter_by_modulename(self, param_name, module_name):
+    arg = module_name[0]
+    pos0 = arg.find("&"+param_name+"=")
+    pos1 = arg.find("?"+param_name+"=")
+    
+    
+
+    if pos0 == -1 and pos1 == -1:
+      return ""
+
+    if pos0 == -1:
+      pos = pos1
+    else:
+      pos = pos0
+
+    endpos = arg.find('&', pos + 1)
+    if endpos == -1:
+      paramstr = arg[(pos + 1):]
+    else:
+      paramstr = arg[(pos + 1): endpos]
+    self._rtcout.RTC_VERBOSE("%s arg: %s", (param_name, paramstr))
+
+    
+
+    eqpos = paramstr.find("=")
+    if eqpos == -1:
+      self._rtcout.RTC_WARN("Invalid argument: %s", module_name)
+      return ""
+
+    paramstr = paramstr[eqpos + 1:]
+    self._rtcout.RTC_DEBUG("%s is %s",(param_name, paramstr))
+
+    if endpos == -1:
+      arg = arg[:pos]
+    else:
+      arg = arg[:pos] + arg[endpos:]
+
+    module_name[0] = arg
+
+    return paramstr
+
+
+    
+
   ##
   # @if jp
   # @brief 指定のマネージャでRTCを起動する
@@ -1030,47 +1074,47 @@ class ManagerServant(RTM__POA.Manager):
   # RTC::RTObject_ptr create_component_by_mgrname(string module_name)
   def create_component_by_mgrname(self, module_name):
     arg = module_name
-    pos0 = arg.find("&manager_name=")
-    pos1 = arg.find("?manager_name=")
+    
 
-    if pos0 == -1 and pos1 == -1:
+    tmp = [arg]
+    mgrstr = self.get_parameter_by_modulename("manager_name",tmp)
+    arg = tmp[0]
+
+    if not mgrstr:
       return RTC.RTObject._nil
+    
 
-    if pos0 == -1:
-      pos = pos1
-    else:
-      pos = pos0
-
-    endpos = arg.find('&', pos + 1)
-    if endpos == -1:
-      mgrstr = arg[(pos + 1):]
-    else:
-      mgrstr = arg[(pos + 1): endpos]
-    self._rtcout.RTC_VERBOSE("Manager arg: %s", mgrstr)
-
-
-    eqpos = mgrstr.find("=")
-    if eqpos == -1:
-      self._rtcout.RTC_WARN("Invalid argument: %s", module_name)
-      return RTC.RTObject._nil
-
-    mgrstr = mgrstr[eqpos + 1:]
-    self._rtcout.RTC_DEBUG("Manager is %s", mgrstr)
 
     mgrobj = self.findManager_by_name(mgrstr)
+
+    tmp = [arg]
+    language = self.get_parameter_by_modulename("language",tmp)
+    arg = tmp[0]
+    if not language:
+      language = "Python"
+    
+    
+    
+    
     
     if CORBA.is_nil(mgrobj):
       self._rtcout.RTC_WARN("%s cannot be found.", mgrstr)
       config = copy.deepcopy(self._mgr.getConfig())
-      cmd = "rtcd_python"
+      rtcd_cmd = config.getProperty("manager.modules."+language+".manager_cmd")
+      
+      if not rtcd_cmd:
+        rtcd_cmd = "rtcd_python"
+      
+      cmd = rtcd_cmd
       cmd += " -o " + "manager.is_master:NO"
       cmd += " -o " + "manager.corba_servant:YES"
       cmd += " -o " + "corba.master_manager:" + config.getProperty("corba.master_manager")
       cmd += " -o " + "manger.name:" + config.getProperty("manger.name")
       cmd += " -o " + "manager.instance_name:" + mgrstr
+      #cmd += " -o " + "manager.supported_languages:" + language
       
       
-
+      
       self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
       ret = OpenRTM_aist.launch_shell(cmd)
       
@@ -1090,21 +1134,20 @@ class ManagerServant(RTM__POA.Manager):
         self._rtcout.RTC_WARN("Manager cannot be found.")
         return RTC.RTObject._nil
       
-      
+
+
+    
     
     
 
-    if endpos == -1:
-      arg = arg[:pos]
-    else:
-      arg = arg[:pos] + arg[endpos:]
+    
+
       
     self._rtcout.RTC_DEBUG("Creating component on %s",  mgrstr)
     self._rtcout.RTC_DEBUG("arg: %s", arg)
     
     
     try:
-      
       rtobj = mgrobj.create_component(arg)
       
       return rtobj
@@ -1138,45 +1181,37 @@ class ManagerServant(RTM__POA.Manager):
   def create_component_by_address(self, module_name):
 
     arg = module_name
-    pos0 = arg.find("&manager_address=")
-    pos1 = arg.find("?manager_address=")
+    tmp = [arg]
+    mgrstr = self.get_parameter_by_modulename("manager_address",tmp)
+    arg = tmp[0]
 
-    if pos0 == -1 and pos1 == -1:
+    if not mgrstr:
       return RTC.RTObject._nil
     
-    # create other manager
-
-    # extract manager's location
-    # since Python2.5 
-    # pos = (lambda x: pos0 if x == -1 else pos1)(pos0)
-    if pos0 == -1:
-      pos = pos1
-    else:
-      pos = pos0
-    
-    endpos = arg.find('&', pos + 1)
-    if endpos == -1:
-      mgrstr = arg[(pos + 1):]
-    else:
-      mgrstr = arg[(pos + 1): endpos]
-    self._rtcout.RTC_VERBOSE("Manager arg: %s", mgrstr)
     mgrvstr = mgrstr.split(":")
     if len(mgrvstr) != 2:
       self._rtcout.RTC_WARN("Invalid manager name: %s", mgrstr)
       return RTC.RTObject._nil
 
-    eqpos = mgrstr.find("=")
-    if eqpos == -1:
-      self._rtcout.RTC_WARN("Invalid argument: %s", module_name)
-      return RTC.RTObject._nil
-
-    mgrstr = mgrstr[eqpos + 1:]
-    self._rtcout.RTC_DEBUG("Manager is %s", mgrstr)
-
+    
     # find manager
     mgrobj = self.findManager(mgrstr)
+
+    tmp = [arg]
+    language = self.get_parameter_by_modulename("language",tmp)
+    arg = tmp[0]
+    if not language:
+      language = "Python"
+
+
     if CORBA.is_nil(mgrobj):
-      cmd = "rtcd_python -p "
+      config = copy.deepcopy(self._mgr.getConfig())
+      rtcd_cmd = config.getProperty("manager.modules."+language+".manager_cmd")
+      if not rtcd_cmd:
+        rtcd_cmd = "rtcd_python"
+
+      cmd = rtcd_cmd
+      cmd = " -p "
       cmd += mgrvstr[1] # port number
 
       self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
@@ -1199,11 +1234,7 @@ class ManagerServant(RTM__POA.Manager):
       self._rtcout.RTC_WARN("Manager cannot be found.")
       return RTC.RTObject._nil
     
-    # create component on the manager
-    if endpos == -1:
-      arg = arg[:pos]
-    else:
-      arg = arg[:pos] + arg[endpos:]
+    
     self._rtcout.RTC_DEBUG("Creating component on %s",  mgrstr)
     self._rtcout.RTC_DEBUG("arg: %s", arg)
     try:
