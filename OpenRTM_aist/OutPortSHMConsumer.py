@@ -15,6 +15,7 @@ from omniORB import any
 import OpenRTM_aist
 import OpenRTM
 import OpenRTM__POA
+import CORBA
 
 import threading
 
@@ -59,7 +60,7 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
     self._shmem = OpenRTM_aist.SharedMemory()
       
     self._mutex = threading.RLock()
-    self._outportcdr = None
+    self._outportcdr = OpenRTM.PortSharedMemory._nil
 
     return
 
@@ -79,8 +80,13 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
   def __del__(self, CorbaConsumer=OpenRTM_aist.CorbaConsumer):
     self._rtcout.RTC_PARANOID("~OutPortSHMConsumer()")
     CorbaConsumer.__del__(self)
-    if self._outportcdr:
-      self._outportcdr.close_memory(True)
+    try:
+      if not CORBA.is_nil(self._outportcdr):
+        self._outportcdr.close_memory(True)
+    except:
+      self._rtcout.RTC_WARN("Exception caught from PortSharedMemory.close_memory().")
+      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      
     oid = OpenRTM_aist.Manager.instance().getPOA().servant_to_id(self._shmem)
     OpenRTM_aist.Manager.instance().getPOA().deactivate_object(oid)
 
@@ -113,10 +119,14 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
   def setObject(self, obj):
     if OpenRTM_aist.CorbaConsumer.setObject(self, obj):
       ref_ = self.getObject()
-      if ref_:
-        outportcdr = self.getObject()._narrow(OpenRTM__POA.PortSharedMemory)
-        outportcdr.setInterface(self._shmem._this())
-        return True
+      try:
+        if ref_:
+          outportcdr = self.getObject()._narrow(OpenRTM__POA.PortSharedMemory)
+          outportcdr.setInterface(self._shmem._this())
+          return True
+      except:
+        self._rtcout.RTC_WARN("Exception caught from PortSharedMemory.setInterface().")
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
     return False
   
 

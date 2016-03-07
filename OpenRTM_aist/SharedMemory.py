@@ -16,6 +16,7 @@ from omniORB import cdrUnmarshal
 import CORBA
 import OpenRTM_aist
 import OpenRTM__POA
+import OpenRTM
 
 
 
@@ -65,7 +66,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   def __init__(self):
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("SharedMemory")
     self._shmem = None
-    self._smInterface = None
+    self._smInterface = OpenRTM.PortSharedMemory._nil
     self._shm_address = ""
     self._memory_size = SharedMemory.default_memory_size
     if platform.system() == "Windows":
@@ -194,7 +195,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
         self.rt.close( self.fd )
 
       
-      if self._smInterface:
+      if not CORBA.is_nil(self._smInterface):
         self._smInterface.open_memory(self._memory_size, self._shm_address)
 
 
@@ -265,7 +266,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
            self.rt.shm_unlink(self._shm_address)
       self._shmem = None
 
-      if self._smInterface:
+      if not CORBA.is_nil(self._smInterface):
         self._smInterface.close_memory(False)
 
   
@@ -304,7 +305,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
       if data_size + SharedMemory.default_size > self._memory_size:
         self._memory_size = data_size + SharedMemory.default_size
 
-        if self._smInterface:
+        if not CORBA.is_nil(self._smInterface):
           self._smInterface.close_memory(False)
 
 
