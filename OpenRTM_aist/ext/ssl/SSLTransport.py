@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: euc-jp -*-
 
+
+##
+# @file SSLTransport.py
+# @brief SSL Transport module
+# @date $Date: $
+# @author Nobuhiko Miyamoto
+
+
 import os
 from omniORB import sslTP
 import OpenRTM_aist
@@ -9,7 +17,10 @@ import OpenRTM_aist
 
 def SSLTransportInit(manager):
 
-    os.environ['ORBsslVerifyMode'] = "none"
+    
+    #os.environ['ORBtraceLevel'] = '25'
+    #os.environ['ORBendPoint'] = 'giop:ssl::'
+    #os.environ['ORBsslVerifyMode'] = "none"
 
 
     prop = manager.getConfig()
