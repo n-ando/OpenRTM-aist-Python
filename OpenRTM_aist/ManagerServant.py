@@ -926,8 +926,9 @@ class ManagerServant(RTM__POA.Manager):
     rtcs = self._mgr.getComponents()
     crtcs = []
     tmp = [name]
-    name = OpenRTM_aist.eraseHeadBlank(tmp)
-    rtc_name = tmp[0].split("/")
+    OpenRTM_aist.eraseHeadBlank(tmp)
+    name = tmp[0]
+    rtc_name = name.split("/")
     for rtc in rtcs:
       if len(rtc_name) == 1:
         if rtc.getInstanceName() == rtc_name[0]:
