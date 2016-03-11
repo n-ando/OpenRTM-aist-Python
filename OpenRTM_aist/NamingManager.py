@@ -516,7 +516,7 @@ class NamingOnManager(NamingBase):
   ##
   # @if jp
   #
-  # @brief 指定マネージャ名、ポート名でManagerのオブジェクトリファレンスを取得
+  # @brief 指定ホスト名、ポート名でManagerのオブジェクトリファレンスを取得
   # 
   # @return Managerのオブジェクトリファレンス
   #
@@ -543,8 +543,8 @@ class NamingOnManager(NamingBase):
       return mgr
     try:
       mgrloc = "corbaloc:iiop:"
-      
-      manager_name = "manager"
+      prop = self._mgr.getConfig()
+      manager_name = prop.getProperty("manager.name")
       mgrloc += name
       mgrloc += "/" + manager_name
       
