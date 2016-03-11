@@ -507,8 +507,12 @@ class NamingOnManager(NamingBase):
             rtc_list = mgr.get_components_by_name(rtc_name)
 
             slaves = mgr.get_slave_managers()
-            for ms in slaves:
-              rtc_list.extend(ms.get_components_by_name(rtc_name))
+            for slave in slaves:
+              try:
+                rtc_list.extend(slave.get_components_by_name(rtc_name))
+              except:
+                self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+                mgr.remove_slave_manager(slave)
 
           return rtc_list
     return rtc_list

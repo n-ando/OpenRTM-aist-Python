@@ -971,7 +971,7 @@ class ManagerServant(RTM__POA.Manager):
       return self.getObjRef()
     if self._isMaster:
       guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
-      for slave in self._slaves:
+      for slave in self._slaves[:]:
         try:
           prof = slave.get_configuration()
           prop = OpenRTM_aist.Properties()
@@ -983,11 +983,13 @@ class ManagerServant(RTM__POA.Manager):
         except:
           self._rtcout.RTC_ERROR("Unknown exception cought.")
           self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+          self.remove_slave_manager(slave)
       del guard
     else:
       guard = OpenRTM_aist.ScopedLock(self._masterMutex)
       for master in self._masters:
-        for slave in master.get_slave_managers():
+        slaves = master.get_slave_managers()
+        for slave in slaves[:]:
           try:
             prof = slave.get_configuration()
             prop = OpenRTM_aist.Properties()
@@ -998,6 +1000,7 @@ class ManagerServant(RTM__POA.Manager):
           except:
             self._rtcout.RTC_ERROR("Unknown exception cought.")
             self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+            master.remove_slave_manager(slave)
         try:
           prof = master.get_configuration()
           prop = OpenRTM_aist.Properties()
