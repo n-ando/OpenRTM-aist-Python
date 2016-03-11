@@ -2669,7 +2669,8 @@ class Manager:
       
       comp0_name = comp_ports[0].split(".")[0]
       port0_name = comp_ports[0]
-      if len(comp0_name.split("//")) < 2:
+      
+      if comp0_name.find("://") == -1:
         comp0 = self.getComponent(comp0_name)
         if comp0 is None:
           self._rtcout.RTC_ERROR("%s not found." % comp0_name)
@@ -2698,7 +2699,7 @@ class Manager:
       
 
 
-      if len(comp1_name.split("//")) < 2:
+      if comp1_name.find("://") == -1:
         comp1 = self.getComponent(comp1_name)
         if comp1 is None:
           self._rtcout.RTC_ERROR("%s not found." % comp1_name)
@@ -2755,7 +2756,7 @@ class Manager:
       OpenRTM_aist.eraseTailBlank(tmp)
       c = tmp[0]
       if c:
-        if len(c.split("//")) < 2:
+        if c.find("://") == -1:
           comp = self.getComponent(c)
           if comp is None:
             self._rtcout.RTC_ERROR("%s not found." % c)

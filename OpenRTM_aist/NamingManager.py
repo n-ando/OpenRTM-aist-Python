@@ -313,9 +313,9 @@ class NamingOnCorba(NamingBase):
   # virtual RTCList string_to_component(string name) = 0;
   def string_to_component(self, name):
     rtc_list = []
-    tmp = name.split("//")
+    tmp = name.split("://")
     if len(tmp) > 1:
-      if tmp[0] == "rtcname:":
+      if tmp[0] == "rtcname":
         tag = tmp[0]
         url = tmp[1]
         r = url.split("/")
@@ -491,10 +491,10 @@ class NamingOnManager(NamingBase):
   # virtual RTCList string_to_component();
   def string_to_component(self, name):
     rtc_list = []
-    tmp = name.split("//")
+    tmp = name.split("://")
     
     if len(tmp) > 1:
-      if tmp[0] == "rtcloc:":
+      if tmp[0] == "rtcloc":
         tag = tmp[0]
         url = tmp[1]
         r = url.split("/")
