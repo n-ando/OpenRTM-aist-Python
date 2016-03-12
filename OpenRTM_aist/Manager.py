@@ -903,6 +903,10 @@ class Manager:
       if self._config.findNode(inherit_prop[i]):
         prop.setProperty(inherit_prop[i],self._config.getProperty(inherit_prop[i]))
 
+    prop_ = prop.getNode("port")
+    prop_.mergeProperties(self._config.getNode("port"))
+    
+
     comp = factory.create(self)
 
     if comp is None:
