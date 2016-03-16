@@ -60,7 +60,7 @@ def RunOutPort(q):
     
     
         
-    manager.shutdownManager()
+    manager.shutdown()
 
 
 class TestSSLTransport(unittest.TestCase):
