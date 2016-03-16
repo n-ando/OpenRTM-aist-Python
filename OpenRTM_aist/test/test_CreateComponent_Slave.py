@@ -168,19 +168,29 @@ class Test_CreateComponent_Slave(unittest.TestCase):
     
     time.sleep(0.1)
 
+
+
+
+
   def test_createComponent_slave(self):
     self.queue = multiprocessing.Queue()
     self.outport_process = multiprocessing.Process(target=runTestComp2, args=(self.queue,))
     self.outport_process.start()
     self.queue.put("")
     time.sleep(1)
+    test_module_name = ["comp&test=0"]
+    test_value = self.manager.getManagerServant().get_parameter_by_modulename("test",test_module_name)
+    self.assertEqual(test_value,"0")
+    self.assertEqual(test_module_name[0],"comp")
     #rtc = self.manager.getManagerServant().create_component("TestComp1&manager_name=manager2")
     #rtc = self.manager.getManagerServant().create_component("TestComp2&manager_address=localhost:2810")
     rtc = self.manager.getManagerServant().create_component("TestComp2&manager_name=manager2")
     slave = self.manager.getManagerServant().findManager_by_name("manager2")
+    self.assertTrue(slave is not None)
     rtcs = slave.get_components_by_name("TestComp20")
     name = rtcs[0].get_component_profile().instance_name
     self.assertEqual(name,"TestComp20")
+    
     self.queue.put("")
     #rtc = self.manager.getManagerServant().create_component("TestComp2")
     #print rtc

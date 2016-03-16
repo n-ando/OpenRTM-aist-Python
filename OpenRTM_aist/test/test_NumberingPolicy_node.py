@@ -121,6 +121,13 @@ class Test_NumberingPolicy_node(unittest.TestCase):
       #print prop
       comp = self.manager.getComponent("TestComp11")
       self.assertTrue(comp is not None)
+
+      self.__dnp = OpenRTM_aist.NodeNumberingPolicy()
+      num = self.__dnp.onCreate(comp)
+      self.assertEqual(num,"2")
+
+
+      
       
     
 

@@ -66,6 +66,10 @@ class TestDirectServicePort(unittest.TestCase):
     
                                       
   def test_Service(self):
+    
+    
+
+    
     prop = OpenRTM_aist.Properties()
     ret = OpenRTM_aist.connect("con1",prop,self._servicePort_provided.getPortRef(),self._servicePort_required.getPortRef())
     obj = self._testService_required._ptr()

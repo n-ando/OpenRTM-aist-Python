@@ -22,7 +22,11 @@ import time
 #from Manager import *
 import OpenRTM_aist
 import RTC, OpenRTM
-
+from omniORB import cdrMarshal
+from omniORB import cdrUnmarshal
+import CORBA
+import platform
+import os
 
 
   
@@ -57,9 +61,42 @@ class TestSharedMemory(unittest.TestCase):
   def tearDown(self):
     self.manager.shutdownManager()
 
+  def test_SharedMemory(self):
+      sh_read = OpenRTM_aist.SharedMemory()
+      sh_read_var = sh_read._this()
+      sh_write = OpenRTM_aist.SharedMemory()
+      sh_write_var = sh_write._this()
+      
+      sh_write.setInterface(sh_read_var)
+      
+      memsize = sh_write.string_to_MemorySize("1")
+      self.assertEqual(memsize, 1)
+      memsize = sh_write.string_to_MemorySize("1k")
+      self.assertEqual(memsize, 1024)
+      memsize = sh_write.string_to_MemorySize("1M")
+      self.assertEqual(memsize, 1024*1024)
+
+      sh_write.create_memory(1000,"test")
+      data_cdr = cdrMarshal(CORBA.TC_ulong, 100)
+      sh_write.write(data_cdr)
+      data_cdr = sh_read.read()
+      data = cdrUnmarshal(CORBA.TC_ulong, data_cdr)
+      self.assertEqual(data, 100)
+      if platform.system() == "Windows":
+          pass
+      else:
+          self.assertTrue(os.path.exists("/dev/shm/test"))
+      sh_write.close_memory(True)
+      if platform.system() == "Windows":
+          pass
+      else:
+          self.assertFalse(os.path.exists("/dev/shm/test"))
+          
+
   def test_Push(self):
     
     prop = OpenRTM_aist.Properties()
+    #prop.setProperty("dataport.shem_default_size","10k")
     prop.setProperty("dataport.interface_type","shared_memory")
     prop.setProperty("dataport.dataflow_type","push")
     ret = OpenRTM_aist.connect("con1",prop,self.inport_obj,self.outport_obj)
@@ -87,6 +124,7 @@ class TestSharedMemory(unittest.TestCase):
 
   def test_Pull(self):
     prop = OpenRTM_aist.Properties()
+    #prop.setProperty("dataport.shem_default_size","10k")
     prop.setProperty("dataport.interface_type","shared_memory")
     prop.setProperty("dataport.dataflow_type","pull")
     ret = OpenRTM_aist.connect("con1",prop,self.inport_obj,self.outport_obj)

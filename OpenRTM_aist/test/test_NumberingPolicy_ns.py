@@ -118,7 +118,11 @@ class Test_NumberingPolicy_ns(unittest.TestCase):
 
   def test_getComponent(self):
       comp = self.manager.getComponent("TestComp11")
-      self.assertTrue(comp is not None)    
+      self.assertTrue(comp is not None)
+      
+      self.__dnp = OpenRTM_aist.NamingServiceNumberingPolicy()
+      num = self.__dnp.onCreate(comp)
+      self.assertEqual(num,"2")
 
 ############### test #################
 if __name__ == '__main__':

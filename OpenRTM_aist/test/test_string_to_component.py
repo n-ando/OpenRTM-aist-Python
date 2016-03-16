@@ -135,23 +135,23 @@ class Test_string_to_component(unittest.TestCase):
   def test_getComponent(self):
       #mgr_sev = self.manager._mgrservant.getObjRef()
       #print mgr_sev.get_components_by_name("example/TestComp10")
-      rtcs = self.manager._namingManager.string_to_component("rtcloc://localhost:2810/example/TestComp20")
+      rtcs = self.manager.getNaming().string_to_component("rtcloc://localhost:2810/example/TestComp20")
       name = rtcs[0].get_component_profile().instance_name
       self.assertEqual(name,"TestComp20")
-      rtcs = self.manager._namingManager.string_to_component("rtcloc://*/example/TestComp20")
+      rtcs = self.manager.getNaming().string_to_component("rtcloc://*/example/TestComp20")
       name = rtcs[0].get_component_profile().instance_name
       self.assertEqual(name,"TestComp20")
-      rtcs = self.manager._namingManager.string_to_component("rtcloc://*/*/TestComp20")
+      rtcs = self.manager.getNaming().string_to_component("rtcloc://*/*/TestComp20")
       name = rtcs[0].get_component_profile().instance_name
       self.assertEqual(name,"TestComp20")
       #print rtcs
-      rtcs = self.manager._namingManager.string_to_component("rtcname://localhost/test.host_cxt/TestComp20")
+      rtcs = self.manager.getNaming().string_to_component("rtcname://localhost/test.host_cxt/TestComp20")
       name = rtcs[0].get_component_profile().instance_name
       self.assertEqual(name,"TestComp20")
-      rtcs = self.manager._namingManager.string_to_component("rtcname://*/test.host_cxt/TestComp20")
+      rtcs = self.manager.getNaming().string_to_component("rtcname://*/test.host_cxt/TestComp20")
       name = rtcs[0].get_component_profile().instance_name
       self.assertEqual(name,"TestComp20")
-      rtcs = self.manager._namingManager.string_to_component("rtcname://*/*/TestComp20")
+      rtcs = self.manager.getNaming().string_to_component("rtcname://*/*/TestComp20")
       name = rtcs[0].get_component_profile().instance_name
       self.assertEqual(name,"TestComp20")
       

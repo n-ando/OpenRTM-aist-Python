@@ -1,229 +1,248 @@
 #!/usr/bin/env python
 # -*- coding: euc-jp -*-
 
-##
-# @file test_ComponentActionListener.py
-# @brief test for ComponentActionListener class
-# @date $Date$
-# @author Shinji Kurihara
 #
-# Copyright (C) 2011
-#     Intelligent Systems Research Institute,
-#     National Institute of
-#         Advanced Industrial Science and Technology (AIST), Japan
-#     All rights reserved.
+# \file test_ComponentActionListener.py
+# \brief 
+# \date $Date: $
+# \author Nobuhiko Miyamoto
+#
 
 
 import sys
 sys.path.insert(1,"../")
 
-import unittest
+try:
+    import unittest2 as unittest
+except (ImportError):
+    import unittest
 
-from ComponentActionListener import *
+import time
+
+#from Manager import *
 import OpenRTM_aist
+import RTC, RTC__POA
+import OpenRTM, OpenRTM__POA
 
-class MockPreComponentActionListener(PreComponentActionListener):
+testcomp1_spec = ["implementation_id", "TestComp1",
+                 "type_name",         "TestComp1",
+                 "description",       "Test example component",
+                 "version",           "1.0",
+                 "vendor",            "Nobuhiko Myiyamoto",
+                 "category",          "example",
+                 "activity_type",     "DataFlowComponent",
+                 "max_instance",      "10",
+                 "language",          "C++",
+                 "lang_type",         "compile",
+                 "conf.default.test1", "0",
+                 ""]
+
+testcomp2_spec = ["implementation_id", "TestComp2",
+                 "type_name",         "TestComp2",
+                 "description",       "Test example component",
+                 "version",           "1.0",
+                 "vendor",            "Nobuhiko Myiyamoto",
+                 "category",          "example",
+                 "activity_type",     "DataFlowComponent",
+                 "max_instance",      "10",
+                 "language",          "C++",
+                 "lang_type",         "compile",
+                 ""]
+
+class Test_i(OpenRTM__POA.InPortCdr):
   def __init__(self):
-    PreComponentActionListener.__init__(self)
+    pass
+  def put(self, data):
+    return OpenRTM.PORT_OK
+
+
+
+class TestPostListener(OpenRTM_aist.PostComponentActionListener):
+    def __init__(self, mes):
+        self.mes = mes
+    def __del__(self):
+        pass
+    def __call__(self, ec_id, ret):
+        print self.mes
+        
+
+class TestPreListener(OpenRTM_aist.PreComponentActionListener):
+    def __init__(self, mes):
+        self.mes = mes
+    def __del__(self):
+        pass
+    def __call__(self, ec_id):
+        print self.mes
+
+
+class TestComp1(OpenRTM_aist.DataFlowComponentBase):
+  def __init__(self, manager):
+    OpenRTM_aist.DataFlowComponentBase.__init__(self, manager)
+    self._d_out = RTC.TimedLong(RTC.Time(0,0),0)
+    self._outOut = OpenRTM_aist.OutPort("out", self._d_out)
+    self._d_in = RTC.TimedLong(RTC.Time(0,0),0)
+    self._inIn = OpenRTM_aist.InPort("in", self._d_in)
+
+    self._servicePort_provided = OpenRTM_aist.CorbaPort("service")
+    self._testService_provided = Test_i()
+
+    self._test1 = [0]
+
+  def onInitialize(self):
+    self.addOutPort("out",self._outOut)
+    self.addInPort("in",self._inIn)
+    
+    self._servicePort_provided.registerProvider("service", "TestService", self._testService_provided)
+    self.addPort(self._servicePort_provided)
+    
+    #self._servicePort_provided.activateInterfaces()
+
+    self.bindParameter("test1", self._test1, "0")
+
+
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_INITIALIZE, TestPreListener("RTC2:PRE_ON_INITIALIZE"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_FINALIZE, TestPreListener("RTC1:PRE_ON_FINALIZE"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_STARTUP, TestPreListener("RTC1:PRE_ON_STARTUP"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_SHUTDOWN, TestPreListener("RTC1:PRE_ON_SHUTDOWN"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_ACTIVATED, TestPreListener("RTC1:PRE_ON_ACTIVATED"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_DEACTIVATED, TestPreListener("RTC1:PRE_ON_DEACTIVATED"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_ABORTING, TestPreListener("RTC1:PRE_ON_ABORTING"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_ERROR, TestPreListener("RTC1:PRE_ON_ERROR"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_RESET, TestPreListener("RTC1:PRE_ON_RESET"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_EXECUTE, TestPreListener("RTC1:PRE_ON_EXECUTE"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_STATE_UPDATE, TestPreListener("RTC1:PRE_ON_STATE_UPDATE"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_RATE_CHANGED, TestPreListener("RTC1:PRE_ON_RATE_CHANGED"))
+    
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_INITIALIZE, TestPostListener("RTC1:POST_ON_INITIALIZE"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_FINALIZE, TestPostListener("RTC1:POST_ON_FINALIZE"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_STARTUP, TestPostListener("RTC1:POST_ON_STARTUP"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_SHUTDOWN, TestPostListener("RTC1:POST_ON_SHUTDOWN"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_ACTIVATED, TestPostListener("RTC1:POST_ON_ACTIVATED"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_DEACTIVATED, TestPostListener("RTC1:POST_ON_DEACTIVATED"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_ABORTING, TestPostListener("RTC1:POST_ON_ABORTING"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_ERROR, TestPostListener("RTC1:POST_ON_ERROR"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_RESET, TestPostListener("RTC1:POST_ON_RESET"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_EXECUTE, TestPostListener("RTC1:POST_ON_EXECUTE"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_STATE_UPDATE, TestPostListener("RTC1:POST_ON_STATE_UPDATE"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_RATE_CHANGED, TestPostListener("RTC1:POST_ON_RATE_CHANGED"))
+
+    
+        
+
+    return RTC.RTC_OK
+
+  
+  
+class TestComp2(OpenRTM_aist.DataFlowComponentBase):
+  def __init__(self, manager):
+    OpenRTM_aist.DataFlowComponentBase.__init__(self, manager)
+    self._d_out = RTC.TimedLong(RTC.Time(0,0),0)
+    self._outOut = OpenRTM_aist.OutPort("out", self._d_out)
+    self._d_in = RTC.TimedLong(RTC.Time(0,0),0)
+    self._inIn = OpenRTM_aist.InPort("in", self._d_in)
+    
+        
+    
+    
+    self._servicePort_required = OpenRTM_aist.CorbaPort("service")
+    self._testService_required = OpenRTM_aist.CorbaConsumer(interfaceType=OpenRTM.InPortCdr)
+
+
+    
     return
-
-  def __call__(self,id):
-    return id
-
-
-class MockPostComponentActionListener(PostComponentActionListener):
-  def __init__(self):
-    PostComponentActionListener.__init__(self)
-    return
-
-  def __call__(self,id,ret):
-    return id,ret
+  
+  def onInitialize(self):
+    self.addInPort("in",self._inIn)
+    self.addOutPort("out",self._outOut)
+    
+    
+    
+    self._servicePort_required.registerConsumer("service", "TestService", self._testService_required)
+    self.addPort(self._servicePort_required)
 
 
-class MockPortActionListener(PortActionListener):
-  def __init__(self):
-    PortActionListener.__init__(self)
-    return
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_INITIALIZE, TestPreListener("RTC2:PRE_ON_INITIALIZE"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_FINALIZE, TestPreListener("RTC2:PRE_ON_FINALIZE"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_STARTUP, TestPreListener("RTC2:PRE_ON_STARTUP"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_SHUTDOWN, TestPreListener("RTC2:PRE_ON_SHUTDOWN"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_ACTIVATED, TestPreListener("RTC2:PRE_ON_ACTIVATED"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_DEACTIVATED, TestPreListener("RTC2:PRE_ON_DEACTIVATED"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_ABORTING, TestPreListener("RTC2:PRE_ON_ABORTING"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_ERROR, TestPreListener("RTC2:PRE_ON_ERROR"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_RESET, TestPreListener("RTC2:PRE_ON_RESET"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_EXECUTE, TestPreListener("RTC2:PRE_ON_EXECUTE"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_STATE_UPDATE, TestPreListener("RTC2:PRE_ON_STATE_UPDATE"))
+    self.addPreComponentActionListener(OpenRTM_aist.PreComponentActionListenerType.PRE_ON_RATE_CHANGED, TestPreListener("RTC2:PRE_ON_RATE_CHANGED"))
+    
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_INITIALIZE, TestPostListener("RTC2:POST_ON_INITIALIZE"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_FINALIZE, TestPostListener("RTC2:POST_ON_FINALIZE"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_STARTUP, TestPostListener("RTC2:POST_ON_STARTUP"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_SHUTDOWN, TestPostListener("RTC2:POST_ON_SHUTDOWN"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_ACTIVATED, TestPostListener("RTC2:POST_ON_ACTIVATED"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_DEACTIVATED, TestPostListener("RTC2:POST_ON_DEACTIVATED"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_ABORTING, TestPostListener("RTC2:POST_ON_ABORTING"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_ERROR, TestPostListener("RTC2:POST_ON_ERROR"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_RESET, TestPostListener("RTC2:POST_ON_RESET"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_EXECUTE, TestPostListener("RTC2:POST_ON_EXECUTE"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_STATE_UPDATE, TestPostListener("RTC2:POST_ON_STATE_UPDATE"))
+    self.addPostComponentActionListener(OpenRTM_aist.PostComponentActionListenerType.POST_ON_RATE_CHANGED, TestPostListener("RTC2:POST_ON_RATE_CHANGED"))
 
-  def __call__(self, pprof):
-    return pprof
+    
+    return RTC.RTC_OK
+    
+
+ 
+
+    
+def TestComp1Init(manager):
+  profile = OpenRTM_aist.Properties(defaults_str=testcomp1_spec)
+  manager.registerFactory(profile,
+                          TestComp1,
+                          OpenRTM_aist.Delete)
 
 
-class MockExecutionContextActionListener(ExecutionContextActionListener):
-  def __init__(self):
-    ExecutionContextActionListener.__init__(self)
-    return
+    
+def TestComp2Init(manager):
+  profile = OpenRTM_aist.Properties(defaults_str=testcomp2_spec)
+  manager.registerFactory(profile,
+                          TestComp2,
+                          OpenRTM_aist.Delete)
+  
 
-  def __call__(self, ec_id):
-    return ec_id
+def MyModuleInit(manager):
+  TestComp1Init(manager)
+  TestComp2Init(manager)
+  com = manager.createComponent("TestComp1")
+  com = manager.createComponent("TestComp2")
+  
 
 
-class TestListener(unittest.TestCase):
+
+
+class test_ComponentActionListener(unittest.TestCase):
+  
   def setUp(self):
-    return
+    self.manager = OpenRTM_aist.Manager.init(sys.argv)
+    self.manager.setModuleInitProc(MyModuleInit)
+    self.manager.activateManager()
+    
+    self.comp1 = self.manager.getComponent("TestComp10").getObjRef()
+    self.comp2 = self.manager.getComponent("TestComp20").getObjRef()   
 
   def tearDown(self):
-    OpenRTM_aist.Manager.instance().shutdownManager()
-    return
+    comps = self.manager.getComponents()[:]
+    for comp in comps:
+        self.manager.unregisterComponent(comp)
+        comp_id = comp.getProperties()
+        factory = self.manager._factory.find(comp_id)
+        factory.destroy(comp)
+    self.manager.shutdownNaming()
+    time.sleep(0.1)
 
-  def test_PreComponentActionListener_toString(self):
-    self.assertEqual("PRE_ON_INITIALIZE",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_INITIALIZE))
-    
-    self.assertEqual("PRE_ON_FINALIZE",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_FINALIZE))
-
-    self.assertEqual("PRE_ON_STARTUP",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_STARTUP))
-
-    self.assertEqual("PRE_ON_SHUTDOWN",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_SHUTDOWN))
-
-    self.assertEqual("PRE_ON_ACTIVATED",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_ACTIVATED))
-
-    self.assertEqual("PRE_ON_DEACTIVATED",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_DEACTIVATED))
-
-    self.assertEqual("PRE_ON_ABORTING",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_ABORTING))
-
-    self.assertEqual("PRE_ON_ERROR",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_ERROR))
-
-    self.assertEqual("PRE_ON_RESET",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_RESET))
-
-    self.assertEqual("PRE_ON_EXECUTE",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_EXECUTE))
-
-    self.assertEqual("PRE_ON_STATE_UPDATE",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_STATE_UPDATE))
-
-    self.assertEqual("PRE_ON_RATE_CHANGED",
-                    PreComponentActionListener.toString(
-        PreComponentActionListenerType.PRE_ON_RATE_CHANGED))
-
-    return
-
-  def test_PostComponentActionListener_toString(self):
-    self.assertEqual("POST_ON_INITIALIZE",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_INITIALIZE))
-    
-    self.assertEqual("POST_ON_FINALIZE",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_FINALIZE))
-
-    self.assertEqual("POST_ON_STARTUP",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_STARTUP))
-
-    self.assertEqual("POST_ON_SHUTDOWN",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_SHUTDOWN))
-
-    self.assertEqual("POST_ON_ACTIVATED",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_ACTIVATED))
-
-    self.assertEqual("POST_ON_DEACTIVATED",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_DEACTIVATED))
-
-    self.assertEqual("POST_ON_ABORTING",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_ABORTING))
-
-    self.assertEqual("POST_ON_ERROR",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_ERROR))
-
-    self.assertEqual("POST_ON_RESET",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_RESET))
-
-    self.assertEqual("POST_ON_EXECUTE",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_EXECUTE))
-
-    self.assertEqual("POST_ON_STATE_UPDATE",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_STATE_UPDATE))
-
-    self.assertEqual("POST_ON_RATE_CHANGED",
-                    PostComponentActionListener.toString(
-        PostComponentActionListenerType.POST_ON_RATE_CHANGED))
-
-    return
-
-  def test_PortActionListener_toString(self):
-    self.assertEqual("ADD_PORT",
-                    PortActionListener.toString(
-        PortActionListenerType.ADD_PORT))
-
-    self.assertEqual("REMOVE_PORT",
-                    PortActionListener.toString(
-        PortActionListenerType.REMOVE_PORT))
-
-    return
-
-  def test_ExecutionContextActionListener_toString(self):
-    self.assertEqual("ATTACH_EC",
-                    ExecutionContextActionListener.toString(
-        ExecutionContextActionListenerType.EC_ATTACHED))
-
-    self.assertEqual("DETACH_EC",
-                    ExecutionContextActionListener.toString(
-        ExecutionContextActionListenerType.EC_DETACHED))
-
-    return
-
-
-  def test_PreComponentActionListenerHolder(self):
-    preactions = ComponentActionListeners()
-    listener = MockPreComponentActionListener()
-    preactions.preaction_[0].addListener(listener,True)
-    preactions.preaction_[0].notify("test precomp ec_id")
-    preactions.preaction_[0].removeListener(listener)
-    return
-
-  def test_PostComponentActionListenerHolder(self):
-    postactions = ComponentActionListeners()
-    listener = MockPostComponentActionListener()
-    postactions.postaction_[0].addListener(listener,True)
-    postactions.postaction_[0].notify("test postcomp ec_id",True)
-    postactions.postaction_[0].removeListener(listener)
-    return
-
-  def test_PortActionListenerHolder(self):
-    portactions = ComponentActionListeners()
-    listener = MockPortActionListener()
-    portactions.portaction_[0].addListener(listener,True)
-    portactions.portaction_[0].notify("test port pprof")
-    portactions.portaction_[0].removeListener(listener)
-    return
-
-  def test_ExecutionContextActionListenerHolder(self):
-    ecactions = ComponentActionListeners()
-    listener = MockExecutionContextActionListener()
-    ecactions.ecaction_[0].addListener(listener,True)
-    ecactions.ecaction_[0].notify("test ec ec_id")
-    ecactions.ecaction_[0].removeListener(listener)
-    return
-
+  def test_Component(self):
+    while(True):
+        time.sleep(10)
 
 ############### test #################
 if __name__ == '__main__':
-  unittest.main()
+        unittest.main()
