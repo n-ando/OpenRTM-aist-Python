@@ -137,7 +137,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     memory_size = SharedMemory.default_memory_size
     if size_str:
       if size_str[-1] == "M":
-        memory_size = 1024 * 1024 * int(size_str[0:-1])
+        memory_size = 1048576 * int(size_str[0:-1])
       elif size_str[-1] == "k":
         memory_size = 1024 * int(size_str[0:-1])
       else:
