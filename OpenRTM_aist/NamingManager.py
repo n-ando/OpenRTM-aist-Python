@@ -1094,9 +1094,10 @@ class NamingManager:
   # RTCList string_to_component(string name);
   def string_to_component(self, name):
     for n in self._names:
-      comps = n.ns.string_to_component(name)
-      if len(comps) > 0:
-        return comps
+      if n.ns:
+        comps = n.ns.string_to_component(name)
+        if len(comps) > 0:
+          return comps
     return []
 
   # Name Servers' method/name and object

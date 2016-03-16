@@ -178,11 +178,8 @@ class InPortSHMProvider(OpenRTM_aist.InPortProvider, OpenRTM_aist.SharedMemory):
       return OpenRTM.UNKNOWN_ERROR
     return OpenRTM.UNKNOWN_ERROR
     
-      
-      
-      
-    return self.convertReturn(ret, data)
-      
+
+
       
   def onBufferWrite(self, data):
     if self._listeners is not None and self._profile is not None:
@@ -225,7 +222,35 @@ class InPortSHMProvider(OpenRTM_aist.InPortProvider, OpenRTM_aist.SharedMemory):
     return
 
       
+  def convertReturn(self, status, data):
+    if status == OpenRTM_aist.BufferStatus.BUFFER_OK:
+      self.onBufferWrite(data)
+      return OpenRTM.PORT_OK
+            
+    elif status == OpenRTM_aist.BufferStatus.BUFFER_ERROR:
+      self.onReceiverError(data)
+      return OpenRTM.PORT_ERROR
 
+    elif status == OpenRTM_aist.BufferStatus.BUFFER_FULL:
+      self.onBufferFull(data)
+      self.onReceiverFull(data)
+      return OpenRTM.BUFFER_FULL
+
+    elif status == OpenRTM_aist.BufferStatus.BUFFER_EMPTY:
+      return OpenRTM.BUFFER_EMPTY
+
+    elif status == OpenRTM_aist.BufferStatus.PRECONDITION_NOT_MET:
+      self.onReceiverError(data)
+      return OpenRTM.PORT_ERROR
+
+    elif status == OpenRTM_aist.BufferStatus.TIMEOUT:
+      self.onBufferWriteTimeout(data)
+      self.onReceiverTimeout(data)
+      return OpenRTM.BUFFER_TIMEOUT
+
+    else:
+      self.onReceiverError(data)
+      return OpenRTM.UNKNOWN_ERROR
       
       
 
