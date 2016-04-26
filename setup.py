@@ -280,13 +280,16 @@ document_path         = os.path.normpath(current_dir + "/" + document_dir)
 # <prefix>/share/openrtm-1.1/examples/python/SimpleIO/ConsoleIn.py
 #
 #------------------------------------------------------------
-def create_filelist(start_path, subs_path, target_path, regex_match):
+def create_filelist(start_path, subs_path, target_path, regex_match, 
+not_included_modules=[]):
   filelist = []
   temp_hash = {}
   if start_path[-1] != "/": start_path += "/"
   if subs_path[-1] != "/": subs_path += "/"
   import re
   for root, dirs, files in os.walk(start_path):
+    if root.replace("\\","/") in not_included_modules:
+      continue
     for filename in files:
       if re.match(regex_match, filename):
         subdir = re.sub(subs_path, "", root)
@@ -965,7 +968,8 @@ else:
 pkg_example_files   = create_filelist(example_dir,
                                       example_dir,
                                       target_example_dir,
-                                      example_match_regex)
+                                      example_match_regex,
+                                      ["OpenRTM_aist/examples/NXTRTC"])
 
 
 #
