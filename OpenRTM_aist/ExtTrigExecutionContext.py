@@ -75,7 +75,7 @@ class ExtTrigExecutionContext(OpenRTM_aist.ExecutionContextBase,
     return
 
 
-  def __del__(self):
+  def __del__(self, Task=OpenRTM_aist.Task):
     self._rtcout.RTC_TRACE("ExtTrigExecutionContext.__del__()")
     guard = OpenRTM_aist.ScopedLock(self._svcmutex)
     self._svc = False
@@ -393,6 +393,16 @@ class ExtTrigExecutionContext(OpenRTM_aist.ExecutionContextBase,
 
     return RTC.RTC_OK
 
+  # virtual RTC::ReturnCode_t onStopping();
+  def onStopping(self):
+    guard = OpenRTM_aist.ScopedLock(self._svcmutex)
+    self._svc = False
+    del guard
+    
+    # stop thread
+    self.tick()
+    
+    return RTC.RTC_OK
 
   ##
   # @brief onWaitingActivated() template function
