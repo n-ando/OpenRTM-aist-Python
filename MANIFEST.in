@@ -10,3 +10,4 @@ recursive-include installer *.rtf *.in *.wxs *.vbs *.bmp *.txt *.sh *.wxl *.cmd 
 recursive-include OpenRTM_aist *.conf *.exe *.idl *.py *.pth *.sh
 recursive-include OpenRTM_aist *.bat *.exe *.sample README
 recursive-include OpenRTM_aist/docs *.css *.gif *.png *.html *.hhc *.hhk *.hhp
+prune OpenRTM_aist/examples/NXTRTC
