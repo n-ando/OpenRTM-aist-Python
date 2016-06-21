@@ -13,6 +13,7 @@
 %define builddir       %{_topdir}/BUILD/%{distname}
 %define pkgver         RELEASE0
 %define _unpackaged_files_terminate_build   0
+%global debug_package %{nil}
 
 #------------------------------------------------------------
 # Package information
