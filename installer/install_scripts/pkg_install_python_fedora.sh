@@ -6,12 +6,20 @@
 #         Shinji Kurihara
 #         Tetsuo Ando
 #         Nobu Kawauchi
+#         Saburo Takahashi
 #
 # このシェルスクリプトは、aceおよびomniORBのパッケージをインストールし、
 # fedoraの開発環境を構築します。
 #
 # $Id$
 #
+
+# Usage: sudo pkg_install_python_fedora.sh [-u -y -h]
+# option -u            : Uninstall tool_packages.
+# option -y            : When yes/no prompt for installing would be presente    d, assume that the user entered "yes".
+# option -h            : Display a brief help message.
+#
+
 
 #---------------------------------------
 # パッケージリスト
@@ -101,7 +109,7 @@ install_packages () {
 	else
 	    if echo "$p" | grep -q '=0.4.2' ; then
 		str=`echo "$p" |sed 's/=0.4.2//'`
-	    else 
+	    else
 		str="$p"
 	    fi
 
@@ -109,15 +117,15 @@ install_packages () {
 
 	    if test "x$ins" = "x"; then
 		echo "Now installing: " $p
-		$COMMAND install $p
+		$COMMAND install $p $force_yes
 		echo "done."
 		echo ""
-	    else  
+	    else
 		if echo "$ins" |grep -q '0.4.2-0' ; then
 			$COMMAND install $p
-			echo "done." 
+			echo "done."
 			echo ""
-	       else 
+	       else
  		    echo $ins
 		    echo $str "is already installed."
 		    echo ""
@@ -150,9 +158,31 @@ uninstall_packages () {
 }
 
 #---------------------------------------
+# USAGE
+#---------------------------------------
+howto_usage(){
+    cat << EOF
+Usage: sudo $0 [-u -y -h]
+       option -u            : Uninstall tool_packages.
+       option -y            : When yes/no prompt for installing would be presented, assume that the user entered "yes".
+       option -h            : Display a brief help message.
+EOF
+}
+
+#---------------------------------------
 # メイン
 #---------------------------------------
+if test "x$1" = "x-h" ; then
+    howto_usage
+    exit 1
+fi
+
 check_root
+
+if test "x$1" = "x-y" ; then
+    force_yes="-y"
+fi
+
 if test "x$1" = "x-u" ; then
     uninstall_packages `reverse $u_packages`
 else

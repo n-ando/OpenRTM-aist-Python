@@ -7,6 +7,13 @@
 #         Tetsuo Ando
 #         Harumi Miyamoto
 #         Nobu Kawauchi
+#         Saburo Takahashi
+#
+
+# Usage: sudo pkg_install_python_ubuntu.sh [-u -y -h]
+# option -u            : Uninstall tool_packages.
+# option -y            : When yes/no prompt for installing would be presented, assume that the user entered "yes".
+# option -h            : Display a brief help message.
 #
 
 this_file=${0##*/}
@@ -142,7 +149,7 @@ check_root () {
 install_packages () {
     for p in $*; do
 	echo $msg9 $p
-	apt-get install $p
+	apt-get install $p $force_yes
 	echo $msg10
 	echo ""
     done
@@ -170,12 +177,33 @@ uninstall_packages () {
 }
 
 #---------------------------------------
+# USAGE
+#---------------------------------------
+howto_usage(){
+    cat << EOF
+Usage: sudo $0 [-u -y -h]
+       option -u            : Uninstall tool_packages.
+       option -y            : When yes/no prompt for installing would be presented, assume that the user entered "yes".
+       option -h            : Display a brief help message.
+EOF
+}
+
+#---------------------------------------
 # メイン
 #---------------------------------------
+if test "x$1" = "x-h" ; then
+    howto_usage
+    exit 1
+fi
+
 check_lang
 check_root
 check_codename
 set_package_list
+
+if test "x$1" = "x-y" ; then
+    force_yes="-y --force-yes"
+fi
 
 if test "x$1" = "x-u" ; then
     uninstall_packages `reverse $u_packages`
