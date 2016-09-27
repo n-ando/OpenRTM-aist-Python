@@ -2662,7 +2662,7 @@ class Manager:
   # @if jp
   # @brief 起動時にrtc.confで指定したポートを接続する
   # 例:
-  # manager.components.preconnect: RTC0.port0^RTC0.port1(interface_type=corba_cdr&dataport.dataflow_type=pull&~),~
+  # manager.components.preconnect: RTC0.port0^RTC0.port1(interface_type=corba_cdr&dataflow_type=pull&~),~
   # @param self
   # @else
   #
@@ -2763,7 +2763,7 @@ class Manager:
   # @if jp
   # @brief 起動時にrtc.confで指定したRTCをアクティベーションする
   # 例:
-  # manager.components.preactivate RTC1,RTC2~
+  # manager.components.preactivation: RTC1,RTC2~
   # @param self
   # @else
   #
@@ -2773,8 +2773,8 @@ class Manager:
   # void initPreActivation()
   def initPreActivation(self):
     
-    self._rtcout.RTC_TRACE("Components pre-activation: %s" % str(self._config.getProperty("manager.components.preactivate")))
-    comps = str(self._config.getProperty("manager.components.preactivate")).split(",")
+    self._rtcout.RTC_TRACE("Components pre-activation: %s" % str(self._config.getProperty("manager.components.preactivation")))
+    comps = str(self._config.getProperty("manager.components.preactivation")).split(",")
     for c in comps:
       tmp = [c]
       OpenRTM_aist.eraseHeadBlank(tmp)
