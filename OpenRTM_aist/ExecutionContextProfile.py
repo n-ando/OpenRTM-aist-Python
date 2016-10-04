@@ -188,7 +188,7 @@ class ExecutionContextProfile:
   # RTC::ReturnCode_t setRate(double rate);
   def setRate(self, rate):
     self._rtcout.RTC_TRACE("setRate(%f)", rate)
-    if rate < 0.0:
+    if rate <= 0.0:
       return RTC.BAD_PARAMETER
 
     guard = OpenRTM_aist.ScopedLock(self._profileMutex)
