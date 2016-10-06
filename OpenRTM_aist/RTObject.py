@@ -4740,16 +4740,16 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         return RTC.RTC_OK
 
       type_and_name_ = [s.strip() for s in ec_tmp.split("(")]
-      if len(type_and_name) > 2:
+      if len(type_and_name_) > 2:
         self._rtcout.RTC_DEBUG("Invalid EC type specified: %s", ec_tmp)
         continue
 
-      p_ = default_opts;
+      p_ = default_opts_;
 
       # create EC's properties
       p_.setProperty("type",type_and_name_[0])
       self._rtcout.RTC_DEBUG("p_type: %s", p_.getProperty("type"))
-      p_type_ = self._properties.findNode("ec." + p.getProperty("type"))
+      p_type_ = self._properties.findNode("ec." + p_.getProperty("type"))
       if p_type_:
         self._rtcout.RTC_DEBUG("p_type props:")
         self._rtcout.RTC_DEBUG(p_type_)
@@ -4759,8 +4759,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._rtcout.RTC_DEBUG("p_type none")
 
       # EC name specified
-      self._rtcout.RTC_DEBUG("size: %d, name: %s",
-                             (len(type_and_name_), type_and_name_[1]))
+      #self._rtcout.RTC_DEBUG("size: %d, name: %s",
+      #                       (len(type_and_name_), type_and_name_[1]))
 
       if len(type_and_name_) == 2 and type_and_name_[1][len(type_and_name_[1]) - 1] == ')':
         del type_and_name_[1][len(type_and_name_[1]) - 1]
@@ -4812,7 +4812,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     global_props_ = OpenRTM_aist.Properties()
     ret_global_  = self.getGlobalContextOptions(global_props_)
     ret_private_ = self.getPrivateContextOptions(ec_args)
-
+    
     # private(X), global(X) -> error
     # private(O), global(O) -> private
     # private(X), global(O) -> global
