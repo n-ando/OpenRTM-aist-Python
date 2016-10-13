@@ -595,10 +595,18 @@ class ExecutionContextBase:
       self._rtcout.RTC_ERROR("Setting execution rate failed. %f", rate)
       return ret_
 
+    ret_ = self._worker.rateChanged()
+    if ret_ != RTC.RTC_OK:
+      self._rtcout.RTC_ERROR("Invoking on_rate_changed() for each RTC failed.")
+      return ret_
+
     ret_ = self.onSetRate(rate)
     if ret_ != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("onSetRate(%f) failed.", rate)
       return ret_
+
+
+    
 
     self._rtcout.RTC_INFO("setRate(%f) done", rate)
     return ret_

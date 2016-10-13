@@ -43,6 +43,7 @@ class RTObjectStateMachine:
     self._dfcVar  = None
     self._fsmVar  = None
     self._modeVar = None
+    self._rtObjPtr = None
 
     # Setting Action callback objects
     self.setComponentAction(comp)
@@ -111,6 +112,9 @@ class RTObjectStateMachine:
   # RTC::ComponentAction operations
   # void onStartup(void);
   def onStartup(self):
+    if self._rtObjPtr:
+      self._rtObjPtr.on_startup(self._id)
+      return
     if not self._ca:
       return
     self._caVar.on_startup(self._id)
@@ -118,6 +122,10 @@ class RTObjectStateMachine:
 
   # void onShutdown(void);
   def onShutdown(self):
+    if self._rtObjPtr:
+      self._rtObjPtr.on_shutdown(self._id)
+      return
+    
     if not self._ca:
       return
     self._caVar.on_shutdown(self._id)
@@ -125,6 +133,11 @@ class RTObjectStateMachine:
 
   # void onActivated(const ExecContextStates& st);
   def onActivated(self, st):
+    if self._rtObjPtr:
+      if self._rtObjPtr.on_activated(self._id) != RTC.RTC_OK:
+        self._sm.goTo(RTC.ERROR_STATE)
+      return
+    
     if not self._ca:
       return
     if self._caVar.on_activated(self._id) != RTC.RTC_OK:
@@ -133,6 +146,10 @@ class RTObjectStateMachine:
 
   # void onDeactivated(const ExecContextStates& st);
   def onDeactivated(self, st):
+    if self._rtObjPtr:
+      self._rtObjPtr.on_deactivated(self._id)
+      return
+    
     if not self._ca:
       return
     self._caVar.on_deactivated(self._id)
@@ -140,13 +157,21 @@ class RTObjectStateMachine:
 
   # void onAborting(const ExecContextStates& st);
   def onAborting(self, st):
+    if self._rtObjPtr:
+      self._rtObjPtr.on_aborting(self._id)
+      return
+    
     if not self._ca:
       return
-    self._caVar.on_error(self._id)
+    self._caVar.on_aborting(self._id)
     return
 
   # void onError(const ExecContextStates& st);
   def onError(self, st):
+    if self._rtObjPtr:
+      self._rtObjPtr.on_error(self._id)
+      return
+    
     if not self._ca:
       return
     self._caVar.on_error(self._id)
@@ -154,6 +179,11 @@ class RTObjectStateMachine:
 
   # void onReset(const ExecContextStates& st);
   def onReset(self, st):
+    if self._rtObjPtr:
+      if self._rtObjPtr.on_reset(self._id) != RTC.RTC_OK:
+        self._sm.goTo(RTC.ERROR_STATE)
+      return
+    
     if not self._ca:
       return
     if self._caVar.on_reset(self._id) != RTC.RTC_OK:
@@ -163,6 +193,11 @@ class RTObjectStateMachine:
   # RTC::DataflowComponentAction
   # void onExecute(const ExecContextStates& st);
   def onExecute(self, st):
+    if self._rtObjPtr:
+      if self._rtObjPtr.on_execute(self._id) != RTC.RTC_OK:
+        self._sm.goTo(RTC.ERROR_STATE)
+      return
+    
     if not self._dfc:
       return
     
@@ -172,6 +207,11 @@ class RTObjectStateMachine:
 
   # void onStateUpdate(const ExecContextStates& st);
   def onStateUpdate(self, st):
+    if self._rtObjPtr:
+      if self._rtObjPtr.on_state_update(self._id) != RTC.RTC_OK:
+        self._sm.goTo(RTC.ERROR_STATE)
+      return
+    
     if not self._dfc:
       return
     
@@ -179,14 +219,21 @@ class RTObjectStateMachine:
       self._sm.goTo(RTC.ERROR_STATE)
     return
 
-  # void onRateChanged(void);
+  # RTC::ReturnCode_t onRateChanged(void);
   def onRateChanged(self):
-    if not self._dfc:
-      return
+    if self._rtObjPtr:
+      ret = self._rtObjPtr.on_rate_changed(self._id)
+      if ret != RTC.RTC_OK:
+        self._sm.goTo(RTC.ERROR_STATE)
+      return ret
     
-    if self._dfcVar.on_rate_changed(self._id) != RTC.RTC_OK:
+    if not self._dfc:
+      return RTC.RTC_ERROR
+    
+    ret = self._dfcVar.on_rate_changed(self._id)
+    if ret != RTC.RTC_OK:
       self._sm.goTo(RTC.ERROR_STATE)
-    return
+    return ret
 
   # FsmParticipantAction
   # void onAction(const ExecContextStates& st);
@@ -246,8 +293,18 @@ class RTObjectStateMachine:
   # void setComponentAction(const RTC::LightweightRTObject_ptr comp);
   def setComponentAction(self, comp):
     self._caVar = comp._narrow(RTC.ComponentAction)
-    if not CORBA.is_nil(self._caVar):
-      self._ca = True
+    if CORBA.is_nil(self._caVar):
+      return
+    self._ca = True
+    
+    poa = OpenRTM_aist.Manager.instance().getPOA()
+    try:
+      self._rtObjPtr = poa.reference_to_servant(comp)
+    except CORBA.SystemException, ex:
+      self._rtObjPtr = None
+    except:
+      self._rtObjPtr = None
+      
     return
 
   # void setDataFlowComponentAction(const RTC::LightweightRTObject_ptr comp);

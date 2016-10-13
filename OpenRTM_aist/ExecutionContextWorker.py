@@ -231,7 +231,29 @@ class ExecutionContextWorker:
       
     del guard
     return RTC.RTC_OK
-
+  #
+  # @if jp
+  # @brief ExecutionContext の周期が変化した
+  # @return ReturnCode_t 型のリターンコード
+  #
+  # @else
+  #
+  # @brief Changing execution rate of the ExecutionContext
+  #
+  # @return The return code of ReturnCode_t type
+  #
+  # @endif
+  # RTC::ReturnCode_t rateChanged(void);
+  def rateChanged(self):
+    self._rtcout.RTC_TRACE("rateChanged()")
+    guard = OpenRTM_aist.ScopedLock(self._mutex)
+    ret = RTC.RTC_OK
+    for comp in self._comps:
+      tmp = comp.onRateChanged()
+      if tmp != RTC.RTC_OK:
+        ret = tmp
+    del guard
+    return ret
 
   ##
   # @if jp
@@ -743,3 +765,4 @@ class ExecutionContextWorker:
 
     self._removedComps = []
     return
+
