@@ -201,7 +201,7 @@ class ExecutionContextProfile:
   def setPeriod(self, sec=None, tv=None):
     if sec:
       self._rtcout.RTC_TRACE("setPeriod(%f [sec])", sec)
-      if sec < 0.0:
+      if sec <= 0.0:
         return RTC.BAD_PARAMETER
 
       guard = OpenRTM_aist.ScopedLock(self._profileMutex)
