@@ -4880,7 +4880,63 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       ec_[0].init(ec_arg_)
       self._eclist.append(ec_[0])
       ec_[0].bindComponent(self)
+    
+    if len(self._eclist) == 0:
+      default_prop = OpenRTM_aist.Properties()
+      default_prop.setDefaults(OpenRTM_aist.default_config)
 
+      ec_ = [None]
+      ec_type_ = default_prop.getProperty("exec_cxt.periodic.type")
+      if not ec_type_ in avail_ec_:
+          self._rtcout.RTC_WARN("EC %s is not available.", ec_type_)
+          self._rtcout.RTC_DEBUG("Available ECs: %s",
+                                 OpenRTM_aist.flatten(avail_ec_))
+          return RTC.RTC_ERROR
+        
+      ec_[0] = OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_type_)
+      if not ec_[0]:
+        self._rtcout.RTC_ERROR("EC (%s) creation failed.", ec_type_)
+        self._rtcout.RTC_DEBUG("Available EC list: %s",
+                               OpenRTM_aist.flatten(avail_ec_))
+        return RTC.RTC_ERROR
+      
+      default_opts = OpenRTM_aist.Properties()
+      prop_ = default_prop.findNode("exec_cxt.periodic")
+      if not prop_:
+        self._rtcout.RTC_WARN("No default EC options found.")
+        return RTC.RTC_ERROR
+
+      default_opts.mergeProperties(prop_)
+
+      inherited_opts_ = ["sync_transition",
+                       "sync_activation",
+                       "sync_deactivation",
+                       "sync_reset",
+                       "transition_timeout",
+                       "activation_timeout",
+                       "deactivation_timeout",
+                       "reset_timeout"]
+
+      p_ = self._properties.findNode("exec_cxt")
+      
+      if not p_:
+        self._rtcout.RTC_WARN("No exec_cxt option found.")
+        return RTC.RTC_ERROR
+
+      self._rtcout.RTC_DEBUG("Copying inherited EC options.")
+      for opt_ in inherited_opts_:
+        if p_.findNode(opt_):
+          self._rtcout.RTC_PARANOID("Option %s exists.", opt_)
+          default_opts.setProperty(opt_, p_.getProperty(opt_))
+
+      
+      ec_[0].init(default_opts)
+      self._eclist.append(ec_[0])
+      ec_[0].bindComponent(self)
+
+      
+      
+    
     return ret_
 
     
