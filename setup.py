@@ -184,6 +184,7 @@ openrtm_ext_packages = [
   "OpenRTM_aist.ext",
   "OpenRTM_aist.ext.sdo",
   "OpenRTM_aist.ext.sdo.observer",
+  "OpenRTM_aist.ext.ssl",
   ]
 openrtm_utils_packages = [
   "OpenRTM_aist.utils",
