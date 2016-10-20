@@ -99,6 +99,7 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
     
     oid = OpenRTM_aist.Manager.instance().getPOA().servant_to_id(self._shmem)
     OpenRTM_aist.Manager.instance().getPOA().deactivate_object(oid)
+    self._endian = True
     
     return
 
@@ -136,15 +137,14 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
       endian = prop.getProperty("serializer.cdr.endian")
       if not endian:
         self._rtcout.RTC_ERROR("init(): endian is not set.")
-        self._endian = None
+        
+
       endian = OpenRTM_aist.split(endian, ",")
       endian = OpenRTM_aist.normalize(endian)
       if endian == "little":
         self._endian = True
       elif endian == "big":
         self._endian = False
-      else:
-        self._endian = None
     else:
       self._endian = True
     
@@ -197,9 +197,7 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
         inportcdr = ref_._narrow(OpenRTM__POA.PortSharedMemory)
         
         guard = OpenRTM_aist.ScopedLock(self._mutex)
-        if not self._endian:
-          self._rtcout.RTC_ERROR("put(): endian is not set.")
-          return self.UNKNOWN_ERROR
+        
         self._shmem.setEndian(self._endian)
         self._shmem.create_memory(self._memory_size, self._shm_address)
         self._shmem.write(data)

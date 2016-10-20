@@ -123,12 +123,68 @@ class TestSharedMemory(unittest.TestCase):
     self.outport_obj.disconnect_all()
 
 
+  def test_Push_big_endian(self):
+    
+    prop = OpenRTM_aist.Properties()
+    #prop.setProperty("dataport.shem_default_size","10k")
+    prop.setProperty("dataport.interface_type","shared_memory")
+    prop.setProperty("dataport.dataflow_type","push")
+    prop.setProperty("dataport.serializer.cdr.endian","big")
+    ret = OpenRTM_aist.connect("con1",prop,self.inport_obj,self.outport_obj)
+    
+    self._d_out.data = "a"*100
+    self._outOut.write()
+
+    ret = self._inIn.isNew()
+    self.assertTrue(ret)
+
+    data = self._inIn.read()
+    self.assertEqual(data.data, self._d_out.data)
+
+    
+    self._d_out.data = "a"*50000
+    self._outOut.write()
+
+    data = self._inIn.read()
+    self.assertEqual(data.data, self._d_out.data)
+    
+
+    self.outport_obj.disconnect_all()
 
   def test_Pull(self):
     prop = OpenRTM_aist.Properties()
     #prop.setProperty("dataport.shem_default_size","10k")
     prop.setProperty("dataport.interface_type","shared_memory")
     prop.setProperty("dataport.dataflow_type","pull")
+    ret = OpenRTM_aist.connect("con1",prop,self.inport_obj,self.outport_obj)
+    
+    self._d_out.data = "a"*100
+    self._outOut.write()
+
+    #ret = self._inIn.isNew()
+    #self.assertTrue(ret)
+
+    data = self._inIn.read()
+    self.assertEqual(data.data, self._d_out.data)
+
+    
+    self._d_out.data = "a"*50000
+    self._outOut.write()
+    
+
+    data = self._inIn.read()
+    self.assertEqual(data.data, self._d_out.data)
+    
+
+    self.outport_obj.disconnect_all()
+
+
+  def test_Pull_big_endian(self):
+    prop = OpenRTM_aist.Properties()
+    #prop.setProperty("dataport.shem_default_size","10k")
+    prop.setProperty("dataport.interface_type","shared_memory")
+    prop.setProperty("dataport.dataflow_type","pull")
+    prop.setProperty("dataport.serializer.cdr.endian","big")
     ret = OpenRTM_aist.connect("con1",prop,self.inport_obj,self.outport_obj)
     
     self._d_out.data = "a"*100
