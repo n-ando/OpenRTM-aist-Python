@@ -108,6 +108,24 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
     ds = prop.getProperty("shem_default_size")
     self._memory_size = self.string_to_MemorySize(ds)
 
+
+    if prop.hasKey("serializer"):
+      endian = prop.getProperty("serializer.cdr.endian")
+      if not endian:
+        self._rtcout.RTC_ERROR("init(): endian is not set.")
+        self._endian = None
+      endian = OpenRTM_aist.split(endian, ",")
+      endian = OpenRTM_aist.normalize(endian)
+      if endian == "little":
+        self._endian = True
+      elif endian == "big":
+        self._endian = False
+      else:
+        self._endian = None
+    else:
+      self._endian = True
+    
+    return
     
   def setBuffer(self, buffer):
     self._buffer = buffer
@@ -164,6 +182,10 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
       self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
       return OpenRTM.UNKNOWN_ERROR
 
+    if not self._endian:
+      self._rtcout.RTC_ERROR("get(): endian is not set.")
+      return self.UNKNOWN_ERROR
+    self.setEndian(self._endian)
     self.create_memory(self._memory_size, self._shm_address)
     self.write(cdr[0])
     

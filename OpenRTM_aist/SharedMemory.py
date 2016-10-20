@@ -43,8 +43,8 @@ import OpenRTM
 #
 class SharedMemory(OpenRTM__POA.PortSharedMemory):
   default_size = 8
-  default_memory_size = 2*1024*1024
-
+  default_memory_size = 2097152
+  
 
   ##
   # @if jp
@@ -69,6 +69,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     self._smInterface = OpenRTM.PortSharedMemory._nil
     self._shm_address = ""
     self._memory_size = SharedMemory.default_memory_size
+    self._endian = None
     if platform.system() == "Windows":
       pass
     else:
@@ -157,19 +158,20 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   #
   # @param self
   # @param memory_size 共有メモリのサイズ
-  # @parama shm_address 空間名
+  # @param shm_address 空間名
   #
   # @else
   # @brief 
   #
   # @param memory_size 
-  # @parama shm_address
+  # @param shm_address
   #
   # @endif
   #
   # void create_memory(int memory_size, string shm_address);
   def create_memory(self, memory_size, shm_address):
     
+      
     if self._shmem is None:
       self._rtcout.RTC_TRACE("create():memory_size="+str(memory_size)+",shm_address="+str(shm_address))
       self._memory_size = memory_size
@@ -189,14 +191,14 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
 
         self.fd = self.rt.shm_open(self._shm_address,O_RDWR | O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH)
         if self.fd < 0:
-          return self.UNKNOWN_ERROR
+          return
         self.rt.ftruncate(self.fd, self._memory_size)
         self._shmem = mmap.mmap(self.fd, self._memory_size, mmap.MAP_SHARED)
         self.rt.close( self.fd )
 
       
       if not CORBA.is_nil(self._smInterface):
-        self._smInterface.open_memory(self._memory_size, self._shm_address)
+          self._smInterface.open_memory(self._memory_size, self._shm_address)
 
 
 
@@ -298,7 +300,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   def write(self, data):
     self._rtcout.RTC_TRACE("write()")
     
-    if self._shmem:
+    if self._shmem and self._endian:
       data_size = len(data)
 
       
@@ -314,7 +316,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
 
         
         
-      data_size_cdr = cdrMarshal(CORBA.TC_ulong, data_size)
+      data_size_cdr = cdrMarshal(CORBA.TC_ulonglong, data_size, self._endian)
       
       self._shmem.seek(os.SEEK_SET)
       self._shmem.write(data_size_cdr)
@@ -341,12 +343,12 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   # void read(::OpenRTM::CdrData_out data);
   def read(self):
     self._rtcout.RTC_TRACE("read()")
-    if self._shmem:
+    if self._shmem and self._endian:
       
       self._shmem.seek(os.SEEK_SET)
       
       data_size_cdr = self._shmem.read(SharedMemory.default_size)
-      data_size = cdrUnmarshal(CORBA.TC_ulong, data_size_cdr)
+      data_size = cdrUnmarshal(CORBA.TC_ulonglong, data_size_cdr, self._endian)
       
       
       
@@ -376,7 +378,30 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   # void close(int memory_size, string shm_address);
   def setInterface(self, sm):
     self._smInterface = sm
-    
+
+
+  ##
+  # @if jp
+  # @brief エンディアンを設定する
+  # 
+  #
+  #
+  # @param self
+  # @param endian エンディアン
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @param endian endian
+  #
+  # @endif
+  #
+  # PortStatus setEndian();
+  def setEndian(self, endian):
+    self._endian = endian
+    if not CORBA.is_nil(self._smInterface):
+      self._smInterface.setEndian(self._endian)
 
   ##
   # @if jp

@@ -38,6 +38,7 @@ class TestSharedMemory(unittest.TestCase):
   
   def setUp(self):
     sys.argv.extend(['-o', 'port.outport.out.shem_default_size:1k'])
+    #sys.argv.extend(['-o', 'port.dataport.serializer.cdr.endian:1k'])
     #sys.argv.extend(['-o', 'port.inport.in.shem_default_size:1k'])
     self.manager = OpenRTM_aist.Manager.init(sys.argv)
     self.manager.activateManager()
@@ -77,10 +78,11 @@ class TestSharedMemory(unittest.TestCase):
       self.assertEqual(memsize, 1024*1024)
 
       sh_write.create_memory(1000,"test")
-      data_cdr = cdrMarshal(CORBA.TC_ulong, 100)
+      sh_write.setEndian(True)
+      data_cdr = cdrMarshal(CORBA.TC_ulong, 100, True)
       sh_write.write(data_cdr)
       data_cdr = sh_read.read()
-      data = cdrUnmarshal(CORBA.TC_ulong, data_cdr)
+      data = cdrUnmarshal(CORBA.TC_ulong, data_cdr, True)
       self.assertEqual(data, 100)
       if platform.system() == "Windows":
           pass
