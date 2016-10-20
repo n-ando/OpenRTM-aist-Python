@@ -69,7 +69,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     self._smInterface = OpenRTM.PortSharedMemory._nil
     self._shm_address = ""
     self._memory_size = SharedMemory.default_memory_size
-    self._endian = None
+    self._endian = True
     if platform.system() == "Windows":
       pass
     else:
@@ -300,7 +300,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   def write(self, data):
     self._rtcout.RTC_TRACE("write()")
     
-    if self._shmem and self._endian:
+    if self._shmem:
       data_size = len(data)
 
       
@@ -343,7 +343,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   # void read(::OpenRTM::CdrData_out data);
   def read(self):
     self._rtcout.RTC_TRACE("read()")
-    if self._shmem and self._endian:
+    if self._shmem:
       
       self._shmem.seek(os.SEEK_SET)
       
