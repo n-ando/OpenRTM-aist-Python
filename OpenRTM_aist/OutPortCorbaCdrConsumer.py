@@ -312,7 +312,7 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
         self._rtcout.RTC_DEBUG("dataport.corba_cdr.outport_ior found.")
         orb = OpenRTM_aist.Manager.instance().getORB()
         obj = orb.string_to_object(ior)
-        if self._ptr()._is_equivalent(obj):
+        if self._ptr(True)._is_equivalent(obj):
           self.releaseObject()
           self._rtcout.RTC_DEBUG("CorbaConsumer's reference was released.")
           return

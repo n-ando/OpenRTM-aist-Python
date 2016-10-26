@@ -247,6 +247,8 @@ class CorbaConsumer(CorbaConsumerBase):
   def __del__(self):
     self.releaseObject()
 
+    
+
 
   ##
   # @if jp
@@ -316,8 +318,10 @@ class CorbaConsumer(CorbaConsumerBase):
   # @return The object reference narrowed as ObjectType
   #
   # @endif
-  def _ptr(self):
+  def _ptr(self, get_ref=False):
     #print dir(self._var)
+    if get_ref:
+      return self._var
     if self._sev is not None:
       return self._sev
     try:
