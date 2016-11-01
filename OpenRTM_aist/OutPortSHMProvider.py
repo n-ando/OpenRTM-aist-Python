@@ -94,13 +94,22 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
   # @endif
   #
   def __del__(self):
-    oid = self._default_POA().servant_to_id(self)
-    self._default_POA().deactivate_object(oid)
-    
-      
     return
 
-
+  ##
+  # @if jp
+  # @brief ½ªÎ»½èÍý
+  #
+  # @else
+  # @brief 
+  #
+  # 
+  #
+  # @endif
+  #
+  def exit(self):
+    oid = self._default_POA().servant_to_id(self)
+    self._default_POA().deactivate_object(oid)
   
   # virtual void init(coil::Properties& prop);
   def init(self, prop):

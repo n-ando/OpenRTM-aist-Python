@@ -930,7 +930,9 @@ class ManagerServant(RTM__POA.Manager):
     name = tmp[0]
     rtc_name = name.split("/")
     for rtc in rtcs:
-      if len(rtc_name) == 1:
+      if len(rtc_name) == 0:
+        pass
+      elif len(rtc_name) == 1:
         if rtc.getInstanceName() == rtc_name[0]:
           crtcs.append(rtc.getObjRef())
       else:
@@ -944,7 +946,7 @@ class ManagerServant(RTM__POA.Manager):
     
       
         
-        
+    
     return crtcs
 
   ##

@@ -231,6 +231,7 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
     # delete provider
     if self._provider:
       OpenRTM_aist.OutPortProviderFactory.instance().deleteObject(self._provider)
+      self._provider.exit()
     self._provider = 0
 
     # delete buffer

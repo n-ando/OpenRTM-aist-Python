@@ -796,6 +796,7 @@ class NamingManager:
 
     guard = OpenRTM_aist.ScopedLock(self._compNamesMutex)
     len_ = len(self._compNames)
+    
     for i in range(len_):
       idx = (len_ - 1) - i
       self.unbindObject(self._compNames[idx].name)

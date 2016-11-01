@@ -258,7 +258,9 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
     if self._provider:
       cfactory = OpenRTM_aist.InPortProviderFactory.instance()
       cfactory.deleteObject(self._provider)
-
+      
+      self._provider.exit()
+      
     self._provider = 0
 
     # delete buffer

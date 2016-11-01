@@ -56,7 +56,7 @@ class OutPortConnector(OpenRTM_aist.ConnectorBase):
   def __init__(self, info):
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("OutPortConnector")
     self._profile = info
-    self._endian = None
+    self._endian = True
     return
 
   ##
@@ -126,7 +126,7 @@ class OutPortConnector(OpenRTM_aist.ConnectorBase):
     return self.profile().name
 
 
-  # void setConnectorInfo(ConnectorInfo info);
+  # ReturnCode_t setConnectorInfo(ConnectorInfo info);
   def setConnectorInfo(self, info):
     self._profile = info
 
@@ -144,7 +144,7 @@ class OutPortConnector(OpenRTM_aist.ConnectorBase):
       elif endian == "big":
         self._endian = False
       else:
-        self._endian = None
+        return RTC.RTC_ERROR
             
     else:
       self._endian = True # little endian

@@ -58,7 +58,20 @@ class InPortProvider(OpenRTM_aist.DataPortStatus):
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("InPortProvider")
     self._connector = None
 
-
+  ##
+  # @if jp
+  # @brief 終了処理
+  #
+  # @else
+  # @brief 
+  #
+  # 
+  #
+  # @endif
+  #
+  def exit(self):
+    pass
+  
   ##
   # @if jp
   # @brief InterfaceProfile情報を公開する

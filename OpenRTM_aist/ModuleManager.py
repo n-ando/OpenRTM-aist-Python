@@ -290,14 +290,18 @@ class ModuleManager:
     if pathChanged:
       sys.path = save_path
 
+    file_path = file_path.replace("\\","/")
+    file_path = file_path.replace("//","/")
+
     dll = self.DLLEntity(mo,OpenRTM_aist.Properties())
     dll.properties.setProperty("file_path",file_path)
     self._modules.registerObject(dll)
-
+    
 
     if init_func is None:
       return file_name
 
+    
     self.symbol(file_path,init_func)(self._mgr)
 
     return file_name

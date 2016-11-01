@@ -91,7 +91,20 @@ class InPortDirectProvider(OpenRTM_aist.InPortProvider):
   def __del__(self):
     
     return
-
+  ##
+  # @if jp
+  # @brief ½ªÎ»½èÍý
+  #
+  # @else
+  # @brief 
+  #
+  # 
+  #
+  # @endif
+  #
+  def exit(self):
+    pass
+  
   ## void init(coil::Properties& prop);
   def init(self, prop):
     pass

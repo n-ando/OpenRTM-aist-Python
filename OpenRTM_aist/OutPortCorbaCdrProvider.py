@@ -103,10 +103,22 @@ class OutPortCorbaCdrProvider(OpenRTM_aist.OutPortProvider,
   # @endif
   #
   def __del__(self):
-    oid = self._default_POA().servant_to_id(self)
-    self._default_POA().deactivate_object(oid)
     return
 
+  ##
+  # @if jp
+  # @brief ½ªÎ»½èÍý
+  #
+  # @else
+  # @brief 
+  #
+  # 
+  #
+  # @endif
+  #
+  def exit(self):
+    oid = self._default_POA().servant_to_id(self)
+    self._default_POA().deactivate_object(oid)
 
   ##
   # @if jp

@@ -82,6 +82,19 @@ class OutPortProvider(OpenRTM_aist.DataPortStatus):
     self._subscriptionType = ""
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("OutPortProvider")
 
+  ##
+  # @if jp
+  # @brief ½ªÎ»½èÍý
+  #
+  # @else
+  # @brief 
+  #
+  # 
+  #
+  # @endif
+  #
+  def exit(self):
+    pass
 
   ##
   # @if jp

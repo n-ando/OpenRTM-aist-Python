@@ -83,7 +83,19 @@ class OutPortDirectProvider(OpenRTM_aist.OutPortProvider):
 
     return
 
-
+  ##
+  # @if jp
+  # @brief ½ªÎ»½èÍý
+  #
+  # @else
+  # @brief 
+  #
+  # 
+  #
+  # @endif
+  #
+  def exit(self):
+    pass
   
   # void init(coil::Properties& prop);
   def init(self, prop):

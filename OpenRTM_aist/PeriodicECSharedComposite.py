@@ -636,19 +636,20 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
   #
   def __init__(self, manager):
     OpenRTM_aist.RTObject_impl.__init__(self,manager)
+    
     self._ref = self._this()
     self._objref = self._ref
     self._org = OpenRTM_aist.PeriodicECOrganization(self)
     OpenRTM_aist.CORBA_SeqUtil.push_back(self._sdoOwnedOrganizations,
                                          self._org.getObjRef())
-
+  
     self._members = [[]]
     self.bindParameter("members", self._members, " ", stringToStrVec)
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("rtobject.periodic_ec_shared")
     self._configsets.addConfigurationSetListener(\
       OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET,
       setCallback(self._org))
-
+    
     self._configsets.addConfigurationSetListener(\
       OpenRTM_aist.ConfigurationSetListenerType.ON_ADD_CONFIG_SET,
       addCallback(self._org))
@@ -671,7 +672,11 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
   #
   def __del__(self):
     self._rtcout.RTC_TRACE("destructor of PeriodicECSharedComposite")
-    pass
+    OpenRTM_aist.RTObject_impl.__del__(self)
+    poa = OpenRTM_aist.Manager.instance().getPOA()
+    poa.deactivate_object(poa.servant_to_id(self._org))
+    del self._org
+    
 
     
   ##
@@ -691,7 +696,7 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
   #
   def onInitialize(self):
     self._rtcout.RTC_TRACE("onInitialize()")
-
+    return RTC.RTC_OK
     active_set = self._properties.getProperty("configuration.active_config",
                                               "default")
     if self._configsets.haveConfig(active_set):

@@ -621,22 +621,23 @@ class ExecutionContextBase:
   # RTC::ReturnCode_t ExecutionContextBase::
   # addComponent(RTC::LightweightRTObject_ptr comp)
   def addComponent(self, comp):
+    
     self._rtcout.RTC_TRACE("addComponent()")
     ret_ = self.onAddingComponent(comp) # Template
     if ret_ != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("Error: onAddingComponent(). RTC is not attached.")
       return ret_
-
+    
     ret_ = self._worker.addComponent(comp) # Actual addComponent()
     if ret_ != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("Error: ECWorker addComponent() faild.")
       return ret_
-
+    
     ret_ = self._profile.addComponent(comp) # Actual addComponent()
     if ret_ != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("Error: ECProfile addComponent() faild.")
       return ret_
-
+    
     ret_ = self.onAddedComponent(comp) # Template
     if ret_ != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("Error: onAddedComponent() faild.")

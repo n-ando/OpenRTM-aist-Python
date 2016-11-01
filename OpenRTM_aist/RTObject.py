@@ -566,18 +566,19 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # @endif
   def finalize(self):
     self._rtcout.RTC_TRACE("finalize()")
+    
     if self._created or not self._exiting:
       return RTC.PRECONDITION_NOT_MET
 
     # Return RTC::PRECONDITION_NOT_MET,
     # When the component is registered in ExecutionContext.
     if len(self._ecOther) != 0:
-      for ec in self._ecOther:
-        if not CORBA.is_nil(ec):
-          return RTC.PRECONDITION_NOT_MET
+      #for ec in self._ecOther:
+        #if not CORBA.is_nil(ec):
+          #return RTC.PRECONDITION_NOT_MET
       
       self._ecOther = []
-
+  
     ret = self.on_finalize()
     self.shutdown()
     return ret
