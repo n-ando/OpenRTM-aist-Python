@@ -26,6 +26,7 @@ from types import IntType, ListType
 import OpenRTM_aist
 import RTC
 import SDOPackage
+import CosNaming
 
 
 #------------------------------------------------------------
@@ -437,16 +438,9 @@ class Manager:
     if self._initProc:
       self._initProc(self)
 
-    comps = [s.strip() for s in self._config.getProperty("manager.components.precreate").split(",")]
-    for i in range(len(comps)):
-      if comps[i] is None or comps[i] == "":
-        continue
-      tmp = [comps[i]]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      comps[i] = tmp[0]
-
-      self.createComponent(comps[i])
+    self.initPreCreation()
+    self.initPreActivation()
+    self.initPreConnection()
 
     return True
 
@@ -656,7 +650,13 @@ class Manager:
   def registerFactory(self, profile, new_func, delete_func):
     self._rtcout.RTC_TRACE("Manager.registerFactory(%s)", profile.getProperty("type_name"))
     try:
-      factory = OpenRTM_aist.FactoryPython(profile, new_func, delete_func)
+      policy_name = self._config.getProperty("manager.components.naming_policy")
+      
+      if not policy_name:
+        policy_name = "process_unique"
+      policy = OpenRTM_aist.NumberingPolicyFactory.instance().createObject(policy_name)
+      
+      factory = OpenRTM_aist.FactoryPython(profile, new_func, delete_func, policy)
       self._factory.registerObject(factory)
       return True
     except:
@@ -714,13 +714,6 @@ class Manager:
   # @endif
   def registerECFactory(self, name, new_func, delete_func):
     self._rtcout.RTC_TRACE("Manager.registerECFactory(%s)", name)
-    """try:
-      self._ecfactory.registerObject(OpenRTM_aist.ECFactoryPython(name, new_func, delete_func))
-      return True
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      return False
-    """
     try:
       OpenRTM_aist.ExecutionContextFactory.instance().addFactory(name,
                     new_func,
@@ -729,7 +722,7 @@ class Manager:
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return False
-    
+
     return False
 
 
@@ -912,6 +905,10 @@ class Manager:
       if self._config.findNode(inherit_prop[i]):
         prop.setProperty(inherit_prop[i],self._config.getProperty(inherit_prop[i]))
 
+    prop_ = prop.getNode("port")
+    prop_.mergeProperties(self._config.getNode("port"))
+    
+
     comp = factory.create(self)
 
     if comp is None:
@@ -956,13 +953,6 @@ class Manager:
                            comp_id.getProperty("implementation_id"))
     self._listeners.rtclifecycle_.postInitialize()
     self.registerComponent(comp)
-
-    poa = self._orb.resolve_initial_references("omniINSPOA")
-    poa._get_the_POAManager().activate()
-    id = comp.getCategory()+"/"+comp.getInstanceName()
-    
-    poa.activate_object_with_id(id, comp)
-    
     return comp
 
 
@@ -994,6 +984,20 @@ class Manager:
       self._namingManager.bindObject(name, comp)
     self._listeners.naming_.postBind(comp, names)
 
+    self.publishPorts(comp)
+    self.subscribePorts(comp)
+
+    try:
+      poa = self._orb.resolve_initial_references("omniINSPOA")
+      poa._get_the_POAManager().activate()
+      id = comp.getCategory() + "/" + comp.getInstanceName()
+      poa.activate_object_with_id(id, comp)
+      
+    except:
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+      
+    
+
     return True
 
   
@@ -1022,6 +1026,16 @@ class Manager:
       self._namingManager.unbindObject(name)
     self._listeners.naming_.postUnbind(comp, names)
 
+    try:
+      poa = self._orb.resolve_initial_references("omniINSPOA")
+      poa._get_the_POAManager().activate()
+      id = comp.getCategory() + "/" + comp.getInstanceName()
+      poa.deactivate_object(id)
+    except:
+      self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+
+
+
     return True
 
 
@@ -1049,17 +1063,13 @@ class Manager:
     if not self.procContextArgs(ec_args, ec_id, ec_prop):
       return None
 
-    #factory = self._ecfactory.find(ec_id[0])
-
     avail_ec_ = OpenRTM_aist.ExecutionContextFactory.instance().getIdentifiers()
-    
 
-    #if factory == None:
     if not ec_id[0] in avail_ec_:
       self._rtcout.RTC_ERROR("Factory not found: %s", ec_id[0])
       return None
 
-    #ec = factory.create()
+    
     ec = OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_id[0])
     ec.init(ec_prop)
     return ec
@@ -1351,6 +1361,21 @@ class Manager:
                                       OpenRTM_aist.Manager.cleanupComponents,
                                       tm)
 
+
+    lmpm_ = [s.strip() for s in self._config.getProperty("manager.preload.modules").split(",")]
+    for mpm_ in lmpm_:
+      tmp = [mpm_]
+      OpenRTM_aist.eraseHeadBlank(tmp)
+      OpenRTM_aist.eraseTailBlank(tmp)
+      mpm_ = tmp[0]
+      if len(mpm_) == 0:
+        continue
+      basename_ = mpm_.split(".")[0]+"Init"
+      try:
+        self._module.load(mpm_, basename_)
+      except:
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+
     return
 
 
@@ -1514,6 +1539,7 @@ class Manager:
       args = OpenRTM_aist.split(self.createORBOptions(), " ")
       args.insert(0,"manager")
       argv = OpenRTM_aist.toArgv(args)
+      
       self._orb = CORBA.ORB_init(argv)
 
       self._poa = self._orb.resolve_initial_references("RootPOA")
@@ -1782,6 +1808,7 @@ class Manager:
   def shutdownNaming(self):
     self._rtcout.RTC_TRACE("Manager.shutdownNaming()")
     comps = self.getComponents()
+    
     for comp in comps:
       names = comp.getNamingNames()
       self._listeners.naming_.preUnbind(comp, names)
@@ -1958,7 +1985,6 @@ class Manager:
   #
   # @endif
   def shutdownComponents(self):
-    
     self._rtcout.RTC_TRACE("Manager.shutdownComponents()")
     comps = self._namingManager.getObjects()
     for comp in comps:
@@ -1976,7 +2002,6 @@ class Manager:
       except:
         self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
         pass
-    
 
 
   ##
@@ -2018,7 +2043,6 @@ class Manager:
     guard = OpenRTM_aist.ScopedLock(self._finalized.mutex)
     self._rtcout.RTC_VERBOSE("%d components are marked as finalized.",
                              len(self._finalized.comps))
-    
     for _comp in self._finalized.comps:
       self.deleteComponent(comp=_comp)
 
@@ -2415,8 +2439,434 @@ class Manager:
       
     return
 
+
+
+
+  ##
+  # @if jp
+  #
+  # @brief 指定したRTコンポーネントの保持するポートをNamingServiceにバインドする
+  # ポートのpublish_topicというプロパティでトピック名を設定し、トピック名のコンテキストの下に登録
+  #
+  # 
+  # @param self
+  # @param comp RTコンポーネント
+  #
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param comp 
+  #
+  # @endif
+  # void publishPorts(RTObject_impl* comp)
+  def publishPorts(self, comp):
+    ports = comp.get_ports()
+    for p in ports:
+      prof = p.get_port_profile()
+      prop = OpenRTM_aist.Properties()
+      OpenRTM_aist.NVUtil.copyToProperties(prop, prof.properties)
+      
+      if (prop.hasKey("publish_topic") is None or not str(prop.getProperty("publish_topic"))) and (prop.hasKey("subscribe_topic") is None or not str(prop.getProperty("subscribe_topic"))) and (prop.hasKey("rendezvous_point") is None or not str(prop.getProperty("rendezvous_point"))):
+        continue
+
+
+      if prop.getProperty("port.port_type") == "DataOutPort":
+        name  = "dataports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt/"
+        name += prof.name
+        name += ".outport"
+      elif prop.getProperty("port.port_type") == "DataInPort":
+        name  = "dataports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt/"
+        name += prof.name
+        name += ".inport"
+      elif prop.getProperty("port.port_type") == "CorbaPort":
+        name  = "svcports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt/"
+        name += prof.name
+        name += ".svc"
+
+      else:
+        
+        self._rtcout.RTC_WARN("Unknown port type: %s" % str(prop.getProperty("port.port_type")))
+        continue
+
+      
+      port = self._poa.reference_to_servant(p)
+      
+      self._namingManager.bindPortObject(name, port)
+
+  ##
+  # @if jp
+  #
+  # @brief 指定したRTコンポーネントの保持するポートを同じトピック名以下の接続可能なポートと接続
+  #
+  # 
+  # @param self
+  # @param comp RTコンポーネント
+  #
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param comp 
+  #
+  # @endif
+  # void subscribePorts(RTObject_impl* comp)
+  def subscribePorts(self, comp):
+    ports = comp.get_ports()
+    
+    for p in ports:
+      
+      prof = p.get_port_profile()
+      prop = OpenRTM_aist.Properties()
+      OpenRTM_aist.NVUtil.copyToProperties(prop, prof.properties)
+      
+      if (prop.hasKey("publish_topic") is None or not str(prop.getProperty("publish_topic"))) and (prop.hasKey("subscribe_topic") is None or not str(prop.getProperty("subscribe_topic"))) and (prop.hasKey("rendezvous_point") is None or not str(prop.getProperty("rendezvous_point"))):
+        continue
+      
+            
+      
+      
+      if prop.getProperty("port.port_type") == "DataOutPort":
+        name  = "dataports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt"
+        
+        nsports = self.getPortsOnNameServers(name, "inport")
+        
+        self.connectDataPorts(p, nsports)
+      
+      elif prop.getProperty("port.port_type") == "DataInPort":
+        name  = "dataports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt"
+        nsports = self.getPortsOnNameServers(name, "outport")
+        self.connectDataPorts(p, nsports)
+      
+      elif prop.getProperty("port.port_type") == "CorbaPort":
+        name  = "svcports.port_cxt/"
+        name += str(prop.getProperty("publish_topic")) + ".topic_cxt"
+        nsports = self.getPortsOnNameServers(name, "svc")
+        self.connectServicePorts(p, nsports)
+
+  ##
+  # @if jp
+  #
+  # @brief 与えられたパス以下の指定されたkindのポートを取得する
+  # 
+  # @param self
+  # @param nsname パス
+  # @param kind kind
+  # @return ポートのオブジェクトリファレンスのリスト
+  #
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param nsname 
+  # @param kind
+  # @return 
+  #
+  # @endif
+  # PortServiceList_var getPortsOnNameServers(std::string nsname,std::string kind)
+  def getPortsOnNameServers(self, nsname, kind):
+    ports = []
+    ns = self._namingManager.getNameServices()
+    for n in ns:
+      noc = n.ns
+      if noc is None:
+        continue
+      cns = noc._cosnaming
+      if cns is None:
+        continue
+      
+      bl = cns.listByKind(nsname,kind)
+      
+      for b in bl:
+        if b.binding_type != CosNaming.nobject:
+          continue
+        tmp = b.binding_name[0].id + "." + b.binding_name[0].kind
+                
+        nspath = "/" + nsname + "/" + tmp
+        nspath.replace("\\","")
+        
+        obj = cns.resolveStr(nspath)
+        portsvc = obj
+        
+        if CORBA.is_nil(portsvc):
+          continue
+        
+        try:
+          p = portsvc.get_port_profile()
+          
+        except:
+          continue
+        ports.append(portsvc)
+
+    return ports
+
+  ##
+  # @if jp
+  # @brief 指定したデータポートを指定したリスト内のデータポート全てと接続する
+  # @param self
+  # @param port 対象のデータポート
+  # @param target_ports 接続対象のデータポートのリスト
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param port
+  # @param target_ports
+  # @endif
+  # void connectDataPorts(PortService_ptr port,PortServiceList_var& target_ports)
+  def connectDataPorts(self, port, target_ports):
+    for p in target_ports:
+      if port._is_equivalent(p):
+        continue
+      con_name = ""
+      p0 = port.get_port_profile()
+      p1 = p.get_port_profile()
+      con_name += p0.name
+      con_name += ":"
+      con_name += p1.name
+      prop = OpenRTM_aist.Properties()
+      if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(con_name,prop,port,p):
+        self._rtcout.RTC_ERROR("Connection error in topic connection.")
+
+
+  ##
+  # @if jp
+  # @brief 指定したサービスポートを指定したリスト内のサービスポート全てと接続する
+  # @param self
+  # @param port 対象のサービスポート
+  # @param target_ports 接続対象のサービスポートのリスト
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param port
+  # @param target_ports
+  # @endif
+  # void connectServicePorts(PortService_ptr port,PortServiceList_var& target_ports)
+  def connectServicePorts(self, port, target_ports):
+    for p in target_ports:
+      if port._is_equivalent(p):
+        continue
+      con_name = ""
+      p0 = port.get_port_profile()
+      p1 = p.get_port_profile()
+      con_name += p0.name
+      con_name += ":"
+      con_name += p1.name
+      prop = OpenRTM_aist.Properties()
+      if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(con_name,prop,port,p):
+        self._rtcout.RTC_ERROR("Connection error in topic connection.")
+
+
+  ##
+  # @if jp
+  # @brief 起動時にrtc.confで指定したポートを接続する
+  # 例:
+  # manager.components.preconnect: RTC0.port0^RTC0.port1(interface_type=corba_cdr&dataflow_type=pull&~),~
+  # @param self
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @endif
+  # void initPreConnection()
+  def initPreConnection(self):
+    self._rtcout.RTC_TRACE("Connection pre-creation: %s" % str(self._config.getProperty("manager.components.preconnect")))
+    connectors = str(self._config.getProperty("manager.components.preconnect")).split(",")
+    
+    for c in connectors:
+      tmp = [c]
+      OpenRTM_aist.eraseHeadBlank(tmp)
+      OpenRTM_aist.eraseTailBlank(tmp)
+      c = tmp[0]
+      if len(c) == 0:
+        continue
+      conn_prop = c.split("(")
+      if len(conn_prop) < 2:
+        self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
+        continue
+      conn_prop[1] = conn_prop[1].replace(")","")
+      comp_ports = conn_prop[0].split("^")
+      if len(comp_ports) != 2:
+        self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
+        self._rtcout.RTC_ERROR("Format must be Comp0.port0:Comp1.port1")
+        continue
+      
+      comp0_name = comp_ports[0].split(".")[0]
+      port0_name = comp_ports[0]
+      
+      if comp0_name.find("://") == -1:
+        comp0 = self.getComponent(comp0_name)
+        if comp0 is None:
+          self._rtcout.RTC_ERROR("%s not found." % comp0_name)
+          continue
+        comp0_ref = comp0.getObjRef()
+      else:
+        rtcs = self._namingManager.string_to_component(comp0_name)
+        
+        if len(rtcs) == 0:
+          self._rtcout.RTC_ERROR("%s not found." % comp0_name)
+          continue
+        comp0_ref = rtcs[0]
+        port0_name = comp_ports[0].split("/")[-1]
+      
+        
+      
+      port0_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp0_ref, port0_name)
+      
+      if CORBA.is_nil(port0_var):
+        self._rtcout.RTC_DEBUG("port %s found: " % comp_ports[0])
+        continue
+
+      comp1_name = comp_ports[1].split(".")[0]
+      port1_name = comp_ports[1]
+      
+      
+
+
+      if comp1_name.find("://") == -1:
+        comp1 = self.getComponent(comp1_name)
+        if comp1 is None:
+          self._rtcout.RTC_ERROR("%s not found." % comp1_name)
+          continue
+        comp1_ref = comp1.getObjRef()
+      else:
+        rtcs = self._namingManager.string_to_component(comp1_name)
+        
+        if len(rtcs) == 0:
+          self._rtcout.RTC_ERROR("%s not found." % comp1_name)
+          continue
+        comp1_ref = rtcs[0]
+        port1_name = comp_ports[1].split("/")[-1]
+
+
+      port1_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp1_ref, port1_name)
+      
+      if CORBA.is_nil(port1_var):
+        self._rtcout.RTC_DEBUG("port %s found: " % comp_ports[1])
+        continue
+      
+      prop = OpenRTM_aist.Properties()
+      opt_props = conn_prop[1].split("&")
+      for o in opt_props:
+        temp = o.split("=")
+        if len(temp) == 2:
+          prop.setProperty("dataport."+temp[0],temp[1])
+      
+      if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(c, prop, port0_var, port1_var):
+        self._rtcout.RTC_ERROR("Connection error: %s" % c)
+      
+
+
+
+  ##
+  # @if jp
+  # @brief 起動時にrtc.confで指定したRTCをアクティベーションする
+  # 例:
+  # manager.components.preactivation: RTC1,RTC2~
+  # @param self
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @endif
+  # void initPreActivation()
+  def initPreActivation(self):
+    
+    self._rtcout.RTC_TRACE("Components pre-activation: %s" % str(self._config.getProperty("manager.components.preactivation")))
+    comps = str(self._config.getProperty("manager.components.preactivation")).split(",")
+    for c in comps:
+      tmp = [c]
+      OpenRTM_aist.eraseHeadBlank(tmp)
+      OpenRTM_aist.eraseTailBlank(tmp)
+      c = tmp[0]
+      if c:
+        if c.find("://") == -1:
+          comp = self.getComponent(c)
+          if comp is None:
+            self._rtcout.RTC_ERROR("%s not found." % c)
+            continue
+          comp_ref = comp.getObjRef()
+        else:
+          rtcs = self._namingManager.string_to_component(c)
+          if len(rtcs) == 0:
+            self._rtcout.RTC_ERROR("%s not found." % c)
+            continue
+          comp_ref = rtcs[0]
+        ret = OpenRTM_aist.CORBA_RTCUtil.activate(comp_ref)
+        if ret != RTC.RTC_OK:
+          self._rtcout.RTC_ERROR("%s activation filed." % c)
+        else:
+          self._rtcout.RTC_INFO("%s activated." % c)
+
+
+  ##
+  # @if jp
+  # @brief 起動時にrtc.confで指定したRTCを生成する
+  # 例:
+  # manager.components.precreate RTC1,RTC2~
+  # @param self
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @endif
+  # void initPreCreation()
+  def initPreCreation(self):
+    comps = [s.strip() for s in self._config.getProperty("manager.components.precreate").split(",")]
+    for i in range(len(comps)):
+      if comps[i] is None or comps[i] == "":
+        continue
+      tmp = [comps[i]]
+      OpenRTM_aist.eraseHeadBlank(tmp)
+      OpenRTM_aist.eraseTailBlank(tmp)
+      comps[i] = tmp[0]
+
+      self.createComponent(comps[i])
+    
+  ##
+  # @if jp
+  # @brief ManagerServantを取得する
+  # 
+  # 
+  # @param self
+  # @return ManagerServant
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @return
+  # @endif
+  # ManagerServant* getManagerServant()
+  def getManagerServant(self):
+    self._rtcout.RTC_TRACE("Manager.getManagerServant()")
+    return self._mgrservant
+
+
+  ##
+  # @if jp
+  # @brief NamingManagerを取得する
+  # 
+  # 
+  # @param self
+  # @return NamingManager
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @return
+  # @endif
+  # NamingManager* getNaming()
   def getNaming(self):
+    self._rtcout.RTC_TRACE("Manager.getNaming()")
     return self._namingManager
+
+
 
   #============================================================
   # コンポーネントマネージャ
