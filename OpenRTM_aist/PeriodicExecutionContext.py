@@ -606,7 +606,18 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self.wait()
     return RTC.RTC_OK
 
+  def onAddedComponent(self, rtobj):
+    guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
+    if self._workerthread._running == False:
+      self._worker.updateComponentList()
+    return RTC.RTC_OK
 
+  def onRemovedComponent(self, rtobj):
+    guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
+    if self._workerthread._running == False:
+      self._worker.updateComponentList()
+    return RTC.RTC_OK
+      
   # virtual RTC::ReturnCode_t
   # onWaitingActivated(RTC_impl::RTObjectStateMachine* comp, long int count);
   def onWaitingActivated(self, comp, count):
