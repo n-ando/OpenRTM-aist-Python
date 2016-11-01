@@ -4,11 +4,11 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = OpenRTM-aist-1.1.0-Python
+PROJECT_NAME           = "OpenRTM-aist-Python __VERSION__"
 PROJECT_NUMBER         = 
-OUTPUT_DIRECTORY       = ./ClassReference-jp
+OUTPUT_DIRECTORY       = ./ClassReference-en
 CREATE_SUBDIRS         = NO
-OUTPUT_LANGUAGE        = Japanese
+OUTPUT_LANGUAGE        = English
 BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
 ABBREVIATE_BRIEF       = "The $name class " \
@@ -67,7 +67,7 @@ GENERATE_TODOLIST      = YES
 GENERATE_TESTLIST      = YES
 GENERATE_BUGLIST       = YES
 GENERATE_DEPRECATEDLIST= YES
-ENABLED_SECTIONS       = jp
+ENABLED_SECTIONS       = 
 MAX_INITIALIZER_LINES  = 30
 SHOW_USED_FILES        = YES
 SHOW_DIRECTORIES       = NO
@@ -86,7 +86,7 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  = ../
-INPUT_ENCODING         = euc-jp
+INPUT_ENCODING         = 
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
