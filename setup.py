@@ -641,12 +641,25 @@ class build_doc(build):
       else:
         self.doxygen = "doxygen"
 
+  def build_doc_common(self, infile, outfile):
+		f_input = open(infile, 'r')
+		src = f_input.read()
+		f_input.close()
+		dst = src.replace("__VERSION__", pkg_version)
+		f_output = open(outfile, 'w')
+		f_output.write(dst)
+		f_output.close()
+  
   def run(self):
+    conf_in_file = os.path.normpath(document_path + "/Doxyfile_en.in")
     conf_file = os.path.normpath(document_path + "/Doxyfile_en")
+    self.build_doc_common(conf_in_file, conf_file)
     target_dir = os.path.normpath(document_path + "/ClassReference-en")
     create_doc(conf_file, target_dir)
 
+    conf_in_file = os.path.normpath(document_path + "/Doxyfile_jp.in")
     conf_file = os.path.normpath(document_path + "/Doxyfile_jp")
+    self.build_doc_common(conf_in_file, conf_file)
     target_dir = os.path.normpath(document_path + "/ClassReference-jp")
     create_doc(conf_file, target_dir)
 
@@ -706,7 +719,8 @@ class clean_all(Command):
   # sub_command member attribute
   sub_commands = [
     ('clean_core', None),
-    ('clean_example', None)
+    ('clean_example', None),
+    ('clean_doc', None)
     ]
 
 
@@ -772,6 +786,7 @@ class clean_doc(Command):
     return
   def run(self):
     remove_dirs(document_path, ["ClassReference-en", "ClassReference-jp"])
+    remove_files(document_path, ["Doxyfile_en", "Doxyfile_jp"])
 
 #============================================================
 # sdist command classes
