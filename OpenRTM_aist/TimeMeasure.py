@@ -244,6 +244,7 @@ class TimeMeasure:
   #
   def count(self):
     if self._recurred:
+      
       return len(self._record)
     else:
       return self._count
@@ -263,7 +264,9 @@ class TimeMeasure:
       min_i  = [0.0]
       mean_i = [0.0]
       stdd   = [0.0]
-      return self.getStatistics(max_i, min_i, mean_i, stdd)
+      
+      self.getStatistics(max_i, min_i, mean_i, stdd)
+      return self.Statistics(max_i[0], min_i[0], mean_i[0], stdd[0])
 
     max_interval[0] = 0.0
     min_interval[0] = ULLONG_MAX

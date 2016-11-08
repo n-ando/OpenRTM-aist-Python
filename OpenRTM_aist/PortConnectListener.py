@@ -143,10 +143,10 @@ class PortConnectListener:
                   "ON_UPDATE_CONFIG_PARAM",
                   ""]
                       
-    if type < ConfigurationParamListenerType.CONFIG_PARAM_LISTENER_NUM:
+    if type < PortConnectListenerType.PORT_CONNECT_LISTENER_NUM:
       return typeString[type]
         
-    return "";
+    return ""
 
   toString = staticmethod(toString)
 
@@ -281,7 +281,18 @@ class PortConnectRetListener:
   # @endif
   #static const char* toString(PortConnectRetListenerType type);
   def toString(type):
-    return
+    typeString = ["ON_PUBLISH_INTERFACES",
+                  "ON_CONNECT_NEXTPORT",
+                  "ON_SUBSCRIBE_INTERFACES",
+                  "ON_CONNECTED",
+                  "ON_DISCONNECT_NEXT",
+                  "ON_DISCONNECTED",
+                  ""]
+                      
+    if type < PortConnectRetListenerType.PORT_CONNECT_RET_LISTENER_NUM:
+      return typeString[type]
+        
+    return ""
   toString = staticmethod(toString)
 
 
@@ -595,27 +606,24 @@ class PortConnectListeners:
   """
 
   def __init__(self):
-    pass
-
-
-  ##
-  # @if jp
-  # @brief PortConnectListenerType リスナ配列
-  # PortConnectListenerType リスナを格納
-  # @else
-  # @brief PortConnectListenerType listener array
-  # The PortConnectListenerType listener is stored. 
-  # @endif
-  portconnect_num = PortConnectListenerType.PORT_CONNECT_LISTENER_NUM
-  portconnect_ = [PortConnectListenerHolder() for i in range(portconnect_num)]
+    ##
+    # @if jp
+    # @brief PortConnectListenerType リスナ配列
+    # PortConnectListenerType リスナを格納
+    # @else
+    # @brief PortConnectListenerType listener array
+    # The PortConnectListenerType listener is stored. 
+    # @endif
+    self.portconnect_num = PortConnectListenerType.PORT_CONNECT_LISTENER_NUM
+    self.portconnect_ = [PortConnectListenerHolder() for i in range(self.portconnect_num)]
     
-  ##
-  # @if jp
-  # @brief PortConnectRetTypeリスナ配列
-  # PortConnectRetTypeリスナを格納
-  # @else
-  # @brief PortConnectRetType listener array
-  # The PortConnectRetType listener is stored.
-  # @endif
-  portconnret_num = PortConnectRetListenerType.PORT_CONNECT_RET_LISTENER_NUM
-  portconnret_ = [PortConnectRetListenerHolder() for i in range(portconnret_num)]
+    ##
+    # @if jp
+    # @brief PortConnectRetTypeリスナ配列
+    # PortConnectRetTypeリスナを格納
+    # @else
+    # @brief PortConnectRetType listener array
+    # The PortConnectRetType listener is stored.
+    # @endif
+    self.portconnret_num = PortConnectRetListenerType.PORT_CONNECT_RET_LISTENER_NUM
+    self.portconnret_ = [PortConnectRetListenerHolder() for i in range(self.portconnret_num)]

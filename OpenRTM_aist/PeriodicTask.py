@@ -405,6 +405,7 @@ class PeriodicTask(OpenRTM_aist.Task):
   def updateExecStat(self):
     if self._execCount > self._execCountMax:
       guard = OpenRTM_aist.ScopedLock(self._execStat.mutex)
+
       self._execStat.stat = self._execTime.getStatistics()
       self._execCount = 0
 

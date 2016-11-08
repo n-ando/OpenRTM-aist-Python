@@ -673,11 +673,12 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
   def __del__(self):
     self._rtcout.RTC_TRACE("destructor of PeriodicECSharedComposite")
     OpenRTM_aist.RTObject_impl.__del__(self)
+    
+  def shutdown(self):
+    OpenRTM_aist.RTObject_impl.shutdown(self)
     poa = OpenRTM_aist.Manager.instance().getPOA()
     poa.deactivate_object(poa.servant_to_id(self._org))
     del self._org
-    
-
     
   ##
   # @if jp
