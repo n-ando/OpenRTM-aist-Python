@@ -622,6 +622,8 @@ class ModuleManager:
       else:
         f = str(path)+ os.sep + str(file_name)
       if self.fileExist(f):
+        f = f.replace("\\","/")
+        f = f.replace("//","/")
         return f
     return ""
 
