@@ -64,7 +64,6 @@ def is_existing(rtc):
     return True
   except CORBA.SystemException, ex:
     return False
-  return False
 
 
 ##
@@ -129,7 +128,7 @@ def get_actual_ec(rtc, ec_id=0):
     if CORBA.is_nil(eclist[pec_id]):
       return RTC.ExecutionContext._nil
     return eclist[pec_id]
-  return RTC.ExecutionContext._nil
+
     
 
 
@@ -152,6 +151,8 @@ def get_actual_ec(rtc, ec_id=0):
 # @endif
 def get_ec_id(rtc, ec):
   if CORBA.is_nil(rtc):
+    return -1
+  if CORBA.is_nil(ec):
     return -1
   
   eclist_own = rtc.get_owned_contexts()
@@ -463,7 +464,7 @@ def set_current_rate(rtc, ec_id, rate):
 # 
 # @param localcomp 対象のRTコンポーネント
 # @param othercomp 実行コンテキストに関連付けるRTコンポーネント
-# @return ecの取得に失敗した場合はRTC_ERRORを返す
+# @return ecの取得に失敗した場合はBAD_PARAMETERを返す
 # そうでない場合はaddComponent関数の戻り値を返す。RTC_OKで接続成功。
 #
 # @else
@@ -473,9 +474,11 @@ def set_current_rate(rtc, ec_id, rate):
 #
 # @endif
 def add_rtc_to_default_ec(localcomp, othercomp):
+  if CORBA.is_nil(othercomp):
+    return RTC.BAD_PARAMETER
   ec = get_actual_ec(localcomp)
   if CORBA.is_nil(ec):
-    return RTC.RTC_ERROR
+    return RTC.BAD_PARAMETER
   return ec.add_component(othercomp)
 
 
@@ -487,7 +490,7 @@ def add_rtc_to_default_ec(localcomp, othercomp):
 # 
 # @param localcomp 対象のRTコンポーネント
 # @param othercomp 実行コンテキストとの関連付けを解除するRTコンポーネント
-# @return ecの取得に失敗した場合はRTC_ERRORを返す
+# @return ecの取得に失敗した場合はBAD_PARAMETERを返す
 # そうでない場合はremoveComponent関数の戻り値を返す。RTC_OKで接続成功。
 #
 # @else
@@ -497,9 +500,11 @@ def add_rtc_to_default_ec(localcomp, othercomp):
 #
 # @endif
 def remove_rtc_to_default_ec(localcomp, othercomp):
+  if CORBA.is_nil(othercomp):
+    return RTC.BAD_PARAMETER
   ec = get_actual_ec(localcomp)
   if CORBA.is_nil(ec):
-    return RTC.RTC_ERROR
+    return RTC.BAD_PARAMETER
   return ec.remove_component(othercomp)
 
 
@@ -904,11 +909,11 @@ def already_connected(localport, otherport):
 # RTC::ReturnCode_t connect(const std::string name,const coil::Properties prop,const RTC::PortService_ptr port0,const RTC::PortService_ptr port1)
 def connect(name, prop, port0, port1):
   if CORBA.is_nil(port0):
-    RTC.BAD_PARAMETER
+    return RTC.BAD_PARAMETER
   if CORBA.is_nil(port1):
-    RTC.BAD_PARAMETER
+    return RTC.BAD_PARAMETER
   if port0._is_equivalent(port1):
-    RTC.BAD_PARAMETER
+    return RTC.BAD_PARAMETER
   cprof = create_connector(name, prop, port0, port1)
   return port0.connect(cprof)[0]
 
@@ -925,7 +930,7 @@ def connect(name, prop, port0, port1):
 # @param port0 対象のポート
 # @param port1 対象のポートのリスト
 # @return 全ての接続が成功した場合はRTC_OKを返す。
-# connect関数がRTC_OK以外を返した場合はRTC_ERRORを返す。
+# connect関数がRTC_OK以外を返した場合はBAD_PARAMETERを返す。
 #
 #
 # @else
@@ -941,14 +946,17 @@ def connect(name, prop, port0, port1):
 # RTC::ReturnCode_t connect_multi(const std::string name,const coil::Properties prop,const RTC::PortService_ptr port,RTC::PortServiceList_var& target_ports)
 def connect_multi(name, prop, port, target_ports):
   ret = RTC.RTC_OK
-  
+  if CORBA.is_nil(port):
+    return RTC.BAD_PARAMETER
   for p in target_ports:
+    if CORBA.is_nil(p):
+      continue
     if p._is_equivalent(port):
       continue
     if already_connected(port, p):
       continue
     if RTC.RTC_OK != connect(name, prop, port, p):
-      ret = RTC.RTC_ERROR
+      ret = RTC.BAD_PARAMETER
 
   return ret
 
@@ -1256,7 +1264,8 @@ def get_port_by_url(port_name):
   p = port_name.split(".")
   if len(p) < 2:
     return RTC.PortService._nil
-  rtcs = nm.string_to_component(p[0])
+  
+  rtcs = nm.string_to_component(port_name.rstrip("."+p[-1]))
   
   if len(rtcs) < 1:
     return RTC.PortService._nil
