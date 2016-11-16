@@ -110,6 +110,9 @@ rm -rf %{buildroot}
 #------------------------------------------------------------
 # changelog section
 %changelog
+* Wed Nov 16 2016  <n-ando@aist.go.jp> 1.2.0
+- 1.2.0-RELEASE
+
 * Tue Feb 23 2016  <n-ando@aist.go.jp> 1.1.2
 - 1.1.2-RELEASE
 
