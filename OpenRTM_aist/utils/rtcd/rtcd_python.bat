@@ -6,4 +6,4 @@ rem     Intelligent Systems Research Institute,
 rem     National Institute of
 rem         Advanced Industrial Science and Technology (AIST), Japan
 rem     All rights reserved.
-%CD%\python.exe rtcd.py %*
+%~dp0\python.exe %~dp0\rtcd.py %*

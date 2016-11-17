@@ -266,6 +266,42 @@ class OpenHRPExecutionContext(OpenRTM_aist.ExecutionContextBase,
     return OpenRTM_aist.ExecutionContextBase.getProfile(self)
 
 
+  def onAddedComponent(self, rtobj):
+    guard = OpenRTM_aist.ScopedLock(self._tickmutex)
+    self._worker.updateComponentList()
+    return RTC.RTC_OK
+
+  def onRemovedComponent(self, rtobj):
+    guard = OpenRTM_aist.ScopedLock(self._tickmutex)
+    self._worker.updateComponentList()
+    return RTC.RTC_OK
+
+  def onWaitingActivated(self, comp, count):
+    self._rtcout.RTC_TRACE("onWaitingActivated(count = %d)", count)
+    self._rtcout.RTC_PARANOID("curr: %s, next: %s",
+                              (self.getStateString(comp.getStates().curr),
+                               self.getStateString(comp.getStates().next)))
+    self.tick()
+    return RTC.RTC_OK
+
+  def onWaitingDeactivated(self, comp, count):
+    self._rtcout.RTC_TRACE("onWaitingDeactivated(count = %d)", count)
+    self._rtcout.RTC_PARANOID("curr: %s, next: %s",
+                              (self.getStateString(comp.getStates().curr),
+                               self.getStateString(comp.getStates().next)))
+    self.tick()
+    return RTC.RTC_OK
+
+  def onWaitingReset(self, comp, count):
+    self._rtcout.RTC_TRACE("onWaitingReset(count = %d)", count)
+    self._rtcout.RTC_PARANOID("curr: %s, next: %s",
+                              (self.getStateString(comp.getStates().curr),
+                               self.getStateString(comp.getStates().next)))
+    self.tick()
+    return RTC.RTC_OK
+
+
+
 def OpenHRPExecutionContextInit(manager):
   OpenRTM_aist.ExecutionContextFactory.instance().addFactory("OpenHRPExecutionContext",
                                                              OpenRTM_aist.OpenHRPExecutionContext,

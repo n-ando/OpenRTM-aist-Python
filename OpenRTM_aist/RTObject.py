@@ -4527,6 +4527,10 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     if self._manager:
       self._rtcout.RTC_DEBUG("Cleanup on Manager")
       self._manager.notifyFinalized(self)
+      
+    del self._actionListeners 
+    del self._portconnListeners
+
 
     return
 

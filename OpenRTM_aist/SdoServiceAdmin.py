@@ -198,6 +198,7 @@ class SdoServiceAdmin:
 
     # If types include '[Aa][Ll][Ll]', all types allowed in this RTC
     for ctype in self._consumerTypes:
+      
       tmp = ctype.lower()
       if tmp == "all":
         self._allConsumerEnabled = True
@@ -216,7 +217,7 @@ class SdoServiceAdmin:
   # Virtual destractor.
   # @endif
   def __del__(self):
-    len_ = len(self._proiders)
+    len_ = len(self._providers)
     for i in range(len_):
       idx = (len_ - 1) - i
       self._providers[idx].finalize()
@@ -300,7 +301,7 @@ class SdoServiceAdmin:
     for i in range(len(self._providers)):
       if id == str(self._providers[i].getProfile().id):
         self._rtcout.RTC_ERROR("SDO service(id=%s, ifr=%s) already exists",
-                               str(prof.id), str(prof.interface_type))
+                               (str(prof.id), str(prof.interface_type)))
         return False
 
     self._providers.append(provider)
@@ -351,7 +352,7 @@ class SdoServiceAdmin:
     if not self.isEnabledConsumerType(sProfile):
       self._rtcout.RTC_ERROR("Not supported consumer type. %s", profile.id)
       return False
-
+  
     if not self.isExistingConsumerType(sProfile):
       self._rtcout.RTC_ERROR("type %s already exists.", profile.id)
       return False
