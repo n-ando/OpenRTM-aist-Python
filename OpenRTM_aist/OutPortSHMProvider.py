@@ -193,7 +193,8 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
 
     self.setEndian(self._endian)
     self.create_memory(self._memory_size, self._shm_address)
-    self.write(cdr[0])
+    if cdr[0]:
+      self.write(cdr[0])
     
     return self.convertReturn(ret, cdr[0])
 
