@@ -508,6 +508,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   #
   # @endif
   def add_component(self, comp):
+    print "add"
     return OpenRTM_aist.ExecutionContextBase.addComponent(self, comp)
 
 

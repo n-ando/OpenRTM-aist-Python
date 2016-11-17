@@ -797,41 +797,38 @@ class ConfigurationListeners:
   """
 
   def __init__(self):
-    pass
+    ##
+    # @if jp
+    # @brief ConfigurationParamListenerTypeリスナ配列
+    # ConfigurationParamTypeリスナを格納
+    # @else
+    # @brief ConfigurationParamListenerType listener array
+    # The ConfigurationParamListenerType listener is stored.
+    # @endif
+    self.configparam_num = ConfigurationParamListenerType.CONFIG_PARAM_LISTENER_NUM
+    self.configparam_ = [ConfigurationParamListenerHolder()
+                  for i in range(self.configparam_num)]
 
+    ##
+    # @if jp
+    # @brief ConfigurationSetListenerTypeリスナ配列
+    # ConfigurationSetListenerTypeリスナを格納
+    # @else
+    # @brief ConfigurationSetListenerType listener array
+    # The ConfigurationSetListenerType listener is stored.
+    # @endif
+    self.configset_num = ConfigurationSetListenerType.CONFIG_SET_LISTENER_NUM
+    self.configset_ = [ConfigurationSetListenerHolder()
+                for i in range(self.configset_num)]
 
-  ##
-  # @if jp
-  # @brief ConfigurationParamListenerTypeリスナ配列
-  # ConfigurationParamTypeリスナを格納
-  # @else
-  # @brief ConfigurationParamListenerType listener array
-  # The ConfigurationParamListenerType listener is stored.
-  # @endif
-  configparam_num = ConfigurationParamListenerType.CONFIG_PARAM_LISTENER_NUM
-  configparam_ = [ConfigurationParamListenerHolder()
-                  for i in range(configparam_num)]
-
-  ##
-  # @if jp
-  # @brief ConfigurationSetListenerTypeリスナ配列
-  # ConfigurationSetListenerTypeリスナを格納
-  # @else
-  # @brief ConfigurationSetListenerType listener array
-  # The ConfigurationSetListenerType listener is stored.
-  # @endif
-  configset_num = ConfigurationSetListenerType.CONFIG_SET_LISTENER_NUM
-  configset_ = [ConfigurationSetListenerHolder()
-                for i in range(configset_num)]
-
-  ##
-  # @if jp
-  # @brief ConfigurationSetNameListenerTypeリスナ配列
-  # ConfigurationSetNameListenerTypeリスナを格納
-  # @else
-  # @brief ConfigurationSetNameListenerType listener array
-  # The ConfigurationSetNameListenerType listener is stored. 
-  # @endif
-  configsetname_num = ConfigurationSetNameListenerType.CONFIG_SET_NAME_LISTENER_NUM
-  configsetname_ = [ConfigurationSetNameListenerHolder()
-                    for i in range(configsetname_num)]
+    ##
+    # @if jp
+    # @brief ConfigurationSetNameListenerTypeリスナ配列
+    # ConfigurationSetNameListenerTypeリスナを格納
+    # @else
+    # @brief ConfigurationSetNameListenerType listener array
+    # The ConfigurationSetNameListenerType listener is stored. 
+    # @endif
+    self.configsetname_num = ConfigurationSetNameListenerType.CONFIG_SET_NAME_LISTENER_NUM
+    self.configsetname_ = [ConfigurationSetNameListenerHolder()
+                    for i in range(self.configsetname_num)]

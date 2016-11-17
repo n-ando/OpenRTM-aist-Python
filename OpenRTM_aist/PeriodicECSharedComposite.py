@@ -697,7 +697,7 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
   #
   def onInitialize(self):
     self._rtcout.RTC_TRACE("onInitialize()")
-    return RTC.RTC_OK
+    
     active_set = self._properties.getProperty("configuration.active_config",
                                               "default")
     if self._configsets.haveConfig(active_set):
@@ -769,7 +769,9 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
 
     for sdo in sdos:
       rtc = sdo._narrow(RTC.RTObject)
-      ecs[0].activate_component(rtc)
+      #ecs[0].activate_component(rtc)
+      therad = MemberComponentThread(rtc, ecs[0].activate_component)
+      therad.activate()
 
     len_ = len(self._members[0])
 
@@ -781,7 +783,7 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
       str_ = "was"
 
     self._rtcout.RTC_DEBUG("%d member RTC%s activated.", (len_, str_))
-
+    
     return RTC.RTC_OK
 
 
@@ -823,7 +825,9 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
 
     for sdo in sdos:
       rtc = sdo._narrow(RTC.RTObject)
-      ecs[0].deactivate_component(rtc)
+      #ecs[0].deactivate_component(rtc)
+      therad = MemberComponentThread(rtc, ecs[0].deactivate_component)
+      therad.activate()
 
     return RTC.RTC_OK
 
@@ -865,7 +869,9 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
 
     for sdo in sdos:
       rtc = sdo._narrow(RTC.RTObject)
-      ecs[0].reset_component(rtc)
+      #ecs[0].reset_component(rtc)
+      therad = MemberComponentThread(rtc, ecs[0].reset_component)
+      therad.activate()
 
     return RTC.RTC_OK
 
@@ -899,6 +905,17 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
     self._org.removeAllMembers()
     self._rtcout.RTC_PARANOID("onFinalize() done")
     return RTC.RTC_OK
+
+
+
+class MemberComponentThread(OpenRTM_aist.Task):
+  def __init__(self, rto, func):
+    OpenRTM_aist.Task.__init__(self)
+    self.rto = rto
+    self.func = func
+  def svc(self):
+    self.func(self.rto)
+    
 
 
     

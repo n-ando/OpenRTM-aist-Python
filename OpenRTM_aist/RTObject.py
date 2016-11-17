@@ -864,7 +864,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
 
     num = OpenRTM_aist.CORBA_SeqUtil.find(self._ecOther, self.ec_find(cxt))
     if num != -1:
-      return long(num)
+      return long(num) + 1000
 
     return long(-1)
 
@@ -3907,6 +3907,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         return
 
     listener = Noname(memfunc)
+    
     self._actionListeners.portaction_[listener_type].addListener(listener, autoclean)
     return listener
 
@@ -4898,12 +4899,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
                                  OpenRTM_aist.flatten(avail_ec_))
           return RTC.RTC_ERROR
         
-      ec_[0] = OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_type_)
-      if not ec_[0]:
-        self._rtcout.RTC_ERROR("EC (%s) creation failed.", ec_type_)
-        self._rtcout.RTC_DEBUG("Available EC list: %s",
-                               OpenRTM_aist.flatten(avail_ec_))
-        return RTC.RTC_ERROR
+      
       
       default_opts = OpenRTM_aist.Properties()
       prop_ = default_prop.findNode("exec_cxt.periodic")
@@ -4934,6 +4930,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
           self._rtcout.RTC_PARANOID("Option %s exists.", opt_)
           default_opts.setProperty(opt_, p_.getProperty(opt_))
 
+
+      ec_[0] = OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_type_)
+      if not ec_[0]:
+        self._rtcout.RTC_ERROR("EC (%s) creation failed.", ec_type_)
+        self._rtcout.RTC_DEBUG("Available EC list: %s",
+                               OpenRTM_aist.flatten(avail_ec_))
+        return RTC.RTC_ERROR
       
       ec_[0].init(default_opts)
       self._eclist.append(ec_[0])

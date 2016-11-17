@@ -1072,6 +1072,7 @@ class Manager:
     
     ec = OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_id[0])
     ec.init(ec_prop)
+    self._ecs.append(ec)
     return ec
     
 
