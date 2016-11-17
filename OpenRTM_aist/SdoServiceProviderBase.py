@@ -114,6 +114,8 @@ class SdoServiceProviderBase(SDOPackage__POA.SDOService):
   """
   """
 
+  def __init__(self):
+    pass
   ##
   # @if jp
   # @brief 仮想デストラクタ
