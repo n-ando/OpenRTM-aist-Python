@@ -248,7 +248,7 @@ class TimeMeasure:
       return len(self._record)
     else:
       return self._count
-    return
+
     
   ##
   # @brief Get total statistics.

@@ -160,7 +160,7 @@ def push_back_list(seq1, seq2):
 # @endif
 def insert(seq, elem, index):
   len_ = len(seq)
-  if index > len:
+  if index > len_:
     seq.append(elem)
     return
   seq.insert(index, elem)

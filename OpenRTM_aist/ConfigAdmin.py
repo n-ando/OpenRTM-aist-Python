@@ -889,11 +889,12 @@ class ConfigAdmin:
   # @param config_id ID of the target configuration set for getting
   #
   # @return The configuration set
-  # 
+  #
   # @endif
   # const coil::Properties& getConfigurationSet(const char* config_id);
   def getConfigurationSet(self, config_id):
-    prop = self._configsets.getNode(config_id)
+    
+    prop = self._configsets.findNode(config_id)
     if prop is None:
       return self._emptyconf
     return prop

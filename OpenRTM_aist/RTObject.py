@@ -4768,11 +4768,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       # EC name specified
       #self._rtcout.RTC_DEBUG("size: %d, name: %s",
       #                       (len(type_and_name_), type_and_name_[1]))
-
+      
       if len(type_and_name_) == 2 and type_and_name_[1][len(type_and_name_[1]) - 1] == ')':
-        del type_and_name_[1][len(type_and_name_[1]) - 1]
+        type_and_name_ = type_and_name_[1][:-1]
         p_.setProperty("name", type_and_name_[1])
-        p_name_ = self._properties.findNode("ec." + p.getProperty("name"))
+        p_name_ = self._properties.findNode("ec." + p_.getProperty("name"))
+        
         if p_name_:
           self._rtcout.RTC_DEBUG("p_name props:")
           self._rtcout.RTC_DEBUG(p_name_)
