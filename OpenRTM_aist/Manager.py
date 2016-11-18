@@ -22,11 +22,13 @@ import sys
 import time
 from omniORB import CORBA, PortableServer
 from types import IntType, ListType
+import platform
 
 import OpenRTM_aist
 import RTC
 import SDOPackage
 import CosNaming
+
 
 
 #------------------------------------------------------------
@@ -1850,12 +1852,8 @@ class Manager:
     
     if not self._config.findNode("manager.cpu_affinity"):
       return
-    
-    try:
-      import affinity
-    except ImportError:
-      self._rtcout.RTC_DEBUG("not found affinity module")
-      return
+          
+
     
     
     affinity_str = self._config.getProperty("manager.cpu_affinity")
@@ -1876,11 +1874,36 @@ class Manager:
 
     if cpu_num == 0:
       return
+
+
+
     
-    affinity.set_process_affinity_mask(pid, cpu_num)
-    ret = affinity.get_process_affinity_mask(pid)
-    if ret != cpu_num:
-      self._rtcout.RTC_ERROR("get_process_affinity_mask(): returned error.")
+    if platform.system() == "Windows":
+      import win32process
+      import win32api
+      import win32con
+      flag = win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_SET_INFORMATION
+      h = win32api.OpenProcess(flag, 0, pid)
+      result = win32process.SetProcessAffinityMask(h, cpu_num)
+      result = win32process.GetProcessAffinityMask(h)[0]
+      if result != cpu_num:
+        self._rtcout.RTC_ERROR("GetProcessAffinityMask(): returned error.")
+    else:
+      import ctypes
+      from ctypes.util import find_library
+      pthread = find_library("pthread")
+      if pthread is None:
+        self._rtcout.RTC_ERROR("Not Found pthread Module")
+      pthread = CDLL(pthread)
+      
+      mask = ctypes.c_long()
+      mask.value = cpu_num
+      result = pthread.sched_setaffinity(os.getpid(), ctypes.sizeof(mask), ctypes.byref(mask))
+      mask = ctypes.c_long()
+      result = pthread.sched_getaffinity(os.getpid(), ctypes.sizeof(mask), ctypes.byref(mask))
+      
+      if mask.value != cpu_num:
+        self._rtcout.RTC_ERROR("CPU affinity mask setting failed")
     
 
 

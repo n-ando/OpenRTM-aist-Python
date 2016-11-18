@@ -19,6 +19,7 @@ import copy
 import threading
 import time
 import os
+import platform
 from omniORB import CORBA, PortableServer
 
 import OpenRTM_aist
@@ -121,7 +122,21 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._rtcout.RTC_TRACE("svc()")
     count_ = 0
 
-    
+    if self._cpu > 0:
+      if platform.system() == "Windows":
+        import win32process
+        import win32api
+        import win32con
+        h = win32api.GetCurrentThread()
+        result = win32process.SetThreadAffinityMask(h, self._cpu)
+        
+      else:
+        from ctypes.util import find_library
+        pthread = find_library("pthread")
+        if pthread is None:
+          return
+        pthread = CDLL(pthread)
+        
     
     while self.threadRunning():
       OpenRTM_aist.ExecutionContextBase.invokeWorkerPreDo(self)
