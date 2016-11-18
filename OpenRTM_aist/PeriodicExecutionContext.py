@@ -18,6 +18,7 @@ import sys
 import copy
 import threading
 import time
+import os
 from omniORB import CORBA, PortableServer
 
 import OpenRTM_aist
@@ -73,6 +74,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._rtcout.RTC_DEBUG("Actual rate: %d [sec], %d [usec]",
                            (self._profile.getPeriod().sec(), self._profile.getPeriod().usec()))    
 
+    self._cpu = 0
+
     return
 
 
@@ -93,6 +96,11 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     Task.__del__(self)
     return
 
+  def init(self, props):
+    OpenRTM_aist.ExecutionContextBase.init(self, props)
+    self.setCpuAffinity(props)
+    self._rtcout.RTC_DEBUG("init() done")
+
 
   ##
   # @if jp
@@ -112,6 +120,8 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   def svc(self):
     self._rtcout.RTC_TRACE("svc()")
     count_ = 0
+
+    
     
     while self.threadRunning():
       OpenRTM_aist.ExecutionContextBase.invokeWorkerPreDo(self)
@@ -735,6 +745,25 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     guard = OpenRTM_aist.ScopedLock(self._svcmutex)
     return self._svc
 
+
+  def setCpuAffinity(self, props):
+    self._rtcout.RTC_TRACE("setCpuAffinity()")
+    
+    affinity_str = props.getProperty("cpu_affinity")
+    self._rtcout.RTC_DEBUG("CPU affinity property: %s",affinity_str)
+    
+    tmp = affinity_str.split(",")
+    self._cpu = 0
+    for num in tmp:
+      try:
+        p = 0x01 << (int(num)-1)
+        self._cpu += p
+        self._rtcout.RTC_DEBUG("CPU affinity int value: %d added.",int(num))
+      except ValueError:
+        pass
+    
+      
+    
 
   ##
   # @if jp

@@ -895,6 +895,7 @@ class Manager:
                     "exec_cxt.activation_timeout",
                     "exec_cxt.deactivation_timeout",
                     "exec_cxt.reset_timeout",
+                    "exec_cxt.cpu_affinity",
                     "logger.enable",
                     "logger.log_level",
                     "naming.enable",
@@ -1841,7 +1842,47 @@ class Manager:
     OpenRTM_aist.PeriodicExecutionContextInit(self)
     OpenRTM_aist.ExtTrigExecutionContextInit(self)
     OpenRTM_aist.OpenHRPExecutionContextInit(self)
+    self.initCpuAffinity()
     return True
+
+  def initCpuAffinity(self):
+    self._rtcout.RTC_TRACE("Manager.initCpuAffinity()")
+    
+    if not self._config.findNode("manager.cpu_affinity"):
+      return
+    
+    try:
+      import affinity
+    except ImportError:
+      self._rtcout.RTC_DEBUG("not found affinity module")
+      return
+    
+    
+    affinity_str = self._config.getProperty("manager.cpu_affinity")
+    self._rtcout.RTC_DEBUG("CPU affinity property: %s", affinity_str)
+
+    tmp = affinity_str.split(",")
+
+    pid = os.getpid()
+    cpu_num = 0
+    for num in tmp:
+      try:
+        p = 0x01 << (int(num)-1)
+        cpu_num += p
+      except:
+        pass
+    
+    self._rtcout.RTC_DEBUG("CPU affinity mask set to %d", cpu_num)
+
+    if cpu_num == 0:
+      return
+    
+    affinity.set_process_affinity_mask(pid, cpu_num)
+    ret = affinity.get_process_affinity_mask(pid)
+    if ret != cpu_num:
+      self._rtcout.RTC_ERROR("get_process_affinity_mask(): returned error.")
+    
+
 
 
   ##

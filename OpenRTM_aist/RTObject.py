@@ -4702,7 +4702,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
                        "transition_timeout",
                        "activation_timeout",
                        "deactivation_timeout",
-                       "reset_timeout"]
+                       "reset_timeout"
+                       "cpu_affinity"]
 
     p_ = self._properties.findNode("exec_cxt")
     if not p_:
@@ -4916,7 +4917,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
                        "transition_timeout",
                        "activation_timeout",
                        "deactivation_timeout",
-                       "reset_timeout"]
+                       "reset_timeout",
+                       "cpu_affinity"]
 
       p_ = self._properties.findNode("exec_cxt")
       
