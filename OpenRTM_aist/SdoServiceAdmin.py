@@ -16,6 +16,7 @@
 import copy
 import threading
 import OpenRTM_aist
+import SDOPackage
 
 
 ##
@@ -182,6 +183,7 @@ class SdoServiceAdmin:
 
       svc.init(rtobj, prof)
       self._providers.append(svc)
+    
 
     # ------------------------------------------------------------
     # SDO service consumer
@@ -217,6 +219,9 @@ class SdoServiceAdmin:
   # Virtual destractor.
   # @endif
   def __del__(self):
+    pass
+
+  def exit(self):
     len_ = len(self._providers)
     for i in range(len_):
       idx = (len_ - 1) - i

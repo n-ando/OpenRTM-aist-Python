@@ -850,7 +850,7 @@ class PublisherPeriodic(OpenRTM_aist.PublisherBase):
     else:
       return self.PORT_ERROR
     
-    return self.PORT_ERROR
+
 
   ##
   # @if jp

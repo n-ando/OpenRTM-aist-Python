@@ -212,7 +212,9 @@ class SdoServiceProviderBase(SDOPackage__POA.SDOService):
   # @endif
   # virtual void finalize() = 0;
   def finalize(self):
-    pass
+    poa  = OpenRTM_aist.Manager.instance().getPOA()
+    poa.deactivate_object(poa.servant_to_id(self))
+    
 
 
 sdoserviceproviderfactory = None
