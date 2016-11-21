@@ -1861,49 +1861,26 @@ class Manager:
 
     tmp = affinity_str.split(",")
 
-    pid = os.getpid()
-    cpu_num = 0
+    
+    cpu_num = []
     for num in tmp:
       try:
-        p = 0x01 << (int(num)-1)
-        cpu_num += p
+        cpu_num.append(int(num))
+        self._rtcout.RTC_DEBUG("CPU affinity mask set to %d", int(num))
       except:
         pass
     
-    self._rtcout.RTC_DEBUG("CPU affinity mask set to %d", cpu_num)
+    
 
-    if cpu_num == 0:
+    if len(cpu_num) == 0:
       return
 
 
-
+    ret = OpenRTM_aist.setProcessAffinity(cpu_num)
     
-    if platform.system() == "Windows":
-      import win32process
-      import win32api
-      import win32con
-      flag = win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_SET_INFORMATION
-      h = win32api.OpenProcess(flag, 0, pid)
-      result = win32process.SetProcessAffinityMask(h, cpu_num)
-      result = win32process.GetProcessAffinityMask(h)[0]
-      if result != cpu_num:
-        self._rtcout.RTC_ERROR("GetProcessAffinityMask(): returned error.")
-    else:
-      import ctypes
-      from ctypes.util import find_library
-      pthread = find_library("pthread")
-      if pthread is None:
-        self._rtcout.RTC_ERROR("Not Found pthread Module")
-      pthread = CDLL(pthread)
-      
-      mask = ctypes.c_long()
-      mask.value = cpu_num
-      result = pthread.sched_setaffinity(os.getpid(), ctypes.sizeof(mask), ctypes.byref(mask))
-      mask = ctypes.c_long()
-      result = pthread.sched_getaffinity(os.getpid(), ctypes.sizeof(mask), ctypes.byref(mask))
-      
-      if mask.value != cpu_num:
-        self._rtcout.RTC_ERROR("CPU affinity mask setting failed")
+    if ret == False:
+      self._rtcout.RTC_ERROR("CPU affinity mask setting failed")
+    
     
 
 

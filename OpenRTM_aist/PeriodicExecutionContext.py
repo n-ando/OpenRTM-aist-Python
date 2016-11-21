@@ -75,7 +75,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._rtcout.RTC_DEBUG("Actual rate: %d [sec], %d [usec]",
                            (self._profile.getPeriod().sec(), self._profile.getPeriod().usec()))    
 
-    self._cpu = 0
+    self._cpu = []
 
     return
 
@@ -122,21 +122,10 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._rtcout.RTC_TRACE("svc()")
     count_ = 0
 
-    if self._cpu > 0:
-      if platform.system() == "Windows":
-        import win32process
-        import win32api
-        import win32con
-        h = win32api.GetCurrentThread()
-        result = win32process.SetThreadAffinityMask(h, self._cpu)
-        
-      else:
-        from ctypes.util import find_library
-        pthread = find_library("pthread")
-        if pthread is None:
-          return
-        pthread = CDLL(pthread)
-        
+    if len(self._cpu) > 0:
+      ret = OpenRTM_aist.setThreadAffinity(self._cpu)
+      if ret == False:
+        self._rtcout.RTC_ERROR("CPU affinity mask setting failed")
     
     while self.threadRunning():
       OpenRTM_aist.ExecutionContextBase.invokeWorkerPreDo(self)
@@ -768,11 +757,10 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._rtcout.RTC_DEBUG("CPU affinity property: %s",affinity_str)
     
     tmp = affinity_str.split(",")
-    self._cpu = 0
+    self._cpu = []
     for num in tmp:
       try:
-        p = 0x01 << (int(num)-1)
-        self._cpu += p
+        self._cpu.append(int(num))
         self._rtcout.RTC_DEBUG("CPU affinity int value: %d added.",int(num))
       except ValueError:
         pass
