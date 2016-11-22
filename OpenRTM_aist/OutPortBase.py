@@ -1131,7 +1131,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
   # OutPortProvider*
   # OutPortBase::createProvider(ConnectorProfile& cprof, coil::Properties& prop)
   def createProvider(self, cprof, prop):
-    if prop.getProperty("interface_type") and \
+    if not prop.getProperty("interface_type") or \
           not OpenRTM_aist.includes(self._providerTypes, prop.getProperty("interface_type")):
       self._rtcout.RTC_ERROR("no provider found")
       self._rtcout.RTC_DEBUG("interface_type:  %s", prop.getProperty("interface_type"))
@@ -1167,8 +1167,8 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
   # InPortConsumer* OutPortBase::createConsumer(const ConnectorProfile& cprof,
   #                                             coil::Properties& prop)
   def createConsumer(self, cprof, prop):
-    if prop.getProperty("interface_type") and \
-          not self._consumerTypes.count(prop.getProperty("interface_type")):
+    if not prop.getProperty("interface_type") or \
+          not OpenRTM_aist.includes(self._consumerTypes, prop.getProperty("interface_type")):
       self._rtcout.RTC_ERROR("no consumer found")
       self._rtcout.RTC_DEBUG("interface_type:  %s", prop.getProperty("interface_type"))
       self._rtcout.RTC_DEBUG("interface_types: %s",

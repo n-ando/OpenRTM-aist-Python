@@ -363,8 +363,7 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
       self.onSenderError()
       return self.UNKNOWN_ERROR
 
-    self.onSenderError()
-    return self.UNKNOWN_ERROR
+
 
     
   ##

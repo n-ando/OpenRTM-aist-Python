@@ -1233,7 +1233,7 @@ class Properties:
     else:
       return next
 
-    return None
+    
 
 
   ##

@@ -309,7 +309,7 @@ class PublisherFlush(OpenRTM_aist.PublisherBase):
       self.onReceiverError(data)
       return self._retcode
 
-    return self._retcode
+    
 
 
   ##

@@ -427,9 +427,9 @@ class PortConnectListenerHolder:
     for i in range(len_):
       if (self._listeners[i].listener == listener) and self._listeners[i].autoclean:
         self._listeners[i].listener = None
-      del self._listeners[i]
-      del guard
-      return
+        del self._listeners[i]
+        del guard
+        return
     del guard
     return
 
@@ -553,9 +553,9 @@ class PortConnectRetListenerHolder:
     for i in range(len_):
       if (self._listeners[i].listener == listener) and self._listeners[i].autoclean:
         self._listeners[i].listener = None
-      del self._listeners[i]
-      del guard
-      return
+        del self._listeners[i]
+        del guard
+        return
     del guard
     return
 

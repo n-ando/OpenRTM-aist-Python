@@ -1071,7 +1071,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.remove_configuration_set()")
 
-    return False
+    
 
 
   ##
@@ -1135,7 +1135,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
     else:
       raise SDOPackage.InternalError("Configuration.activate_configuration_set()")
 
-    return False
+    
 
 
   #============================================================

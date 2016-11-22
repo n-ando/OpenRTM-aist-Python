@@ -1014,7 +1014,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
                            OpenRTM_aist.flatten(provider_types))
 
     if self._properties.hasKey("provider_types") and \
-          OpenRTM_aist.normalize(self._properties.getProperty("provider_types")) != "all":
+          OpenRTM_aist.normalize([self._properties.getProperty("provider_types")]) != "all":
       self._rtcout.RTC_DEBUG("allowed providers: %s",
                              self._properties.getProperty("provider_types"))
 
@@ -1058,7 +1058,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
                            OpenRTM_aist.flatten(consumer_types))
 
     if self._properties.hasKey("consumer_types") and \
-          OpenRTM_aist.normalize(self._properties.getProperty("consumer_types")) != "all":
+          OpenRTM_aist.normalize([self._properties.getProperty("consumer_types")]) != "all":
       self._rtcout.RTC_DEBUG("allowed consumers: %s",
                              self._properties.getProperty("consumer_types"))
 
@@ -1098,7 +1098,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
   # InPortProvider*
   # createProvider(ConnectorProfile& cprof, coil::Properties& prop);
   def createProvider(self, cprof, prop):
-    if not prop.getProperty("interface_type") and \
+    if not prop.getProperty("interface_type") or \
           not OpenRTM_aist.includes(self._providerTypes, prop.getProperty("interface_type")):
       self._rtcout.RTC_ERROR("no provider found")
       self._rtcout.RTC_DEBUG("interface_type:  %s", prop.getProperty("interface_type"))
@@ -1138,7 +1138,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
   # OutPortConsumer*
   # createConsumer(const ConnectorProfile& cprof, coil::Properties& prop);
   def createConsumer(self, cprof, prop):
-    if not prop.getProperty("interface_type") and \
+    if not prop.getProperty("interface_type") or \
           not OpenRTM_aist.includes(self._consumerTypes, prop.getProperty("interface_type")):
       self._rtcout.RTC_ERROR("no consumer found")
       self._rtcout.RTC_DEBUG("interface_type:  %s", prop.getProperty("interface_type"))
