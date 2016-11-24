@@ -2943,7 +2943,7 @@ class Manager:
     # @endif
     def __init__(self, name=None, factory=None, prop=None):
       if prop:
-        self._name = prop.getInstanceName()
+        self._name = prop.getProperty("instance_name")
       if factory:
         self._name = factory.getInstanceName()
       elif name:
