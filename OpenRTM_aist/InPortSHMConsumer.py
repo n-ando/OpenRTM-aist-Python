@@ -133,13 +133,16 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
 
 
 
+    
     if prop.hasKey("serializer"):
       endian = prop.getProperty("serializer.cdr.endian")
       if not endian:
         self._rtcout.RTC_ERROR("init(): endian is not set.")
-        
+        endian = "little"
+
 
       endian = OpenRTM_aist.split(endian, ",")
+      
       endian = OpenRTM_aist.normalize(endian)
       if endian == "little":
         self._endian = True

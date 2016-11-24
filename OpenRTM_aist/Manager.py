@@ -1857,29 +1857,32 @@ class Manager:
     
     
     affinity_str = self._config.getProperty("manager.cpu_affinity")
-    self._rtcout.RTC_DEBUG("CPU affinity property: %s", affinity_str)
-
-    tmp = affinity_str.split(",")
-
-    
-    cpu_num = []
-    for num in tmp:
-      try:
-        cpu_num.append(int(num))
-        self._rtcout.RTC_DEBUG("CPU affinity mask set to %d", int(num))
-      except:
-        pass
-    
-    
-
-    if len(cpu_num) == 0:
-      return
 
 
-    ret = OpenRTM_aist.setProcessAffinity(cpu_num)
-    
-    if ret == False:
-      self._rtcout.RTC_ERROR("CPU affinity mask setting failed")
+    if affinity_str:
+      self._rtcout.RTC_DEBUG("CPU affinity property: %s", affinity_str)
+
+      tmp = affinity_str.split(",")
+
+      
+      cpu_num = []
+      for num in tmp:
+        try:
+          cpu_num.append(int(num))
+          self._rtcout.RTC_DEBUG("CPU affinity mask set to %d", int(num))
+        except:
+          pass
+      
+      
+
+      if len(cpu_num) == 0:
+        return
+
+
+      ret = OpenRTM_aist.setProcessAffinity(cpu_num)
+      
+      if ret == False:
+        self._rtcout.RTC_ERROR("CPU affinity mask setting failed")
     
     
 

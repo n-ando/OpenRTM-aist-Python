@@ -1055,7 +1055,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
                               OpenRTM_aist.flatten(provider_types))
 
     if self._properties.hasKey("provider_types") and \
-          OpenRTM_aist.normalize(self._properties.getProperty("provider_types")) != "all":
+          OpenRTM_aist.normalize([self._properties.getProperty("provider_types")]) != "all":
       self._rtcout.RTC_DEBUG("allowed providers: %s",
                              self._properties.getProperty("provider_types"))
 
@@ -1097,7 +1097,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
                               OpenRTM_aist.flatten(consumer_types))
 
     if self._properties.hasKey("consumer_types") and \
-          OpenRTM_aist.normalize(self._properties.getProperty("consumer_types")) != "all":
+          OpenRTM_aist.normalize([self._properties.getProperty("consumer_types")]) != "all":
       self._rtcout.RTC_DEBUG("allowed consumers: %s",
                              self._properties.getProperty("consumer_types"))
 

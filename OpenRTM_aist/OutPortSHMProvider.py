@@ -122,6 +122,7 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
       endian = prop.getProperty("serializer.cdr.endian")
       if not endian:
         self._rtcout.RTC_ERROR("init(): endian is not set.")
+        endian = "little"
         
       endian = OpenRTM_aist.split(endian, ",")
       endian = OpenRTM_aist.normalize(endian)

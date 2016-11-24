@@ -71,6 +71,7 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
   #
   def __init__(self):
     OpenRTM_aist.CorbaConsumer.__init__(self)
+    print "test"
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("OutPortCorbaCdrConsumer")
     self._buffer = None
     self._profile = None

@@ -422,6 +422,6 @@ class ManagerConfig :
       fp.close()
       return True
 
-    return False
+
 
 

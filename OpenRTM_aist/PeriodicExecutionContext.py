@@ -522,7 +522,6 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
   #
   # @endif
   def add_component(self, comp):
-    print "add"
     return OpenRTM_aist.ExecutionContextBase.addComponent(self, comp)
 
 
@@ -754,16 +753,17 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     self._rtcout.RTC_TRACE("setCpuAffinity()")
     
     affinity_str = props.getProperty("cpu_affinity")
-    self._rtcout.RTC_DEBUG("CPU affinity property: %s",affinity_str)
-    
-    tmp = affinity_str.split(",")
-    self._cpu = []
-    for num in tmp:
-      try:
-        self._cpu.append(int(num))
-        self._rtcout.RTC_DEBUG("CPU affinity int value: %d added.",int(num))
-      except ValueError:
-        pass
+    if affinity_str:
+      self._rtcout.RTC_DEBUG("CPU affinity property: %s",affinity_str)
+      
+      tmp = affinity_str.split(",")
+      self._cpu = []
+      for num in tmp:
+        try:
+          self._cpu.append(int(num))
+          self._rtcout.RTC_DEBUG("CPU affinity int value: %d added.",int(num))
+        except ValueError:
+          pass
     
       
     
