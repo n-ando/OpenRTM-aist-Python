@@ -9,5 +9,5 @@ recursive-include packages/rpm *.sh openrtm-aist.spec.in openrtm-aist_fc19.spec.
 recursive-include installer *.rtf *.in *.wxs *.vbs *.bmp *.txt *.sh *.wxl *.cmd *.py *.bat
 recursive-include OpenRTM_aist *.conf *.exe *.idl *.py *.pth *.sh
 recursive-include OpenRTM_aist *.bat *.exe *.sample README
-recursive-include OpenRTM_aist/docs *.css *.gif *.png *.html *.hhc *.hhk *.hhp
+recursive-include OpenRTM_aist/docs *.css *.gif *.png *.html *.hhc *.hhk *.hhp Doxyfile_en.in Doxyfile_jp.in
 prune OpenRTM_aist/examples/NXTRTC
