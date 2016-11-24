@@ -1131,6 +1131,7 @@ class ManagerServant(RTM__POA.Manager):
       
       if not rtcd_cmd:
         rtcd_cmd = "rtcd_python"
+      #rtcd_cmd = "rtcd_python.bat"
       
       cmd = rtcd_cmd
       cmd += " -o " + "manager.is_master:NO"

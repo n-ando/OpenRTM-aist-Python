@@ -272,7 +272,7 @@ class SdoServiceAdmin:
       if idstr == str(self._providers[i].getProfile().id):
         return self._providers[i].getProfile()
 
-    raise SDOPackage.InvalidParameter()
+    raise SDOPackage.InvalidParameter("")
 
 
   ##
@@ -372,7 +372,7 @@ class SdoServiceAdmin:
       if id == str(self._consumers[i].getProfile().id):
         self._rtcout.RTC_INFO("Existing consumer is reinitilized.")
         self._rtcout.RTC_DEBUG("Propeteis are: %s",
-                               NVUtil.toString(sProfile.properties))
+                               OpenRTM_aist.NVUtil.toString(sProfile.properties))
         return self._consumers[i].reinit(sProfile)
     del guard
 
