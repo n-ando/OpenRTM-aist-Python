@@ -9,7 +9,7 @@
 # 
 
 import OpenRTM_aist
-import CORBA
+from omniORB import CORBA
 import RTC
 import SDOPackage
 

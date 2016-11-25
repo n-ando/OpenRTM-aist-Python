@@ -13,7 +13,7 @@ import mmap, os
 import platform, ctypes
 from omniORB import cdrMarshal
 from omniORB import cdrUnmarshal
-import CORBA
+from omniORB import CORBA
 import OpenRTM_aist
 import OpenRTM__POA
 import OpenRTM

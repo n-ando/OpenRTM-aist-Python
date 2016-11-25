@@ -15,7 +15,7 @@ from omniORB import any
 import OpenRTM_aist
 import OpenRTM
 import OpenRTM__POA
-import CORBA
+from omniORB import CORBA
 
 import threading
 
