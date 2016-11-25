@@ -187,7 +187,6 @@ class Manager:
   def init(*arg):
     global manager
     global mutex
-    
     if len(arg) == 1:
       argv = arg[0]
     elif len(arg) == 2 and \
@@ -198,6 +197,7 @@ class Manager:
     else:
       print "Invalid arguments for init()"
       print "init(argc,argv) or init(argv)"
+      return None
         
     if manager is None:
       guard = OpenRTM_aist.ScopedLock(mutex)
@@ -665,7 +665,7 @@ class Manager:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return False
 
-    return
+    
 
 
   ##
@@ -725,7 +725,7 @@ class Manager:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return False
 
-    return False
+
 
 
   ##
@@ -2222,7 +2222,7 @@ class Manager:
 
     type_conf = category + "." + type_name + ".config_file"
     name_conf = category + "." + inst_name + ".config_file"
-
+    
     type_prop = OpenRTM_aist.Properties()
 
     name_prop = OpenRTM_aist.Properties()
@@ -2482,7 +2482,7 @@ class Manager:
       self._rtcout.RTC_ERROR("Module load error: %s", file_name)
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       
-    return
+
 
 
 

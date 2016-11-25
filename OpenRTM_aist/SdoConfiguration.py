@@ -958,7 +958,6 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.get_active_configuration_set()")
 
-    return SDOPackage.ConfigurationSet("","",[])
 
 
   ##

@@ -1919,7 +1919,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_service_profiles()")
 
-    return []
+    
 
 
   ##
@@ -1982,7 +1982,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_service_profile()")
 
-    return SDOPackage.ServiceProfile("", "", [], None)
+    
 
 
   ##
@@ -2049,7 +2049,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_service()")
-    return SDOPackage.SDOService._nil
+    
 
 
   ##
@@ -2101,13 +2101,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   def get_configuration(self):
     self._rtcout.RTC_TRACE("get_configuration()")
     if self._SdoConfig is None:
-      raise SODPackage.InterfaceNotImplemented("InterfaceNotImplemented: get_configuration")
+      raise SDOPackage.InterfaceNotImplemented("InterfaceNotImplemented: get_configuration")
     try:
       return self._SdoConfig
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_configuration()")
-    return SDOPackage.Configuration._nil
+    
 
 
   ##
@@ -2206,7 +2206,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_organizations()")
-    return []
+    
 
 
   ##
@@ -2249,7 +2249,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_status_list()")
-    return []
+    
 
 
   ##
@@ -4734,7 +4734,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
 
     args_ = self._properties.getProperty("execution_contexts")
     ecs_tmp_ = [s.strip() for s in args_.split(",")]
-    if not ecs_tmp_:
+    if not ecs_tmp_[0]:
       return RTC.RTC_ERROR
     self._rtcout.RTC_DEBUG("Component specific e EC option available,")
     self._rtcout.RTC_DEBUG("%s", args_)
@@ -4746,18 +4746,20 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._rtcout.RTC_INFO("EC none. EC will not be bound to the RTC.")
         ec_args = []
         return RTC.RTC_OK
-
+    
       type_and_name_ = [s.strip() for s in ec_tmp.split("(")]
       if len(type_and_name_) > 2:
         self._rtcout.RTC_DEBUG("Invalid EC type specified: %s", ec_tmp)
         continue
 
-      p_ = default_opts_;
+      p_ = default_opts_
+      
 
       # create EC's properties
       p_.setProperty("type",type_and_name_[0])
       self._rtcout.RTC_DEBUG("p_type: %s", p_.getProperty("type"))
       p_type_ = self._properties.findNode("ec." + p_.getProperty("type"))
+      
       if p_type_:
         self._rtcout.RTC_DEBUG("p_type props:")
         self._rtcout.RTC_DEBUG(p_type_)
@@ -4770,9 +4772,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       #self._rtcout.RTC_DEBUG("size: %d, name: %s",
       #                       (len(type_and_name_), type_and_name_[1]))
       
-      if len(type_and_name_) == 2 and type_and_name_[1][len(type_and_name_[1]) - 1] == ')':
+      if len(type_and_name_) == 2 and type_and_name_[1][-1] == ')':
         type_and_name_ = type_and_name_[1][:-1]
-        p_.setProperty("name", type_and_name_[1])
+        p_.setProperty("name", type_and_name_)
         p_name_ = self._properties.findNode("ec." + p_.getProperty("name"))
         
         if p_name_:

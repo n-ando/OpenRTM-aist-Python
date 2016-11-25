@@ -268,7 +268,7 @@ class Organization_impl(SDOPackage__POA.Organization):
       self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("add_organization_property()")
 
-    return False
+
 
 
   ##
@@ -484,7 +484,7 @@ class Organization_impl(SDOPackage__POA.Organization):
       self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("set_owner()")
 
-    return True
+
 
 
   ##
@@ -587,7 +587,7 @@ class Organization_impl(SDOPackage__POA.Organization):
       self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("set_members()")
 
-    return True
+
 
 
   ##
@@ -640,7 +640,7 @@ class Organization_impl(SDOPackage__POA.Organization):
       self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("add_members()")
 
-    return False
+
 
 
   ##
@@ -699,7 +699,7 @@ class Organization_impl(SDOPackage__POA.Organization):
       self.__rtcout.RTC_ERROR("unknown exception")
       raise SDOPackage.InternalError("remove_member(): Not found.")
 
-    return False
+
 
 
   ##
@@ -800,7 +800,7 @@ class Organization_impl(SDOPackage__POA.Organization):
       self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("set_dependency(): Unknown.")
 
-    return False
+
 
 
   def getObjRef(self):
