@@ -1250,9 +1250,10 @@ class ManagerServant(RTM__POA.Manager):
 
 
       cmd = rtcd_cmd
-      cmd += " -p "
-      cmd += mgrvstr[1] # port number
+      cmd += " -o corba.master_manager:"
+      cmd += mgrstr # port number
       cmd += " -d "
+      
 
       self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
       ret = OpenRTM_aist.launch_shell(cmd)
