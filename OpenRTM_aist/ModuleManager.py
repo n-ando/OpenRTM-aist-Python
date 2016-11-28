@@ -190,7 +190,6 @@ class ModuleManager:
   class NotAllowedOperation(Error):
     def __init__(self, reason_):
       ModuleManager.Error.__init__(self, reason_)
-      ModuleManager.Error.__init__(self, reason_)
 
 
 

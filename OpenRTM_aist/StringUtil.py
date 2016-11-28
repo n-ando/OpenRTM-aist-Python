@@ -436,7 +436,7 @@ def includes(_list, value, ignore_case = True):
 def isAbsolutePath(str):
   if str[0] == "/":
     return True
-  if str[0].isalpha() and str[1] == ":" and str[2] == "\\":
+  if str[0].isalpha() and str[1] == ":" and (str[2] == "\\" or str[2] == "/"):
     return True
   if str[0] == "\\" and str[1] == "\\":
     return True

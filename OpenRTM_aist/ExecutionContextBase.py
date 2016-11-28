@@ -1254,8 +1254,8 @@ class ExecutionContextBase:
   #
   # @endif
   # RTC::ExecutionContextProfile* getProfile(void)
-  def getProfile(self):
-    return self._profile.getProfile()
+  #def getProfile(self):
+  #  return self._profile.getProfile()
 
 
   # end of delegated functions to ExecutionContextProfile
