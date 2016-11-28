@@ -25,6 +25,15 @@ import RTC,RTM,RTM__POA
 import SDOPackage
 
 
+class terminate_Task(OpenRTM_aist.Task):
+  def __init__(self, mgr):
+    OpenRTM_aist.Task.__init__(self)
+    self._mgr = mgr
+  def svc(self):
+    time.sleep(1)
+    self._mgr.terminate()
+
+
 class ManagerServant(RTM__POA.Manager):
   """
   """
@@ -802,7 +811,8 @@ class ManagerServant(RTM__POA.Manager):
   #
   # ReturnCode_t shutdown()
   def shutdown(self):
-    self._mgr.terminate()
+    task = terminate_Task(self._mgr)
+    task.activate()
     return RTC.RTC_OK
 
   
@@ -1238,9 +1248,11 @@ class ManagerServant(RTM__POA.Manager):
       if not rtcd_cmd:
         rtcd_cmd = "rtcd_python"
 
+
       cmd = rtcd_cmd
-      cmd = " -p "
+      cmd += " -p "
       cmd += mgrvstr[1] # port number
+      cmd += " -d "
 
       self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
       ret = OpenRTM_aist.launch_shell(cmd)
