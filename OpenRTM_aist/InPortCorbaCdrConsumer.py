@@ -160,7 +160,7 @@ class InPortCorbaCdrConsumer(OpenRTM_aist.InPortConsumer,OpenRTM_aist.CorbaConsu
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
         
-    return self.UNKNOWN_ERROR
+
 
   ##
   # @if jp
@@ -414,7 +414,9 @@ class InPortCorbaCdrConsumer(OpenRTM_aist.InPortConsumer,OpenRTM_aist.CorbaConsu
     if not obj:
       return False
 
-    if not self._ptr(True)._is_equivalent(obj):
+    obj_ptr = self._ptr(True)
+    
+    if obj_ptr is None or not obj_ptr._is_equivalent(obj):
       return False
     
     self.releaseObject()

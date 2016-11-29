@@ -196,8 +196,7 @@ class OutPortSHMConsumer(OpenRTM_aist.OutPortCorbaCdrConsumer):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
-    self._rtcout.RTC_ERROR("get(): Never comes here.")
-    return self.UNKNOWN_ERROR
+
 
 
   

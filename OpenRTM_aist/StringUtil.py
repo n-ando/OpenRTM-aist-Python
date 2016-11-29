@@ -556,20 +556,25 @@ def stringTo(_type, _str):
   if not _str:
     return False
 
-  if type(_type[0]) == int:
-    _type[0] = int(_str)
-    return True
-  elif type(_type[0]) == long:
-    _type[0] = long(_str)
-    return True
-  elif type(_type[0]) == float:
-    _type[0] = float(_str)
-    return True
-  elif type(_type[0]) == list:
-    return _stringToList(_type, _str)
-  elif type(_type[0]) == str:
-    _type[0] = str(_str)
-    return True
+  try:
+    if type(_type[0]) == int:
+      _type[0] = int(_str)
+      return True
+    elif type(_type[0]) == long:
+      _type[0] = long(_str)
+      return True
+    elif type(_type[0]) == float:
+      _type[0] = float(_str)
+      return True
+    elif type(_type[0]) == list:
+      return _stringToList(_type, _str)
+    elif type(_type[0]) == str:
+      _type[0] = str(_str)
+      return True
+  except ValueError:
+    return False
+  except:
+    return False
   
   return False
 

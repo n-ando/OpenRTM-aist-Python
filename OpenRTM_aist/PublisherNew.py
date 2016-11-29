@@ -635,7 +635,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
-    return self.PORT_ERROR
+
 
   ##
   # @brief push "fifo" policy
@@ -663,7 +663,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
-    return self.PORT_ERROR
+
 
   ##
   # @brief push "skip" policy
@@ -711,7 +711,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
-    return self.PORT_ERROR
+
 
   ##
   # @brief push "new" policy
@@ -741,7 +741,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
-    return self.PORT_ERROR
+
 
   ##
   # @if jp

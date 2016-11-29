@@ -161,7 +161,7 @@ class CorbaNaming:
       self.__print_exception()
       return False
 
-    return False
+
 
 
   ##
@@ -336,8 +336,8 @@ class CorbaNaming:
   #
   # @endif
   def rebind(self, name_list, obj, force=True):
-    if force is None:
-      force = True
+    #if force is None:
+    #  force = True
       
     try:
       self._rootContext.rebind(name_list, obj)
@@ -666,8 +666,8 @@ class CorbaNaming:
   #
   # @endif
   def bindNewContext(self, name, force=True):
-    if force is None:
-      force = True
+    #if force is None:
+    #  force = True
       
     if isinstance(name, basestring):
       name_ = self.toName(name)
@@ -962,7 +962,7 @@ class CorbaNaming:
     except CosNaming.NamingContext.AlreadyBound:
       obj = context.resolve(name_list)
       return obj
-    return CORBA.Object._nil
+
 
 
   ##

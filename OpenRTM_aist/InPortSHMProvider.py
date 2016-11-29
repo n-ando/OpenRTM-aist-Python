@@ -186,7 +186,7 @@ class InPortSHMProvider(OpenRTM_aist.InPortProvider, OpenRTM_aist.SharedMemory):
     except:
       self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
       return OpenRTM.UNKNOWN_ERROR
-    return OpenRTM.UNKNOWN_ERROR
+
     
 
 

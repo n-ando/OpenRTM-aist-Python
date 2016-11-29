@@ -422,7 +422,7 @@ class PortProfileHelper:
     else:
       return self._connProfiles[index]
 
-    return None
+
 
 
   ##
