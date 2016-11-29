@@ -119,10 +119,8 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
 
 
     if prop.hasKey("serializer"):
-      endian = prop.getProperty("serializer.cdr.endian")
-      if not endian:
-        self._rtcout.RTC_ERROR("init(): endian is not set.")
-        endian = "little"
+      endian = prop.getProperty("serializer.cdr.endian", "little")
+
         
       endian = OpenRTM_aist.split(endian, ",")
       endian = OpenRTM_aist.normalize(endian)
@@ -183,7 +181,7 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
       ret = self._buffer.read(cdr)
       
       if ret == OpenRTM_aist.BufferStatus.BUFFER_OK:
-        if not cdr[0]:
+        if cdr[0] is None:
           self._rtcout.RTC_ERROR("buffer is empty.")
           return OpenRTM.BUFFER_EMPTY
       
@@ -268,8 +266,7 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
     else:
       return OpenRTM.UNKNOWN_ERROR
     
-    self.onSenderError()
-    return OpenRTM.UNKNOWN_ERROR
+
 
 
 
