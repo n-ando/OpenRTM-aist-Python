@@ -319,7 +319,6 @@ class CorbaConsumer(CorbaConsumerBase):
   #
   # @endif
   def _ptr(self, get_ref=False):
-    #print dir(self._var)
     if get_ref:
       return self._var
     if self._sev is not None:

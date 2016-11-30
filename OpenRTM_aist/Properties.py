@@ -199,8 +199,8 @@ class Properties:
     if defaults_map:
       #for i in range(len(defaults_map.items())):
       #  self.setDefault(defaults_map.keys()[i], defaults_map.values()[i])
-      for key, value in defaults_map.items():
-        self.setDefault(key, value)
+      for _key, _value in defaults_map.items():
+        self.setDefault(_key, _value)
       return
 
     if defaults_str:

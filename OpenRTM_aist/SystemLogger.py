@@ -20,6 +20,7 @@ import time
 import threading
 import logging
 import logging.handlers
+import OpenRTM_aist
 
 logger = None
 
@@ -112,6 +113,7 @@ class Logger:
 
   def init(*args):
     global logger
+    
 
     if logger is not None:
       return logger
@@ -325,6 +327,7 @@ class LogStream:
     self._loggerObj = Logger.init(*args)
     self._log_enable = True
     self.logger = logging.getLogger(name)
+    self.guard = None
 
 
   def __del__(self):
@@ -440,7 +443,7 @@ class LogStream:
   # @endif
   def acquire(self):
     if self._LogLock:
-      self.guard = OpenRTM_aist.ScopedLock(self._mutex)
+      self.guard = OpenRTM_aist.ScopedLock(self._loggerObj._mutex)
 
 
   ##
@@ -455,7 +458,7 @@ class LogStream:
   #
   # @endif
   def release(self):
-    if self._LogLock:
+    if self._LogLock and self.guard:
       del self.guard
 
 

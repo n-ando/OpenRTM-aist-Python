@@ -444,8 +444,7 @@ class OutPortCorbaCdrProvider(OpenRTM_aist.OutPortProvider,
     else:
       return (OpenRTM.UNKNOWN_ERROR, data)
     
-    self.onSenderError()
-    return (OpenRTM.UNKNOWN_ERROR, data)
+
 
 
 def OutPortCorbaCdrProviderInit():
