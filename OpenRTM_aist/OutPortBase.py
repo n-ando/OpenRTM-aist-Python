@@ -1260,8 +1260,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
       return 0
 
 
-    self._rtcout.RTC_FATAL("never comes here: createConnector()")
-    return 0
+
 
 
   ##

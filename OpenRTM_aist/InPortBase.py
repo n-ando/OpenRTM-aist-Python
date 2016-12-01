@@ -1227,5 +1227,4 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return 0
 
-    self._rtcout.RTC_FATAL("never comes here: createConnector()")
-    return 0
+

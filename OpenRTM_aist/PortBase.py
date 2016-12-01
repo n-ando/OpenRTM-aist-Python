@@ -566,7 +566,7 @@ class PortBase(RTC__POA.PortService):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return (RTC.BAD_PARAMETER, connector_profile)
 
-    return (RTC.RTC_ERROR, connector_profile)
+
 
 
   ##

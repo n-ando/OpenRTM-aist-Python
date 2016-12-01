@@ -222,8 +222,7 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
 
-    self._rtcout.RTC_ERROR("get(): Never comes here.")
-    return self.UNKNOWN_ERROR
+
 
 
   ##
@@ -299,15 +298,16 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
   def unsubscribeInterface(self, properties):
     self._rtcout.RTC_TRACE("unsubscribeInterface()")
     index = OpenRTM_aist.NVUtil.find_index(properties,
-                                           "dataport.corba_cdr.outport_ref")
+                                           "dataport.corba_cdr.outport_ior")
     if index < 0:
       self._rtcout.RTC_DEBUG("dataport.corba_cdr.outport_ior not found.")
       return
     
     ior = ""
+    
     try:
       ior = any.from_any(properties[index].value, keep_structs=True)
-                
+             
       if ior:
         self._rtcout.RTC_DEBUG("dataport.corba_cdr.outport_ior found.")
         orb = OpenRTM_aist.Manager.instance().getORB()
