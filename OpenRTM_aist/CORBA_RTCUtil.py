@@ -113,15 +113,15 @@ def get_actual_ec(rtc, ec_id=0):
     return RTC.ExecutionContext._nil
   if CORBA.is_nil(rtc):
     return RTC.ExecutionContext._nil
-  if ec_id < 1000:
+  if ec_id < OpenRTM_aist.RTObject.ECOTHER_OFFSET:
     eclist = rtc.get_owned_contexts()
     if ec_id >= len(eclist):
       return RTC.ExecutionContext._nil
     if CORBA.is_nil(eclist[ec_id]):
       return RTC.ExecutionContext._nil
     return eclist[ec_id]
-  elif ec_id >= 1000:
-    pec_id = ec_id - 1000
+  elif ec_id >= OpenRTM_aist.RTObject.ECOTHER_OFFSET:
+    pec_id = ec_id - OpenRTM_aist.RTObject.ECOTHER_OFFSET
     eclist = rtc.get_participating_contexts()
     if pec_id >= len(eclist):
       return RTC.ExecutionContext._nil
@@ -168,7 +168,7 @@ def get_ec_id(rtc, ec):
   for e in eclist_pec:
     if not CORBA.is_nil(e):
       if e._is_equivalent(ec):
-        return count+1000
+        return count+OpenRTM_aist.RTObject.ECOTHER_OFFSET
     count += 1
   return -1
   
@@ -529,8 +529,8 @@ def get_participants_rtc(rtc):
   ec = get_actual_ec(rtc)
   if CORBA.is_nil(ec):
     return []
-  prifile = ec.get_profile()
-  return prifile.participants
+  profile = ec.get_profile()
+  return profile.participants
 
 
 ##

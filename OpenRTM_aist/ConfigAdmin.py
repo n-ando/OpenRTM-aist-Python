@@ -130,7 +130,7 @@ class Config:
   # @endif
   def __init__(self, name, var, def_val, trans=None):
     self.name = name
-    self._default_value = def_val
+    self.default_value = def_val
     self.string_value = ""
     self.callback = None
     self._var = var
@@ -631,6 +631,7 @@ class ConfigAdmin:
   #
   def update(self, config_set=None, config_param=None):
     # update(const char* config_set)
+    
     if config_set and config_param is None:
       if self._configsets.hasKey(config_set) is None:
         return

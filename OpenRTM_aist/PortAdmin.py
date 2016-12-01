@@ -300,7 +300,7 @@ class PortAdmin:
         return False
       self._portRefs.append(port.getPortRef())
       return self._portServants.registerObject(port)
-    return False
+
 
   # new interface. since 1.0.0-RELEASE
   # void addPort(PortService_ptr port);

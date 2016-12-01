@@ -1535,7 +1535,7 @@ class PortBase(RTC__POA.PortService):
   #
   #@endif
   def publishInterfaces(self, connector_profile):
-    pass
+    return RTC.BAD_PARAMETER
 
 
   ##
@@ -1737,7 +1737,7 @@ class PortBase(RTC__POA.PortService):
   #
   # @endif
   def unsubscribeInterfaces(self, connector_profile):
-    pass
+    return RTC.BAD_PARAMETER
 
 
   ##
