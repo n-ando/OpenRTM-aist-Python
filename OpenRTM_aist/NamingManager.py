@@ -1036,7 +1036,7 @@ class NamingManager:
     nsobj = 0
     try:
       nsobj = self.createNamingObj(ns.method, ns.nsname)
-      if nsobj != 0: # if succeed
+      if nsobj is not None: # if succeed
         self._rtcout.RTC_INFO("Connected to a name server: %s/%s",
                               (ns.method, ns.nsname))
         ns.ns = nsobj
@@ -1049,7 +1049,7 @@ class NamingManager:
     except:
       self._rtcout.RTC_DEBUG("Name server: %s/%s disappeared again.",
                              (ns.method, ns.nsname))
-      if nsobj != 0:
+      if nsobj is not None:
         del ns.ns
         ns.ns = 0
 

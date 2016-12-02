@@ -741,7 +741,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
       del guard
 
     return RTC.RTC_OK
-    return
+
 
   # bool threadRunning()
   def threadRunning(self):

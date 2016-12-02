@@ -736,6 +736,7 @@ class ExecutionContextBase:
                            (float(self._activationTimeout.toDouble()), self.getRate(), cycle_))
     # Wating INACTIVE -> ACTIVE
     starttime_ = OpenRTM_aist.Time().gettimeofday()
+    
     while rtobj.isCurrentState(RTC.INACTIVE_STATE):
       ret_ = self.onWaitingActivated(rtobj, count_) # Template method
       if ret_ != RTC.RTC_OK:
@@ -761,7 +762,7 @@ class ExecutionContextBase:
     ret_ = self.onActivated(rtobj, count_) # Template method
     if ret_ != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("onActivated() failed.")
-
+  
     self._rtcout.RTC_DEBUG("onActivated() done.")
     return ret_
 
@@ -1476,6 +1477,33 @@ class ExecutionContextBase:
         return True
     self._rtcout.RTC_DEBUG("Configuration %s not found.", key)
     return False
+
+  def is_running(self):
+    self._rtcout.RTC_TRACE("is_running()")
+    return self.isRunning()
+  def get_rate(self):
+    return self.getRate()
+  def set_rate(self, rate):
+    return self.setRate(rate)
+  def activate_component(self, comp):
+    return self.activateComponent(comp)
+  def deactivate_component(self, comp):
+    return self.deactivateComponent(comp)
+  def reset_component(self, comp):
+    return self.resetComponent(comp)
+  def get_component_state(self, comp):
+    return self.getComponentState(comp)
+  def get_kind(self):
+    return self.getKind()
+  def add_component(self, comp):
+    return self.addComponent(comp)
+  def remove_component(self, comp):
+    return self.removeComponent(comp)
+  def get_profile(self):
+    return self.getProfile()
+
+
+  
 
 
 executioncontextfactory = None

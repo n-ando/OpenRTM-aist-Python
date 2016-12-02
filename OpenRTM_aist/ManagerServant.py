@@ -414,13 +414,13 @@ class ManagerServant(RTM__POA.Manager):
         if not CORBA.is_nil(self._slaves[i]):
           srtcs = self._slaves[i].get_components()
           OpenRTM_aist.CORBA_SeqUtil.push_back_list(crtcs, srtcs)
-          continue
+          
       except:
-        self._RTC_INFO("slave (%d) has disappeared.", i)
-        self._slaves[i] = RTM.Manager._nil
+        self._rtcout.RTC_INFO("slave (%d) has disappeared.", i)
+        #self._slaves[i] = RTM.Manager._nil
 
-      OpenRTM_aist.CORBA_SeqUtil.erase(self._slaves, i)
-      i -= 1
+        OpenRTM_aist.CORBA_SeqUtil.erase(self._slaves, i)
+        i -= 1
 
     return crtcs
   
@@ -458,13 +458,12 @@ class ManagerServant(RTM__POA.Manager):
         if not CORBA.is_nil(self._slaves[i]):
           sprofs = self._slaves[i].get_component_profiles()
           OpenRTM_aist.CORBA_SeqUtil.push_back_list(cprofs, sprofs)
-          continue
       except:
         self._rtcout.RTC_INFO("slave (%d) has disappeared.", i)
-        self._slaves[i] = RTM.Manager._nil
+        #self._slaves[i] = RTM.Manager._nil
 
-      OpenRTM_aist.CORBA_SeqUtil.erase(self._slaves, i)
-      i -= 1
+        OpenRTM_aist.CORBA_SeqUtil.erase(self._slaves, i)
+        i -= 1
 
     del guard
     return cprofs
@@ -940,9 +939,7 @@ class ManagerServant(RTM__POA.Manager):
     name = tmp[0]
     rtc_name = name.split("/")
     for rtc in rtcs:
-      if len(rtc_name) == 0:
-        pass
-      elif len(rtc_name) == 1:
+      if len(rtc_name) == 1:
         if rtc.getInstanceName() == rtc_name[0]:
           crtcs.append(rtc.getObjRef())
       else:

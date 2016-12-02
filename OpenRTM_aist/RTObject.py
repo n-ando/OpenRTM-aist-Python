@@ -653,7 +653,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     for ec in self._ecOther:
       if not CORBA.is_nil(ec):
         # ec.stop()
-        ec.remove_component(self._this())
+        ret = ec.remove_component(self._this())
+        
 
     self._exiting = True
     return self.finalize()
