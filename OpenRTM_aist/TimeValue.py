@@ -105,10 +105,8 @@ class TimeValue:
   # @endif
   def __sub__(self, tm):
     global TIMEVALUE_ONE_SECOND_IN_USECS
-    try:
-      res = TimeValue()
-    except:
-      res = OpenRTM_aist.TimeValue()
+
+    res = TimeValue()
 
     if self.tv_sec >= tm.tv_sec:
       # +

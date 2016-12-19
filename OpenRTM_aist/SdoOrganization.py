@@ -211,8 +211,7 @@ class Organization_impl(SDOPackage__POA.Organization):
       self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_organization_property_value()")
 
-    # never reach here
-    return None
+
 
 
   ##
@@ -260,13 +259,10 @@ class Organization_impl(SDOPackage__POA.Organization):
     if org_property is None:
       raise SDOPackage.InvalidParameter("org_property is Empty.")
 
-    try:
-      guard = OpenRTM_aist.ScopedLock(self._org_mutex)
-      self._orgProperty = org_property
-      return True
-    except:
-      self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("add_organization_property()")
+
+    guard = OpenRTM_aist.ScopedLock(self._org_mutex)
+    self._orgProperty = org_property
+    return True
 
 
 
@@ -383,6 +379,7 @@ class Organization_impl(SDOPackage__POA.Organization):
     if index < 0:
       raise SDOPackage.InvalidParameter("remove_organization_property_value(): Not found.")
 
+
     try:
       OpenRTM_aist.CORBA_SeqUtil.erase(self._orgProperty.properties, index)
       return True
@@ -390,7 +387,6 @@ class Organization_impl(SDOPackage__POA.Organization):
       self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("remove_organization_property_value()")
 
-    return False
 
 
   ##
@@ -477,12 +473,10 @@ class Organization_impl(SDOPackage__POA.Organization):
     if CORBA.is_nil(sdo):
       raise SDOPackage.InvalidParameter("set_owner()")
 
-    try:
-      self._varOwner = sdo
-      return True
-    except:
-      self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("set_owner()")
+
+    self._varOwner = sdo
+    return True
+
 
 
 
@@ -524,11 +518,9 @@ class Organization_impl(SDOPackage__POA.Organization):
   # @endif
   def get_members(self):
     self.__rtcout.RTC_TRACE("get_members()")
-    try:
-      return self._memberList
-    except:
-      self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("get_members()")
+
+    return self._memberList
+
 
 
   ##
@@ -580,12 +572,10 @@ class Organization_impl(SDOPackage__POA.Organization):
     if sdos is None:
       raise SDOPackage.InvalidParameter("set_members(): SDOList is empty.")
 
-    try:
-      self._memberList = sdos
-      return True
-    except:
-      self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("set_members()")
+
+    self._memberList = sdos
+    return True
+
 
 
 
@@ -692,13 +682,14 @@ class Organization_impl(SDOPackage__POA.Organization):
       self.__rtcout.RTC_ERROR("remove_member(): Not found.")
       raise SDOPackage.InvalidParameter("remove_member(): Not found.")
 
+    
     try:
       OpenRTM_aist.CORBA_SeqUtil.erase(self._memberList, index)
       return True
     except:
       self.__rtcout.RTC_ERROR("unknown exception")
       raise SDOPackage.InternalError("remove_member(): Not found.")
-
+    
 
 
 
@@ -793,12 +784,9 @@ class Organization_impl(SDOPackage__POA.Organization):
     if dependency is None:
       raise SDOPackage.InvalidParameter("set_dependency(): Empty dependency.")
 
-    try:
-      self._dependency = dependency
-      return True
-    except:
-      self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("set_dependency(): Unknown.")
+
+    self._dependency = dependency
+    return True
 
 
 

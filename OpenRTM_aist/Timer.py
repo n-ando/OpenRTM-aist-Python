@@ -87,10 +87,9 @@ class Timer:
   #
   def __del__(self):
     self._running = False
-    try:
-      self.join()
-    except:
-      pass
+
+    self.join()
+
     self._thread = None
 
   def join(self):

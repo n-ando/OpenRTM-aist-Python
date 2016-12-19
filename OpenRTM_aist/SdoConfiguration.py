@@ -268,12 +268,10 @@ class Configuration_impl(SDOPackage__POA.Configuration):
     if dProfile is None:
       raise SDOPackage.InvalidParameter("dProfile is empty.")
 
-    try:
-      guard = OpenRTM_aist.ScopedLock(self._dprofile_mutex)
-      self._deviceProfile = dProfile
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("Unknown Error")
+
+    guard = OpenRTM_aist.ScopedLock(self._dprofile_mutex)
+    self._deviceProfile = dProfile
+
 
     return True
 
@@ -791,13 +789,11 @@ class Configuration_impl(SDOPackage__POA.Configuration):
 
     guard = OpenRTM_aist.ScopedLock(self._config_mutex)
 
-    try:
-      if not self._configsets.haveConfig(config_id):
-        self._rtcout.RTC_ERROR("No such ConfigurationSet")
-        raise SDOPackage.InternalError("No such ConfigurationSet")
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("Unknown exception")
+
+    if not self._configsets.haveConfig(config_id):
+      self._rtcout.RTC_ERROR("No such ConfigurationSet")
+      raise SDOPackage.InternalError("No such ConfigurationSet")
+
       
 
     configset = self._configsets.getConfigurationSet(config_id)

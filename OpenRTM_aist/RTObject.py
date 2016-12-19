@@ -653,7 +653,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     for ec in self._ecOther:
       if not CORBA.is_nil(ec):
         # ec.stop()
-        ret = ec.remove_component(self._this())
+        ec.remove_component(self._this())
         
 
     self._exiting = True
@@ -922,7 +922,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
-    assert(False)
+
     return None
 
 
@@ -949,13 +949,10 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # virtual PortServiceList* get_ports()
   def get_ports(self):
     self._rtcout.RTC_TRACE("get_ports()")
-    try:
-      return self._portAdmin.getPortServiceList()
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
-    assert(False)
-    return []
+    return self._portAdmin.getPortServiceList()
+
+
 
 
 
@@ -1718,13 +1715,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # virtual SDOPackage::OrganizationList* get_owned_organizations()
   def get_owned_organizations(self):
     self._rtcout.RTC_TRACE("get_owned_organizations()")
-    try:
-      return self._sdoOwnedOrganizations
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.NotAvailable("NotAvailable: get_owned_organizations")
 
-    return []
+    return self._sdoOwnedOrganizations
+
 
 
   #============================================================
@@ -1769,11 +1762,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # virtual char* get_sdo_id()
   def get_sdo_id(self):
     self._rtcout.RTC_TRACE("get_sdo_id()")
-    try:
-      return self._profile.instance_name
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("get_sdo_id()")
+
+    return self._profile.instance_name
+
 
 
   ##
@@ -1814,12 +1805,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # virtual char* get_sdo_type()
   def get_sdo_type(self):
     self._rtcout.RTC_TRACE("get_sdo_type()")
-    try:
-      return self._profile.description
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("get_sdo_type()")
-    return ""
+
+    return self._profile.description
+
 
 
   ##
@@ -1863,13 +1851,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # virtual SDOPackage::DeviceProfile* get_device_profile()
   def get_device_profile(self):
     self._rtcout.RTC_TRACE("get_device_profile()")
-    try:
-      return self._SdoConfigImpl.getDeviceProfile()
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("get_device_profile()")
 
-    return SDOPackage.DeviceProfile("","","","",[])
+    return self._SdoConfigImpl.getDeviceProfile()
+
 
 
   ##
@@ -1914,11 +1898,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   def get_service_profiles(self):
     self._rtcout.RTC_TRACE("get_service_profiles()")
     self._sdoSvcProfiles = self._SdoConfigImpl.getServiceProfiles()
-    try:
-      return self._sdoSvcProfiles
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("get_service_profiles()")
+
+    return self._sdoSvcProfiles
 
     
 
@@ -2045,11 +2026,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     if index < 0:
       raise SDOPackage.InvalidParameter("get_service(): Not found")
 
-    try:
-      return self._sdoSvcProfiles[index].service
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("get_service()")
+
+    return self._sdoSvcProfiles[index].service
+
     
 
 
@@ -2103,11 +2082,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._rtcout.RTC_TRACE("get_configuration()")
     if self._SdoConfig is None:
       raise SDOPackage.InterfaceNotImplemented("InterfaceNotImplemented: get_configuration")
-    try:
-      return self._SdoConfig
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("get_configuration()")
+
+    return self._SdoConfig
+
     
 
 
@@ -2159,7 +2136,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   def get_monitoring(self):
     self._rtcout.RTC_TRACE("get_monitoring()")
     raise SDOPackage.InterfaceNotImplemented("Exception: get_monitoring")
-    return SDOPackage.Monitoring._nil
+    
 
 
   ##
@@ -2202,11 +2179,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   def get_organizations(self):
     self._rtcout.RTC_TRACE("get_organizations()")
     self._sdoOrganizations = self._SdoConfigImpl.getOrganizations()
-    try:
-      return self._sdoOrganizations
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("get_organizations()")
+
+    return self._sdoOrganizations
+
     
 
 
@@ -2245,11 +2220,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # virtual SDOPackage::NVList* get_status_list()
   def get_status_list(self):
     self._rtcout.RTC_TRACE("get_status_list()")
-    try:
-      return self._sdoStatus
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("get_status_list()")
+
+    return self._sdoStatus
+
     
 
 
