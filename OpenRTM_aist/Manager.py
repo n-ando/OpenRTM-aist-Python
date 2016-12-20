@@ -1547,6 +1547,7 @@ class Manager:
       self._orb = CORBA.ORB_init(argv)
 
       self._poa = self._orb.resolve_initial_references("RootPOA")
+      
       if CORBA.is_nil(self._poa):
         self._rtcout.RTC_ERROR("Could not resolve RootPOA")
         return False
@@ -1710,13 +1711,13 @@ class Manager:
         self._rtcout.RTC_PARANOID("Pending work still exists.")
         if self._orb.work_pending():
             self._orb.perform_work()
-            pass
+
 
       self._rtcout.RTC_DEBUG("No pending works of ORB. Shutting down POA and ORB.")
     except:
       self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
-      pass
 
+    
     if not CORBA.is_nil(self._poa):
       try:
         if not CORBA.is_nil(self._poaManager):
@@ -2039,14 +2040,14 @@ class Manager:
         p.mergeProperties(comp.getProperties())
       except:
         self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
-        pass
+
 
     for ec in self._ecs:
       try:
         self._poa.deactivate_object(self._poa.servant_to_id(ec))
       except:
         self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
-        pass
+
 
 
   ##
@@ -3133,7 +3134,6 @@ class Manager:
         #Manager.instance().shutdown()
       except:
         print OpenRTM_aist.Logger.print_exception()
-        pass
       return
 
 

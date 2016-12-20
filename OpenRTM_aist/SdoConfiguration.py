@@ -439,7 +439,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.remove_service_profile")
 
-    return False
+
 
 
   ##
@@ -534,15 +534,11 @@ class Configuration_impl(SDOPackage__POA.Configuration):
   # @endif
   def get_configuration_parameters(self):
     self._rtcout.RTC_TRACE("get_configuration_parameters()")
-    try:
-      guard = OpenRTM_aist.ScopedLock(self._params_mutex)
-      param = copy.copy(self._parameters)
-      return param
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("Configuration.get_configuration_parameters")
 
-    return []
+    guard = OpenRTM_aist.ScopedLock(self._params_mutex)
+    param = copy.copy(self._parameters)
+    return param
+
 
 
   ##
@@ -740,7 +736,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.get_configuration_sets")
 
-    return []
+
 
   ##
   # @if jp
@@ -798,15 +794,12 @@ class Configuration_impl(SDOPackage__POA.Configuration):
 
     configset = self._configsets.getConfigurationSet(config_id)
 
-    try:
-      config = SDOPackage.ConfigurationSet("","",[])
-      toConfigurationSet(config, configset)
-      return config
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("Configuration::get_configuration_set()")
 
-    return SDOPackage.ConfigurationSet("","",[])
+    config = SDOPackage.ConfigurationSet("","",[])
+    toConfigurationSet(config, configset)
+    return config
+
+
 
 
   ##
@@ -887,7 +880,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration::set_configuration_set_values()")
 
-    return True
+
 
 
   ##
@@ -1007,12 +1000,13 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       config_id = configuration_set.id
       config = OpenRTM_aist.Properties(key=config_id)
       toProperties(config, configuration_set)
+      
       return self._configsets.addConfigurationSet(config)
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration::add_configuration_set()")
 
-    return True
+    
 
 
   ##
