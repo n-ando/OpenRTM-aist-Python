@@ -333,7 +333,7 @@ class Configuration_impl(SDOPackage__POA.Configuration):
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("Configuration.add_service_profile")
 
-    return False
+
 
 
   ##
@@ -377,11 +377,8 @@ class Configuration_impl(SDOPackage__POA.Configuration):
     if org is None:
       raise SDOPackage.InvalidParameter("org is empty.")
 
-    try:
-      OpenRTM_aist.CORBA_SeqUtil.push_back(self._organizations, org)
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("Configuration.add_organization")
+
+    OpenRTM_aist.CORBA_SeqUtil.push_back(self._organizations, org)
 
     return True
 
