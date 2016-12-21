@@ -380,12 +380,8 @@ class Organization_impl(SDOPackage__POA.Organization):
       raise SDOPackage.InvalidParameter("remove_organization_property_value(): Not found.")
 
 
-    try:
-      OpenRTM_aist.CORBA_SeqUtil.erase(self._orgProperty.properties, index)
-      return True
-    except:
-      self.__rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      raise SDOPackage.InternalError("remove_organization_property_value()")
+    OpenRTM_aist.CORBA_SeqUtil.erase(self._orgProperty.properties, index)
+    return True
 
 
 
