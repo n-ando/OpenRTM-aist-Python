@@ -144,6 +144,7 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
     for sdo in sdo_list:
       dfc = [None]
       if not self.sdoToDFC(sdo, dfc):
+        sdo_list.remove(sdo)
         continue
       member = self.Member(dfc[0])
       self.stopOwnedEC(member)
@@ -190,6 +191,7 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
     for sdo in sdo_list:
       dfc = [None]
       if not self.sdoToDFC(sdo, dfc):
+        sdo_list.remove(sdo)
         continue
       
       member = self.Member(dfc[0])
@@ -777,6 +779,7 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
 
     # since Python 2.5
     # self._rtcout.RTC_DEBUG("%d member RTC%s activated.", (len_,(lambda x:  if x > 1 else "was")(len_)))
+    
     if len_ > 1:
       str_ = "s were"
     else:

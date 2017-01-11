@@ -355,8 +355,7 @@ class CorbaNaming:
       else:
         self.__print_exception()
         raise
-      
-    return
+
 
 
   ##

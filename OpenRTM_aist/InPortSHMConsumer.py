@@ -213,10 +213,7 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       return self.CONNECTION_LOST
-    
-    
-        
-    return self.UNKNOWN_ERROR
+
  
 
 def InPortSHMConsumerInit():
