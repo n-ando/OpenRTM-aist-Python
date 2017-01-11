@@ -1152,7 +1152,7 @@ class ManagerServant(RTM__POA.Manager):
       
       self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
       ret = OpenRTM_aist.launch_shell(cmd)
-      print cmd, ret
+
       
       if ret == -1:
         self._rtcout.RTC_DEBUG("%s: failed", cmd)
@@ -1255,7 +1255,7 @@ class ManagerServant(RTM__POA.Manager):
 
       self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
       ret = OpenRTM_aist.launch_shell(cmd)
-      print cmd, ret
+
       if ret == -1:
         self._rtcout.RTC_DEBUG("%s: failed", cmd)
         return RTC.RTObject._nil
@@ -1264,7 +1264,6 @@ class ManagerServant(RTM__POA.Manager):
       time.sleep(0.01)
       count = 0
       while CORBA.is_nil(mgrobj):
-        print count
         mgrobj = self.findManager(mgrstr)
         count += 1
         if count > 1000:
