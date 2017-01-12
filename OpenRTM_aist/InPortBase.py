@@ -1209,9 +1209,9 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
         return 0
                 
 
-      if connector is None:
-        self._rtcout.RTC_ERROR("InPortConnector creation failed")
-        return 0
+      #if connector is None:
+      #  self._rtcout.RTC_ERROR("InPortConnector creation failed")
+      #  return 0
 
       if provider_ is not None:
         self._rtcout.RTC_TRACE("InPortPushConnector created")

@@ -285,12 +285,12 @@ class CorbaConsumer(CorbaConsumerBase):
       self._var = self._objref
     
     
+    return True
+    #if not CORBA.is_nil(self._var):
+    #  return True
 
-    if not CORBA.is_nil(self._var):
-      return True
-
-    self.releaseObject()
-    return False
+    #self.releaseObject()
+    #return False
 
 
   ##
@@ -326,12 +326,10 @@ class CorbaConsumer(CorbaConsumerBase):
     try:
       mgr = OpenRTM_aist.Manager.instance()
       self._sev = mgr._poa.reference_to_servant(self._var)
-      if self._sev is not None:
-        return self._sev
+      return self._sev
     except:
       return self._var
-      
-    return self._var
+
 
 
   ##

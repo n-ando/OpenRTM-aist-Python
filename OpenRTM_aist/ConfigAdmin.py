@@ -896,8 +896,8 @@ class ConfigAdmin:
   def getConfigurationSet(self, config_id):
     
     prop = self._configsets.findNode(config_id)
-    if prop is None:
-      return self._emptyconf
+    #if prop is None:
+    #  return self._emptyconf
     return prop
 
 
@@ -935,8 +935,8 @@ class ConfigAdmin:
       return False
 
     p = self._configsets.getNode(node_)
-    if p is None:
-      return False
+    #if p is None:
+    #  return False
 
     p.mergeProperties(config_set)
     self._changed = True
@@ -1013,8 +1013,8 @@ class ConfigAdmin:
     self._configsets.createNode(node)
 
     p = self._configsets.getNode(node)
-    if p is None:
-      return False
+    #if p is None:
+    #  return False
 
     p.mergeProperties(configset)
     self._newConfig.append(node)
