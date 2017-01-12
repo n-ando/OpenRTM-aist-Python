@@ -1223,16 +1223,16 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
         self._rtcout.RTC_ERROR("provider or consumer is not passed. returned 0;")
         return 0
 
-      if connector is None:
-        self._rtcout.RTC_ERROR("OutPortConnector creation failed")
-        return 0
+      #if connector is None:
+      #  self._rtcout.RTC_ERROR("OutPortConnector creation failed")
+      #  return 0
 
       if consumer_ is not None:
         self._rtcout.RTC_TRACE("OutPortPushConnector created")
       elif provider_ is not None:
         self._rtcout.RTC_TRACE("OutPortPullConnector created")
 
-            
+        
       if OpenRTM_aist.StringUtil.normalize([prop.getProperty("interface_type")]) == "direct":
         
         inport = self.getLocalInPort(profile)

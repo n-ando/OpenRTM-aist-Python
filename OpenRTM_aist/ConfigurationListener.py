@@ -444,7 +444,8 @@ class ConfigurationParamListenerHolder:
   def __del__(self):
     for (idx, listener) in enumerate(self._listeners):
       if listener.autoclean:
-        self._listeners[idx] = None
+        del self._listeners[idx]
+        #self._listeners[idx] = None
     return
   
 
@@ -570,7 +571,8 @@ class ConfigurationSetListenerHolder:
   def __del__(self):
     for (idx, listener) in enumerate(self._listeners):
       if listener.autoclean:
-        self._listeners[idx] = None
+        del self._listeners[idx]
+        #self._listeners[idx] = None
     return
     
 
@@ -696,7 +698,8 @@ class ConfigurationSetNameListenerHolder:
   def __del__(self):
     for (idx, listener) in enumerate(self._listeners):
       if listener.autoclean:
-        self._listeners[idx] = None
+        del self._listeners[idx]
+        #self._listeners[idx] = None
     return
 
 

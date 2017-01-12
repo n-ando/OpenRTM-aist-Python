@@ -426,7 +426,7 @@ class CorbaNaming:
             context = obj_._narrow(CosNaming.NamingContext)
         else:
           raise CosNaming.NamingContext.CannotProceed(context, self.subName(name_list, i))
-    return
+
 
 
   ##
@@ -760,15 +760,14 @@ class CorbaNaming:
           next_context.destroy()
         elif bl[i].binding_type == CosNaming.nobject:
           context.unbind(bl[i].binding_name)
-        else:
-          assert(0)
+
       if CORBA.is_nil(bi):
         cont = False
       else:
-        bi.next_n(self._blLength, bl)
+        bi.next_n(self._blLength)
 
-    if not (CORBA.is_nil(bi)):
-      bi.destroy()
+    #if not (CORBA.is_nil(bi)):
+    #  bi.destroy()
     return
 
 
@@ -868,8 +867,8 @@ class CorbaNaming:
     nc_length = 0
     nc_length = self.split(string_name, "/", name_comps)
 
-    if not (nc_length > 0):
-      raise CosNaming.NamingContext.InvalidName
+    #if not (nc_length > 0):
+    #  raise CosNaming.NamingContext.InvalidName
 
     name_list = [CosNaming.NameComponent("","") for i in range(nc_length)]
 
@@ -1301,25 +1300,25 @@ class CorbaNaming:
     #obj = self.getRootContext()
     if CORBA.is_nil(obj):
         return []
-    nc = obj._narrow(obj)
-    if CORBA.is_nil(nc):
-      return []
+    #nc = obj._narrow(obj)
+    #if CORBA.is_nil(nc):
+    #  return []
     max_list_size = 65536
     
     bl, bi = obj.list(max_list_size)
     
     
     max_remaining = max_list_size - len(bl)
-    more_bindings = CORBA.is_nil(bi)
+    more_bindings = not CORBA.is_nil(bi)
     
     
-    if not more_bindings:
-      while not more_bindings and (max_remaining > 0):
+    if more_bindings:
+      while more_bindings and (max_remaining > 0):
         
         (tmp_bl, more_bindings) = bi.next_n(max_remaining)
         for i in tmp_bl:
           bl.append(i)
           
-          max_remaining = max_list_size - len(tmp_bl[0])
+        max_remaining = max_list_size - len(tmp_bl)
         
     return bl

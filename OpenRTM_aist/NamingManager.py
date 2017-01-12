@@ -860,8 +860,7 @@ class NamingManager:
     if mth == "corba":
       try:
         name = OpenRTM_aist.NamingOnCorba(self._manager.getORB(),name_server)
-        if name is None:
-          return None
+        
         self._rtcout.RTC_INFO("NameServer connection succeeded: %s/%s",
                               (method, name_server))
         return name
