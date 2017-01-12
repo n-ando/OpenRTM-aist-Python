@@ -896,8 +896,8 @@ class ConfigAdmin:
   def getConfigurationSet(self, config_id):
     
     prop = self._configsets.findNode(config_id)
-    #if prop is None:
-    #  return self._emptyconf
+    if prop is None:
+      return self._emptyconf
     return prop
 
 
