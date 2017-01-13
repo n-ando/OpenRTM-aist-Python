@@ -492,8 +492,8 @@ class ModuleManager:
     if len(profs) == 0:
       return OpenRTM_aist.Properties()
 
-    if len(profs) > 1:
-      return None
+    #if len(profs) > 1:
+    #  return None
 
     return profs[0]
 

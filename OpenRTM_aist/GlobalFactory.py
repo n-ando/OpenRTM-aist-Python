@@ -126,7 +126,7 @@ class Factory:
       print "Factory.createObject return None id: ", id
       return None
     obj_ = self._creators[id].creator_()
-    assert(not self._objects.has_key(obj_))
+    #assert(not self._objects.has_key(obj_))
     self._objects[obj_] = self._creators[id]
     return obj_
 

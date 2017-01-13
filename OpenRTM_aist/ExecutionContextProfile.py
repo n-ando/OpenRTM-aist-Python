@@ -362,11 +362,12 @@ class ExecutionContextProfile:
   # RTC::ReturnCode_t setOwner(RTC::LightweightRTObject_ptr comp);
   def setOwner(self, comp):
     self._rtcout.RTC_TRACE("setOwner()")
-    assert(not CORBA.is_nil(comp))
+    if CORBA.is_nil(comp):
+      return RTC.BAD_PARAMETER
     rtobj_ = comp._narrow(RTC.RTObject)
     if CORBA.is_nil(rtobj_):
       self._rtcout.RTC_ERROR("Narrowing failed.")
-      return RTC.BAD_PARAMETER
+      return RTC.RTC_ERROR
 
     guard = OpenRTM_aist.ScopedLock(self._profileMutex)
     self._profile.owner = rtobj_

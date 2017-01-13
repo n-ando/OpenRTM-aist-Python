@@ -673,6 +673,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
     self._rtcout.RTC_TRACE("pushSkip()")
     try:
       ret = self.PORT_OK
+      
       preskip = self._buffer.readable() + self._leftskip
       loopcnt = preskip/(self._skipn+1)
       postskip = self._skipn - self._leftskip
@@ -693,7 +694,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
         postskip = self._skipn + 1
 
       self._buffer.advanceRptr(self._buffer.readable())
-
+      
       if loopcnt == 0:
         # Not put
         self._leftskip = preskip % (self._skipn + 1)

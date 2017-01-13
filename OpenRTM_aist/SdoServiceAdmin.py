@@ -380,9 +380,9 @@ class SdoServiceAdmin:
     factory = OpenRTM_aist.SdoServiceConsumerFactory.instance()
     ctype = str(profile.interface_type)
     consumer = factory.createObject(ctype)
-    if consumer == None:
-      self._rtcout.RTC_ERROR("Hmm... consumer must be created.")
-      return False
+    #if consumer is None:
+    #  self._rtcout.RTC_ERROR("Hmm... consumer must be created.")
+    #  return False
 
     # initialize
     if not consumer.init(self._rtobj, sProfile):

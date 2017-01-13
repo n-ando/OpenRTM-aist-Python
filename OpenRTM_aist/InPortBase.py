@@ -1110,7 +1110,8 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
     self._rtcout.RTC_DEBUG("interface_type: %s", prop.getProperty("interface_type"))
     provider = OpenRTM_aist.InPortProviderFactory.instance().createObject(prop.getProperty("interface_type"))
     
-    if provider != 0:
+    
+    if provider is not None:
       self._rtcout.RTC_DEBUG("provider created")
       provider.init(prop.getNode("provider"))
 
@@ -1149,7 +1150,7 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
     self._rtcout.RTC_DEBUG("interface_type: %s", prop.getProperty("interface_type"))
     consumer = OpenRTM_aist.OutPortConsumerFactory.instance().createObject(prop.getProperty("interface_type"))
     
-    if consumer != 0:
+    if consumer is not None:
       self._rtcout.RTC_DEBUG("consumer created")
       consumer.init(prop.getNode("consumer"))
 

@@ -571,8 +571,8 @@ def stringTo(_type, _str):
     elif type(_type[0]) == str:
       _type[0] = str(_str)
       return True
-  except ValueError:
-    return False
+  #except ValueError:
+  #  return False
   except:
     return False
   

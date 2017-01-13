@@ -278,9 +278,14 @@ class CorbaConsumer(CorbaConsumerBase):
     if not CorbaConsumerBase.setObject(self, obj):
       self.releaseObject()
       return False
-
+    
     if self._interfaceType:
+      
       self._var = obj._narrow(self._interfaceType)
+      if self._var is None:
+        self.releaseObject()
+        return False
+      
     else:
       self._var = self._objref
     

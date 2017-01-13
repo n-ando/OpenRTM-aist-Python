@@ -117,6 +117,7 @@ def get_actual_ec(rtc, ec_id=0):
     eclist = rtc.get_owned_contexts()
     if ec_id >= len(eclist):
       return RTC.ExecutionContext._nil
+    
     if CORBA.is_nil(eclist[ec_id]):
       return RTC.ExecutionContext._nil
     return eclist[ec_id]

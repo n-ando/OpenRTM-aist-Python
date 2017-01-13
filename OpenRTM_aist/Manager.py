@@ -2473,11 +2473,11 @@ class Manager:
       mo = __import__(import_name)
       sys.path = save_path
       _spec = getattr(mo,import_name.lower()+"_spec",None)
-      _klass = getattr(mo,import_name,None)
-      if _spec and _klass:
+      _class = getattr(mo,import_name,None)
+      if _spec and _class:
         prof = OpenRTM_aist.Properties(defaults_str=_spec)
         self.registerFactory(prof,
-                             _klass,
+                             _class,
                              OpenRTM_aist.Delete)
     except:
       self._rtcout.RTC_ERROR("Module load error: %s", file_name)

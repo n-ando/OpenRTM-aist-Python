@@ -897,8 +897,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # virtual ComponentProfile* get_component_profile()
   def get_component_profile(self):
     self._rtcout.RTC_TRACE("get_component_profile()")
-    try:
-      prop_ = RTC.ComponentProfile(self._properties.getProperty("instance_name"),
+    prop_ = RTC.ComponentProfile(self._properties.getProperty("instance_name"),
                                    self._properties.getProperty("type_name"),
                                    self._properties.getProperty("description"),
                                    self._properties.getProperty("version"),
@@ -907,8 +906,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
                                    self._portAdmin.getPortProfileList(),
                                    self._profile.parent,
                                    self._profile.properties) 
-      OpenRTM_aist.NVUtil.copyFromProperties(self._profile.properties, self._properties)
-      return prop_
+    OpenRTM_aist.NVUtil.copyFromProperties(self._profile.properties, self._properties)
+    return prop_
       # return RTC.ComponentProfile(self._profile.instance_name,
       #               self._profile.type_name,
       #               self._profile.description,
@@ -919,11 +918,11 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       #               self._profile.parent,
       #               self._profile.properties)
     
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+    #except:
+    #  self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
 
-    return None
+    #return None
 
 
   ##
@@ -2274,7 +2273,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       raise SDOPackage.InternalError("get_status()")
-    return any.to_any("")
+
 
 
   #============================================================
@@ -2866,11 +2865,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     if ret:
       for inport in self._inports:
         if port == inport:
-          try:
-            self._inports.remove(port)
-          except:
-            self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-            
+
+          self._inports.remove(port)
+
           return True
 
     return False
@@ -2905,11 +2902,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     if ret:
       for outport in self._outports:
         if port == outport:
-          try:
-            self._outports.remove(port)
-          except:
-            self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-            
+
+          self._outports.remove(port)
+          
           return True
 
     return False
@@ -3567,8 +3562,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
       del self._eclist[idx]
 
-    if self._eclist:
-      self._eclist = []
+
     return
 
 
@@ -4912,11 +4906,11 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
 
 
       ec_[0] = OpenRTM_aist.ExecutionContextFactory.instance().createObject(ec_type_)
-      if not ec_[0]:
-        self._rtcout.RTC_ERROR("EC (%s) creation failed.", ec_type_)
-        self._rtcout.RTC_DEBUG("Available EC list: %s",
-                               OpenRTM_aist.flatten(avail_ec_))
-        return RTC.RTC_ERROR
+      #if not ec_[0]:
+      #  self._rtcout.RTC_ERROR("EC (%s) creation failed.", ec_type_)
+      #  self._rtcout.RTC_DEBUG("Available EC list: %s",
+      #                         OpenRTM_aist.flatten(avail_ec_))
+      #  return RTC.RTC_ERROR
       
       ec_[0].init(default_opts)
       self._eclist.append(ec_[0])

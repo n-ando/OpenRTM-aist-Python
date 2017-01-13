@@ -189,9 +189,9 @@ class ManagerConfig :
     prop.setDefaults(OpenRTM_aist.default_config)
     if self.findConfigFile():
       try:
-        fd = file(self._configFile,"r")
-        prop.load(fd)
-        fd.close()
+        with file(self._configFile,"r") as fd:
+          prop.load(fd)
+          fd.close()
       except:
         print OpenRTM_aist.Logger.print_exception()
 

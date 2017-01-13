@@ -190,9 +190,9 @@ class PortBase(RTC__POA.PortService):
   def __del__(self):
     self._rtcout.RTC_TRACE("PortBase.__del__()")
     try:
-      mgr = OpenRTM_aist.Manager.instance().getPOA()
-      oid = mgr.servant_to_id(self)
-      mgr.deactivate_object(oid)
+      poa = OpenRTM_aist.Manager.instance().getPOA()
+      oid = poa.servant_to_id(self)
+      poa.deactivate_object(oid)
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
     
@@ -1607,6 +1607,7 @@ class PortBase(RTC__POA.PortService):
   # @endif
   # virtual ReturnCode_t disconnectNext(ConnectorProfile& connector_profile);
   def disconnectNext(self, connector_profile):
+    
     index = OpenRTM_aist.CORBA_SeqUtil.find(connector_profile.ports,
                                             self.find_port_ref(self._profile.port_ref))
     if index < 0:

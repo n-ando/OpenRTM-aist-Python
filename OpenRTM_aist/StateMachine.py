@@ -462,13 +462,13 @@ class StateMachine:
   def worker(self):
     states = StateHolder()
     self.sync(states)
-
     # If no state transition required, execute set of do-actions
     if states.curr == states.next:
       # pre-do
       if self._predo[states.curr]:
         self._predo[states.curr](states)
 
+      
       if self.need_trans():
         return
 

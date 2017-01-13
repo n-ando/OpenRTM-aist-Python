@@ -773,8 +773,8 @@ class Properties:
         pline += tmp[0]
         continue
       pline += _str
-      if pline == "":
-        continue
+      #if pline == "":
+      # continue
 
       key = []
       value = []

@@ -259,10 +259,10 @@ class OutPortCorbaCdrConsumer(OpenRTM_aist.OutPortConsumer,OpenRTM_aist.CorbaCon
     if OpenRTM_aist.NVUtil.isString(properties,"dataport.corba_cdr.outport_ior"):
       self._rtcout.RTC_DEBUG("dataport.corba_cdr.outport_ior found.")
       ior = ""
-      try:
-        ior = any.from_any(properties[index].value, keep_structs=True)
-      except:
-        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+      #try:
+      ior = any.from_any(properties[index].value, keep_structs=True)
+      #except:
+      #  self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
             
       orb = OpenRTM_aist.Manager.instance().getORB()
       obj = orb.string_to_object(ior)

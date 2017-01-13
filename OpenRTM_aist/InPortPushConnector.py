@@ -129,10 +129,12 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
     else:
       self._deleteBuffer = False
 
+    
     if self._buffer == 0:
       self._buffer = self.createBuffer(info)
 
-    if self._buffer == 0 or not self._provider:
+    
+    if self._buffer is None or not self._provider:
       raise
 
     self._buffer.init(info.properties.getNode("buffer"))
