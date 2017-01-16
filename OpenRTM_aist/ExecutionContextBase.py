@@ -730,7 +730,7 @@ class ExecutionContextBase:
     if ret_ != RTC.RTC_OK:
       self._rtcout.RTC_ERROR("onWaitingActivated failed.")
       return ret_
-
+    
     cycle_ = int(float(self._activationTimeout.toDouble()) / float(self.getPeriod().toDouble()))
     self._rtcout.RTC_DEBUG("Timeout is %f [s] (%f [s] in %d times)",
                            (float(self._activationTimeout.toDouble()), self.getRate(), cycle_))
@@ -738,6 +738,7 @@ class ExecutionContextBase:
     starttime_ = OpenRTM_aist.Time().gettimeofday()
     
     while rtobj.isCurrentState(RTC.INACTIVE_STATE):
+      
       ret_ = self.onWaitingActivated(rtobj, count_) # Template method
       if ret_ != RTC.RTC_OK:
         self._rtcout.RTC_ERROR("onWaitingActivated failed.")
@@ -830,7 +831,7 @@ class ExecutionContextBase:
         self._rtcout.RTC_ERROR("The component is not responding.")
         break
 
-
+    
     # Now State must be INACTIVE or ERROR
     if rtobj.isCurrentState(RTC.ACTIVE_STATE):
       self._rtcout.RTC_ERROR("Unknown error: Invalid state transition.")

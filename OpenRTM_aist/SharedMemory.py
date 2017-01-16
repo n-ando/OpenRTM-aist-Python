@@ -73,10 +73,15 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     if platform.system() == "Windows":
       pass
     else:
-      try:
-        self.rt = ctypes.CDLL('librt.so')
-      except:
-        self.rt = ctypes.CDLL('librt.so.1')
+      from ctypes.util import find_library
+      librt = find_library("librt")
+      if librt is None:
+        raise
+      self.rt = ctypes.CDLL(librt)
+      #try:
+      #  self.rt = ctypes.CDLL('librt.so')
+      #except:
+      #  self.rt = ctypes.CDLL('librt.so.1')
       self.rt.shm_open.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_int]
       self.rt.shm_open.restype = ctypes.c_int
       self.rt.ftruncate.argtypes = [ctypes.c_int, ctypes.c_int]
@@ -232,7 +237,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
         O_RDWR = 2
         self.fd = self.rt.shm_open(self._shm_address,O_RDWR,0)
         if self.fd < 0:
-          return self.UNKNOWN_ERROR
+          return
         self.rt.ftruncate(self.fd, self._memory_size)
         self._shmem = mmap.mmap(self.fd, self._memory_size, mmap.MAP_SHARED)
         self.rt.close( self.fd )

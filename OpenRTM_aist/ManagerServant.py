@@ -1071,9 +1071,9 @@ class ManagerServant(RTM__POA.Manager):
     
 
     eqpos = paramstr.find("=")
-    if eqpos == -1:
-      self._rtcout.RTC_WARN("Invalid argument: %s", module_name)
-      return ""
+    #if eqpos == -1:
+    #  self._rtcout.RTC_WARN("Invalid argument: %s", module_name)
+    #  return ""
 
     paramstr = paramstr[eqpos + 1:]
     self._rtcout.RTC_DEBUG("%s is %s",(param_name, paramstr))

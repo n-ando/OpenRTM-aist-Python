@@ -157,13 +157,11 @@ class InPortSHMConsumer(OpenRTM_aist.InPortCorbaCdrConsumer):
     if OpenRTM_aist.CorbaConsumer.setObject(self, obj):
       ref_ = self.getObject()
       if ref_:
-        try:
-          inportcdr = ref_._narrow(OpenRTM__POA.PortSharedMemory)
-          self._shmem.setInterface(inportcdr)
-        except:
-          self._rtcout.RTC_WARN("Exception caught from PortSharedMemory.setInterface().")
-          self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-        
+        inportcdr = ref_._narrow(OpenRTM__POA.PortSharedMemory)
+        if inportcdr is None:
+          return False
+        self._shmem.setInterface(inportcdr)
+
         return True
     return False
       
