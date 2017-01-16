@@ -75,13 +75,13 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     else:
       from ctypes.util import find_library
       librt = find_library("librt")
-      if librt is None:
-        raise
-      self.rt = ctypes.CDLL(librt)
-      #try:
-      #  self.rt = ctypes.CDLL('librt.so')
-      #except:
-      #  self.rt = ctypes.CDLL('librt.so.1')
+      #if librt is None:
+      #  raise
+      #self.rt = ctypes.CDLL(librt)
+      try:
+        self.rt = ctypes.CDLL('librt.so')
+      except:
+        self.rt = ctypes.CDLL('librt.so.1')
       self.rt.shm_open.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_int]
       self.rt.shm_open.restype = ctypes.c_int
       self.rt.ftruncate.argtypes = [ctypes.c_int, ctypes.c_int]
