@@ -997,6 +997,18 @@ class ManagerServant(RTM__POA.Manager):
     else:
       guard = OpenRTM_aist.ScopedLock(self._masterMutex)
       for master in self._masters:
+        try:
+          prof = master.get_configuration()
+          prop = OpenRTM_aist.Properties()
+          OpenRTM_aist.NVUtil.copyToProperties(prop, prof)
+          name = prop.getProperty("manager.instance_name")
+          if name == manager_name:
+            return master
+        except:
+          self._rtcout.RTC_ERROR("Unknown exception cought.")
+          self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+          continue
+          
         slaves = master.get_slave_managers()
         for slave in slaves[:]:
           try:
@@ -1010,16 +1022,7 @@ class ManagerServant(RTM__POA.Manager):
             self._rtcout.RTC_ERROR("Unknown exception cought.")
             self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
             master.remove_slave_manager(slave)
-        try:
-          prof = master.get_configuration()
-          prop = OpenRTM_aist.Properties()
-          OpenRTM_aist.NVUtil.copyToProperties(prop, prof)
-          name = prop.getProperty("manager.instance_name")
-          if name == manager_name:
-            return master
-        except:
-          self._rtcout.RTC_ERROR("Unknown exception cought.")
-          self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+        
       del guard
 
     return RTM.Manager._nil
@@ -1120,6 +1123,7 @@ class ManagerServant(RTM__POA.Manager):
 
 
     mgrobj = self.findManager_by_name(mgrstr)
+    
 
     tmp = [arg]
     language = self.get_parameter_by_modulename("language",tmp)
@@ -1194,7 +1198,7 @@ class ManagerServant(RTM__POA.Manager):
     except:
       self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
       return RTC.RTObject._nil
-    return RTC.RTObject._nil
+    
     
     
 
@@ -1287,8 +1291,7 @@ class ManagerServant(RTM__POA.Manager):
       return RTC.RTObject._nil
     except:
       self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-
-    return RTC.RTObject._nil
+      return RTC.RTObject._nil
 
 
 
