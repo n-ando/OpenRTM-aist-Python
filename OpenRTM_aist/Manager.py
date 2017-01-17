@@ -651,19 +651,18 @@ class Manager:
   # @endif
   def registerFactory(self, profile, new_func, delete_func):
     self._rtcout.RTC_TRACE("Manager.registerFactory(%s)", profile.getProperty("type_name"))
-    try:
-      policy_name = self._config.getProperty("manager.components.naming_policy")
+    #try:
+    policy_name = self._config.getProperty("manager.components.naming_policy","process_unique")
       
-      if not policy_name:
-        policy_name = "process_unique"
-      policy = OpenRTM_aist.NumberingPolicyFactory.instance().createObject(policy_name)
       
-      factory = OpenRTM_aist.FactoryPython(profile, new_func, delete_func, policy)
-      self._factory.registerObject(factory)
-      return True
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      return False
+    policy = OpenRTM_aist.NumberingPolicyFactory.instance().createObject(policy_name)
+      
+    factory = OpenRTM_aist.FactoryPython(profile, new_func, delete_func, policy)
+    return self._factory.registerObject(factory)
+    #  return True
+    #except:
+    #  self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+    #  return False
 
     
 
@@ -716,13 +715,15 @@ class Manager:
   # @endif
   def registerECFactory(self, name, new_func, delete_func):
     self._rtcout.RTC_TRACE("Manager.registerECFactory(%s)", name)
-    try:
-      OpenRTM_aist.ExecutionContextFactory.instance().addFactory(name,
+    #try:
+    ret = OpenRTM_aist.ExecutionContextFactory.instance().addFactory(name,
                     new_func,
                     delete_func)
+    if ret == OpenRTM_aist.Factory.FACTORY_OK:
       return True
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+    #except:
+    #  self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+    else:
       return False
 
 
@@ -2408,7 +2409,7 @@ class Manager:
       # Caught StopIteration exception.
       return str_
 
-    return str_
+    #return str_
 
 
   ##
