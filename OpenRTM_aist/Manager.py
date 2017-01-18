@@ -3113,8 +3113,8 @@ class Manager:
 
     def __del__(self):
       self._th.join()
-      self._th = None
-      return
+      #self._th = None
+      #return
 
 
     ##
