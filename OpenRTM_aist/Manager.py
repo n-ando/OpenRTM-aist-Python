@@ -201,17 +201,17 @@ class Manager:
         
     if manager is None:
       guard = OpenRTM_aist.ScopedLock(mutex)
-      if manager is None:
-        manager = Manager()
-        manager.initManager(argv)
-        manager.initLogger()
-        manager.initORB()
-        manager.initNaming()
-        manager.initFactories()
-        manager.initExecContext()
-        manager.initComposite()
-        manager.initTimer()
-        manager.initManagerServant()
+
+      manager = Manager()
+      manager.initManager(argv)
+      manager.initLogger()
+      manager.initORB()
+      manager.initNaming()
+      manager.initFactories()
+      manager.initExecContext()
+      manager.initComposite()
+      manager.initTimer()
+      manager.initManagerServant()
 
     return manager
   
@@ -244,17 +244,16 @@ class Manager:
     
     if manager is None:
       guard = OpenRTM_aist.ScopedLock(mutex)
-      if manager is None:
-        manager = Manager()
-        manager.initManager(None)
-        manager.initLogger()
-        manager.initORB()
-        manager.initNaming()
-        manager.initFactories()
-        manager.initExecContext()
-        manager.initComposite()
-        manager.initTimer()
-        manager.initManagerServant()
+      manager = Manager()
+      manager.initManager(None)
+      manager.initLogger()
+      manager.initORB()
+      manager.initNaming()
+      manager.initFactories()
+      manager.initExecContext()
+      manager.initComposite()
+      manager.initTimer()
+      manager.initManagerServant()
 
     return manager
 
@@ -859,10 +858,10 @@ class Manager:
         self._rtcout.RTC_ERROR("No module for %s in loadable modules list",
                                comp_id.getProperty("implementation_id"))
         return None
-
+      
       if not found_obj.findNode("module_file_name"):
         self._rtcout.RTC_ERROR("Hmm...module_file_name key not found.")
-        return 0
+        return None
 
       # module loading
       self._rtcout.RTC_INFO("Loading module: %s", found_obj.getProperty("module_file_name"))
@@ -871,7 +870,7 @@ class Manager:
       if not factory:
         self._rtcout.RTC_ERROR("Factory not found for loaded module: %s",
                                comp_id.getProperty("implementation_id"))
-        return 0
+        return None
 
 
     # get default configuration of component.
