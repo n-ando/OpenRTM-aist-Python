@@ -679,12 +679,12 @@ class Organization_impl(SDOPackage__POA.Organization):
       raise SDOPackage.InvalidParameter("remove_member(): Not found.")
 
     
-    try:
-      OpenRTM_aist.CORBA_SeqUtil.erase(self._memberList, index)
-      return True
-    except:
-      self.__rtcout.RTC_ERROR("unknown exception")
-      raise SDOPackage.InternalError("remove_member(): Not found.")
+    #try:
+    OpenRTM_aist.CORBA_SeqUtil.erase(self._memberList, index)
+    return True
+    #except:
+    #  self.__rtcout.RTC_ERROR("unknown exception")
+    #  raise SDOPackage.InternalError("remove_member(): Not found.")
     
 
 

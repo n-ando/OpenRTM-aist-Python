@@ -100,7 +100,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
       self._task.finalize()
 
       OpenRTM_aist.PeriodicTaskFactory.instance().deleteObject(self._task)
-      del self._task
+      #del self._task
       self._rtcout.RTC_PARANOID("task deleted.")
 
     # "consumer" should be deleted in the Connector
@@ -473,7 +473,7 @@ class PublisherNew(OpenRTM_aist.PublisherBase):
       return self.BUFFER_FULL
 
     # why?
-    assert(self._buffer != 0)
+    #assert(self._buffer != 0)
 
     self.onBufferWrite(data)
     ret = self._buffer.write(data, sec, usec)
