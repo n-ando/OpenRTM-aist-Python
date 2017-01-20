@@ -354,12 +354,12 @@ class ManagerConfig :
   # @brief システム情報を設定する
   #
   # システム情報を取得しプロパティにセットする。設定されるキーは以下の通り。
-  #  - manager.os.name    : OS名
-  #  - manager.os.release : OSリリース名
-  #  - manager.os.version : OSバージョン名
-  #  - manager.os.arch    : OSアーキテクチャ
-  #  - manager.os.hostname: ホスト名
-  #  - manager.pid        : プロセスID
+  #  - os.name    : OS名
+  #  - os.release : OSリリース名
+  #  - os.version : OSバージョン名
+  #  - os.arch    : OSアーキテクチャ
+  #  - os.hostname: ホスト名
+  #  - manager.pid: プロセスID
   # 
   # @param self
   # @param prop システム情報を設定したプロパティ
@@ -369,12 +369,12 @@ class ManagerConfig :
   # @brief Set system information
   # 
   # Get the following system info and set them to Manager's properties.
-  #  - manager.os.name    : OS name
-  #  - manager.os.release : OS release name
-  #  - manager.os.version : OS version
-  #  - manager.os.arch    : OS architecture
-  #  - manager.os.hostname: Hostname
-  #  - manager.pid        : process ID
+  #  - os.name    : OS name
+  #  - os.release : OS release name
+  #  - os.version : OS version
+  #  - os.arch    : OS architecture
+  #  - os.hostname: Hostname
+  #  - manager.pid: process ID
   #
   # @endif
   def setSystemInformation(self, prop):
@@ -383,12 +383,12 @@ class ManagerConfig :
     else:
       sysinfo = os.uname()
 
-    prop.setProperty("manager.os.name",     sysinfo[0])
-    prop.setProperty("manager.os.hostname", sysinfo[1])
-    prop.setProperty("manager.os.release",  sysinfo[2])
-    prop.setProperty("manager.os.version",  sysinfo[3])
-    prop.setProperty("manager.os.arch",     sysinfo[4])
-    prop.setProperty("manager.pid",         os.getpid())
+    prop.setProperty("os.name",     sysinfo[0])
+    prop.setProperty("os.hostname", sysinfo[1])
+    prop.setProperty("os.release",  sysinfo[2])
+    prop.setProperty("os.version",  sysinfo[3])
+    prop.setProperty("os.arch",     sysinfo[4])
+    prop.setProperty("manager.pid", os.getpid())
 
     return prop
 
