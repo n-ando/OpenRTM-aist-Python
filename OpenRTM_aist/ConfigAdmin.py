@@ -973,8 +973,8 @@ class ConfigAdmin:
   # const coil::Properties& getActiveConfigurationSet(void);
   def getActiveConfigurationSet(self):
     p = self._configsets.getNode(self._activeId)
-    if p is None:
-      return self._emptyconf
+    #if p is None:
+    #  return self._emptyconf
 
     return p
 

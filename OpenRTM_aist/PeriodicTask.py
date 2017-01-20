@@ -91,7 +91,7 @@ class PeriodicTask(OpenRTM_aist.Task):
     self.finalize()
     self.wait()
     Task.__del__(self)
-    return
+
   
     
   ##

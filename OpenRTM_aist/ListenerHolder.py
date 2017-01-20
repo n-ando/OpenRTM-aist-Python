@@ -161,8 +161,8 @@ class ListenerHolder:
       for (l,f) in listener_.iteritems():
         if f:
           del l
-    del guard
-    return
+    #del guard
+    #return
   
   ##
   # @if jp

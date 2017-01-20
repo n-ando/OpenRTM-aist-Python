@@ -272,7 +272,7 @@ class FactoryPython(FactoryBase):
   def create(self, mgr):
     try:
       rtobj = self._New(mgr)
-      if rtobj == 0:
+      if rtobj is None:
         return None
 
       self._Number += 1

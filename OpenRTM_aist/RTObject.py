@@ -4876,9 +4876,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       
       default_opts = OpenRTM_aist.Properties()
       prop_ = default_prop.findNode("exec_cxt.periodic")
-      if not prop_:
-        self._rtcout.RTC_WARN("No default EC options found.")
-        return RTC.RTC_ERROR
+      #if not prop_:
+      #  self._rtcout.RTC_WARN("No default EC options found.")
+      #  return RTC.RTC_ERROR
 
       default_opts.mergeProperties(prop_)
 

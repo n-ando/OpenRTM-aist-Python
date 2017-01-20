@@ -188,12 +188,13 @@ class ManagerConfig :
   def configure(self, prop):
     prop.setDefaults(OpenRTM_aist.default_config)
     if self.findConfigFile():
-      try:
-        with file(self._configFile,"r") as fd:
-          prop.load(fd)
-          fd.close()
-      except:
-        print OpenRTM_aist.Logger.print_exception()
+      #try:
+      with file(self._configFile,"r") as fd:
+        prop.load(fd)
+        fd.close()
+      #except:
+      #  print OpenRTM_aist.Logger.print_exception()
+
 
     self.setSystemInformation(prop)
     if self._isMaster:
