@@ -1,0 +1,48 @@
+/* -*- idl -*- */
+
+// Profile
+typedef unsigned long ProfileId;
+typedef sequence<octet> ProfileData;
+struct TaggedProfile
+{
+  ProfileId tag;
+  ProfileData profile_data;
+};
+typedef sequence<TaggedProfile> TaggedProfileList;
+
+// Component
+typedef unsigned long ComponentId;
+typedef sequence<octet> ComponentData;
+struct TaggedComponent
+{
+  ComponentId tag;
+  ComponentData component_data;
+};
+typedef sequence<TaggedComponent> MultipleComponentProfile;
+
+// ProfileBody
+struct Version
+{
+  octet dummy;
+  octet major;
+  octet minor;
+};
+struct Address
+{
+  string host;
+  unsigned short port;
+};
+typedef sequence<octet> ObjectKey;
+struct ProfileBody
+{
+  Version version_;
+  Address address_;
+  ObjectKey object_key;
+  MultipleComponentProfile components;
+};
+
+struct IOR
+{
+  string type_id;
+  TaggedProfileList profiles;
+};
