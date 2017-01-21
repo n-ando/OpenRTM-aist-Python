@@ -28,7 +28,7 @@ import OpenRTM_aist
 import RTC
 import SDOPackage
 import CosNaming
-
+import CORBA_IORUtil
 
 
 #------------------------------------------------------------
@@ -884,7 +884,9 @@ class Manager:
                     "os.version",
                     "os.arch",
                     "os.hostname",
-                    "corba.endpoint",
+                    "corba.endpoints",
+                    "corba.endpoints_ipv4",
+                    "corba.endpoints_ipv6",
                     "corba.id",
                     "exec_cxt.periodic.type",
                     "exec_cxt.periodic.rate",
@@ -904,15 +906,16 @@ class Manager:
                     "naming.type",
                     "naming.formats"]
 
+    prop_ = prop.getNode("port")
+    prop_.mergeProperties(self._config.getNode("port"))
+
+    comp = factory.create(self)
+    if self._config.getProperty("corba.endpoints_ipv4") == "":
+      self.setEndpointProperty(comp.getObjRef())
+
     for i in range(len(inherit_prop)):
       if self._config.findNode(inherit_prop[i]):
         prop.setProperty(inherit_prop[i],self._config.getProperty(inherit_prop[i]))
-
-    prop_ = prop.getNode("port")
-    prop_.mergeProperties(self._config.getNode("port"))
-    
-
-    comp = factory.create(self)
 
     if comp is None:
       self._rtcout.RTC_ERROR("createComponent: RTC creation failed: %s",
@@ -1673,7 +1676,7 @@ class Manager:
       if corba == "omniORB":
         endpoint = OpenRTM_aist.normalize([endpoint])
         if OpenRTM_aist.normalize([endpoint]) == "all:":
-          opt[0] += " -ORBendPointPublishAllIFs 1"
+          opt[0] += " -ORBendPointPublish all(addr)"
         else:
           opt[0] += " -ORBendPoint giop:tcp:" + endpoint
 
@@ -1957,6 +1960,109 @@ class Manager:
 
   ##
   # @if jp
+  # @brief corba.endpoint_property プロパティの取得
+  #
+  # corba.endpoint_property の値を取得しタプルとして返す。ノードのエン
+  # ドポイントの内 IPv4, IPv6 のいずれを公開するかを指定するプロパティ
+  # corba.endpoint_property を取得し IPv4/IPv6 の有効無効および、有効に
+  # するIPアドレスの番号をタプル値として返す。
+  #
+  # @return (ipv4, ipv4_list, ipv6, ipv6_list) endpoint_property 値
+  # ipv4, ipv6:  IPv4/IPv6 の有効無効を示すTrue/False
+  # ipv4_list, ipv6_list: 有効にするアドレスの番号、空リストの場合はすべて有効
+  #
+  # @else
+  # @brief ManagerServant initialization
+  #
+  # Getting corba.endpoint_property value and return them as a
+  # tuple. This function obtains corbaendpoint_property that specifies
+  # if IPv4/IPv6 addresses and IP address numbes to be published, and
+  # it returnes them as tuple.
+  #
+  # @return (ipv4, ipv4_list, ipv6, ipv6_list) endpoint_property value
+  # ipv4, ipv6: A True/False flag whether to use IPv4 / IPv6 address
+  # ipv4_list, ipv6_list: List of valid address number, empty means
+  # valid all addresses
+  #
+  # @endif
+  #
+  def endpointPropertySwitch(self):
+    ipv4 = True; ipv4_list = []
+    ipv6 = True; ipv6_list = []
+    
+    ep_prop = self._config.getProperty("corba.endpoint_property", "ipv4")
+    ep_prop = ep_prop.lower()
+
+    import re
+    if ep_prop.count("ipv4"):
+      ipv4 = True
+      m = re.match(r"ipv4\(([0-9, ]*)\)", ep_prop)
+      if m: ipv4_list = map(int, m.group(1).split(","))
+    else:
+      ipv4 = False
+    if ep_prop.count("ipv6"):
+      ipv6 = True
+      m = re.match(r"ipv6\(([0-9, ]*)\)", ep_prop)
+      if m: ipv6_list = map(int, m.group(1).split(","))
+    else:
+      ipv6 = False
+    return (ipv4, ipv4_list, ipv6, ipv6_list)
+
+  ##
+  # @if jp
+  # @brief Endpoint をプロパティに設定
+  #
+  # この関数はエンドポイントをプロパティ corba.endpoints に指定する。引
+  # 数に与えられたオブジェクトリファレンスから現在のプロセスのエンドポ
+  # イント (IPアドレス, ポート番号) を取得し corba.endpoints,
+  # corba.endpoints_ipv4, corba.endpoints_ipv6 に指定する。
+  #
+  # @param objref オブジェクトリファレンス
+  #
+  # @else
+  # @brief Setting endpoint information to property
+  #
+  # This function sets endpoint information to corba.endpoints
+  # property. It extract endpoint information (list of IP address,
+  # port number) from given object reference, and set them to
+  # corba.endpoints, corba.endpoints_ipv4, corba.endpoints_ipv6
+  #
+  # @param objref A object reference
+  #
+  # @endif
+  #
+  def setEndpointProperty(self, objref):
+    import re
+    (ipv4, ipv4_list, ipv6, ipv6_list) = self.endpointPropertySwitch()
+    re_ipv4 = r"((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))"
+    re_ipv6 = r"(([0-9a-f]{1,4})(:([0-9a-f]{1,4})){7}((\.|#|p| port )\d{1,4})?)|\[([0-9a-f]{1,4})(:([0-9a-f]{1,4})){7}\]"
+
+    iorstr = self._orb.object_to_string(objref)
+    ior = CORBA_IORUtil.toIOR(iorstr)
+    endpoints = CORBA_IORUtil.getEndpoints(ior)
+
+    epstr = ""; epstr_ipv4 = ""; epstr_ipv6 = "";
+    ipv4_count = 0; ipv6_count = 0
+    for e in endpoints:
+      if ipv4 and re.match(re_ipv4, e.host):
+        if len(ipv4_list) == 0 or ipv4_list.count(ipv4_count):
+          epstr += e.host + ":" + str(e.port) + ", "
+          epstr_ipv4 += e.host + ":" + str(e.port) + ", "
+        ipv4_count += 1
+      if ipv6 and re.match(re_ipv6, e.host):
+        if len(ipv6_list) == 0 or ipv6_list.count(ipv6_count):
+          epstr += e.host + ":" + str(e.port) + ", "
+          epstr_ipv6 += e.host + ":" + str(e.port) + ", "
+        ipv6_count += 1
+    epstr = epstr[:-2]
+    epstr_ipv4 = epstr_ipv4[:-2]
+    epstr_ipv6 = epstr_ipv6[:-2]
+    self._config.setProperty("corba.endpoints", epstr)
+    self._config.setProperty("corba.endpoints_ipv4", epstr_ipv4)
+    self._config.setProperty("corba.endpoints_ipv6", epstr_ipv6)
+
+  ##
+  # @if jp
   # @brief ManagerServant の初期化
   #
   # @return Timer 初期化処理実行結果(初期化成功:true、初期化失敗:false)
@@ -1970,14 +2076,16 @@ class Manager:
   #
   def initManagerServant(self):
     self._rtcout.RTC_TRACE("Manager.initManagerServant()")
-    if not OpenRTM_aist.toBool(self._config.getProperty("manager.corba_servant"),
-                               "YES","NO",True):
+    if not OpenRTM_aist.toBool(
+      self._config.getProperty("manager.corba_servant"), "YES","NO",True):
       return True
 
     self._mgrservant = OpenRTM_aist.ManagerServant()
+    if self._config.getProperty("corba.endpoints_ipv4") == "":
+      self.setEndpointProperty(self._mgrservant.getObjRef())
     prop = self._config.getNode("manager")
     names = OpenRTM_aist.split(prop.getProperty("naming_formats"),",")
-
+    
     if OpenRTM_aist.toBool(prop.getProperty("is_master"),
                            "YES","NO",True):
       for name in names:
@@ -2397,7 +2505,7 @@ class Manager:
             elif n == "v": str_ += prop.getProperty("version")
             elif n == "V": str_ += prop.getProperty("vendor")
             elif n == "c": str_ += prop.getProperty("category")
-            elif n == "h": str_ += self._config.getProperty("manager.os.hostname")
+            elif n == "h": str_ += self._config.getProperty("os.hostname")
             elif n == "M": str_ += self._config.getProperty("manager.name")
             elif n == "p": str_ += str(self._config.getProperty("manager.pid"))
             else: str_ += n

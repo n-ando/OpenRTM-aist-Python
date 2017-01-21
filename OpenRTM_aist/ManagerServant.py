@@ -64,16 +64,15 @@ class ManagerServant(RTM__POA.Manager):
 
     config = copy.deepcopy(self._mgr.getConfig())
 
+    if (not self.createINSManager()):
+      self._rtcout.RTC_WARN("Manager CORBA servant creation failed.")
+      return
+    self._rtcout.RTC_TRACE("Manager CORBA servant was successfully created.")
+
     if OpenRTM_aist.toBool(config.getProperty("manager.is_master"), "YES", "NO", True):
       # this is master manager
       self._rtcout.RTC_TRACE("This manager is master.")
-
-      if (not self.createINSManager()):
-        self._rtcout.RTC_WARN("Manager CORBA servant creation failed.")
-        return
-        
       self._isMaster = True
-      self._rtcout.RTC_TRACE("Manager CORBA servant was successfully created.")
       return
     else:
       # this is slave manager
@@ -83,19 +82,12 @@ class ManagerServant(RTM__POA.Manager):
         if not owner:
           self._rtcout.RTC_INFO("Master manager not found")
           return
-
-        if not self.createINSManager():
-          self._rtcout.RTC_WARN("Manager CORBA servant creation failed.")
-          return
-
         self.add_master_manager(owner)
         owner.add_slave_manager(self._objref)
         return
       except:
         self._rtcout.RTC_ERROR("Unknown exception cought.")
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-        
-        
     return
 
 
@@ -132,6 +124,7 @@ class ManagerServant(RTM__POA.Manager):
 
     del guard_slave
     del guard_master
+    self._objref._release()
     return
 
 
