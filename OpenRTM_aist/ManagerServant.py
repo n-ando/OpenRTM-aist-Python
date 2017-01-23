@@ -124,7 +124,8 @@ class ManagerServant(RTM__POA.Manager):
 
     del guard_slave
     del guard_master
-    self._objref._release()
+    if self._objref:
+      self._objref._release()
     return
 
 
