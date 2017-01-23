@@ -57,7 +57,7 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "timer.enable",                     "YES",
                  "timer.tick",                       "0.1",
                  "corba.args",                       "",
-                 "corba.endpoints"                   "",
+                 "corba.endpoints",                   "",
                  "corba.id",                         OpenRTM_aist.corba_name,
                  "corba.nameservers",               "localhost",
                  "corba.master_manager",             "localhost:2810",
