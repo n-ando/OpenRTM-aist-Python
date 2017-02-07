@@ -19,7 +19,7 @@
 #
 #
 
-import sys, os
+import sys
 import time
 import math
 
@@ -167,8 +167,8 @@ class Time:
         _fields_ = [('tv_sec', ctypes.c_long),
                     ('tv_nsec', ctypes.c_long)]
 
-      librt = ctypes.cdll.LoadLibrary('librt.so')
-      ts = timespec(long(tv.tv_sec),long(tv.tv_usec*1000))
+      #librt = ctypes.cdll.LoadLibrary('librt.so')
+      #ts = timespec(long(tv.tv_sec),long(tv.tv_usec*1000))
       #return librt.clock_settime(0, ctypes.pointer(ts))
 
     return 0

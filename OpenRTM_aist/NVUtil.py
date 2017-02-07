@@ -15,12 +15,11 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
-import sys
-import traceback
+
 from omniORB import any
 
 import OpenRTM_aist
-import SDOPackage, SDOPackage__POA
+import SDOPackage
 
 
 ##

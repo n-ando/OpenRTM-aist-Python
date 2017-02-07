@@ -17,7 +17,7 @@
 #     All rights reserved.
 #
 
-from omniORB import *
+from omniORB import cdrMarshal
 from omniORB import any
 
 import OpenRTM_aist

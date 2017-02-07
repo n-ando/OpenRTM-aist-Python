@@ -15,9 +15,9 @@
 #     All rights reserved.
 
 
-import RTC
+
 import OpenRTM_aist
-import SDOPackage, SDOPackage__POA
+import SDOPackage__POA
 
 
 ##

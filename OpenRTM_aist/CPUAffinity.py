@@ -8,7 +8,7 @@
 # @author Nobuhiko Miyamoto
 #
 
-import sys
+
 import os
 import platform
 import ctypes
@@ -69,7 +69,7 @@ def setProcessAffinity(cpu_num_list):
 
     
     flag = PROCESS_QUERY_INFORMATION | PROCESS_SET_INFORMATION
-    h = ctypes.windll.kernel32.OpenProcess(flag, 0, pid)
+    ctypes.windll.kernel32.OpenProcess(flag, 0, pid)
 
     
     result = ctypes.windll.kernel32.SetProcessAffinityMask(ctypes.windll.kernel32.GetCurrentProcess(), cpu_num)
@@ -124,9 +124,7 @@ def setThreadAffinity(cpu_num_list):
   
   
   if platform.system() == "Windows":
-    PROCESS_QUERY_INFORMATION   = 0x0400
-    PROCESS_SET_INFORMATION     = 0x0200
-
+    
 
 
     h = ctypes.windll.kernel32.GetCurrentThread()

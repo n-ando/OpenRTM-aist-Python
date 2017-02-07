@@ -17,7 +17,6 @@
 
 import sys
 import os
-import re
 import getopt
 import platform
 

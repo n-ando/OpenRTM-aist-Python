@@ -8,12 +8,11 @@
 # @author Nobuhiko Miyamoto
 
 
-import sys
-from omniORB import *
-from omniORB import any
+
+
 
 import OpenRTM_aist
-import OpenRTM__POA,OpenRTM
+import OpenRTM
 
 
 ##

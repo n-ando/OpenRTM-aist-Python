@@ -15,8 +15,7 @@
 #     All rights reserved.
 
 
-import sys
-import string
+
 import threading
 
 import OpenRTM_aist

@@ -47,7 +47,7 @@ def launch_shell(command):
                      'preexec_fn': os.setsid}
 
   try:
-    p = subprocess.Popen(args, **subproc_args)
+    subprocess.Popen(args, **subproc_args)
   except OSError:
     # fork failed
     if sys.version_info[0:3] >= (2, 4, 0):

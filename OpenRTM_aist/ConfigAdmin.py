@@ -16,7 +16,7 @@
 
 
 
-import copy
+
 import OpenRTM_aist
 
 

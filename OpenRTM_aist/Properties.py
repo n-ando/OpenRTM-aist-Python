@@ -17,7 +17,7 @@
 
 
 import sys
-import string
+
 
 import OpenRTM_aist
 

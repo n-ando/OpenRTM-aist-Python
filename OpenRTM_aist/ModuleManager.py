@@ -15,7 +15,7 @@
 #     All rights reserved.
 
 
-import string
+
 import sys,os
 import glob
 
@@ -452,10 +452,10 @@ class ModuleManager:
     # file name with full path
     fullname  = fname
     # directory name
-    dirname   = os.path.dirname(fname)
+    dirname   = os.path.dirname(fullname)
     sys.path.append(dirname)
     # basename
-    basename  = os.path.basename(fname)
+    basename  = os.path.basename(fullname)
     # classname
     classname  = basename.split(".")[0].lower()
 

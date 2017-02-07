@@ -17,7 +17,7 @@
 #
 
 import OpenRTM_aist
-from OpenRTM_aist import *
+
 
 class CdrBufferBase(OpenRTM_aist.BufferBase):
     def __init__(self):

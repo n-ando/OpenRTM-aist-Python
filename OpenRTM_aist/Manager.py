@@ -15,18 +15,18 @@
 #     All rights reserved.
 
 import threading
-import string
+
 import signal, os
-import traceback
+
 import sys
 import time
 from omniORB import CORBA, PortableServer
 from types import IntType, ListType
-import platform
+
 
 import OpenRTM_aist
 import RTC
-import SDOPackage
+
 import CosNaming
 import CORBA_IORUtil
 
@@ -57,8 +57,8 @@ mutex = threading.RLock()
 # @else
 # @brief Alarm for Windows
 # @endif
-import os
-import time
+
+
 import threading
 
 class Alarm (threading.Thread):
@@ -1742,7 +1742,7 @@ class Manager:
         self._orb.destroy()
         self._rtcout.RTC_DEBUG("ORB was shutdown.")
         self._orb = CORBA.Object._nil
-      except CORBA.SystemException, ex:
+      except CORBA.SystemException:
         self._rtcout.RTC_ERROR("Caught CORBA::SystemException during ORB shutdown.")
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       except:
@@ -2096,7 +2096,7 @@ class Manager:
 
     try:
       otherref = file(self._config.getProperty("manager.refstring_path"),'r')
-      refstring = otherref.readline()
+      #refstring = otherref.readline()
       otherref.close()
     except:
       try:
@@ -2573,7 +2573,7 @@ class Manager:
   # @endif
   def __try_direct_load(self, file_name):
     try:
-      pathChanged=False
+      #pathChanged=False
       splitted_name = os.path.split(file_name)
       save_path = sys.path[:]
       sys.path.append(splitted_name[0])
@@ -2751,7 +2751,7 @@ class Manager:
           continue
         
         try:
-          p = portsvc.get_port_profile()
+          portsvc.get_port_profile()
           
         except:
           continue

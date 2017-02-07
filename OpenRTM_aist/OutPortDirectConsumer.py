@@ -9,10 +9,10 @@
 # 
 
 
-import sys
-from omniORB import any
+
+
 import OpenRTM_aist
-import OpenRTM
+
 
 ##
 # @if jp

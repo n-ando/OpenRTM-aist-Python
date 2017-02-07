@@ -13,7 +13,7 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
-import OpenRTM_aist
+
 
 ##
 # @if jp

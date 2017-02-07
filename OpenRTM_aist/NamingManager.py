@@ -16,8 +16,8 @@
 
 
 import threading
-import traceback
-import sys
+
+
 
 import OpenRTM_aist
 import CORBA
@@ -316,7 +316,7 @@ class NamingOnCorba(NamingBase):
     tmp = name.split("://")
     if len(tmp) > 1:
       if tmp[0] == "rtcname":
-        tag = tmp[0]
+        #tag = tmp[0]
         url = tmp[1]
         r = url.split("/")
         if len(r) > 1:
@@ -495,7 +495,7 @@ class NamingOnManager(NamingBase):
     
     if len(tmp) > 1:
       if tmp[0] == "rtcloc":
-        tag = tmp[0]
+        #tag = tmp[0]
         url = tmp[1]
         r = url.split("/")
         if len(r) > 1:

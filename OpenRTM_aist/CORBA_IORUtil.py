@@ -251,13 +251,14 @@ def getEndpoints(ior):
     # TAG_MULTIPLE_COMPONENTS
     elif p.tag == IOP.TAG_MULTIPLE_COMPONENTS:
       profiles = cdrUnmarshal(_0__GlobalIDL._tc_MultipleComponentProfile,
-                              "".join(p.profile_data, endian))
-      addr += extractAddrs(profiles.components)
+                              "".join(p.profile_data), endian)
+      addr += extractAddrs(profiles)
     else:
       print "Other Profile"
   return addr
 
 def extractAddrs(comps):
+  global endian
   addr = []
   for c in comps:
     # print "TAG component type: ", IOP.ComponentID[c.tag]

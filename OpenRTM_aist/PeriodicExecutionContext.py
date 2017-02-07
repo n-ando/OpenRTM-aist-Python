@@ -14,16 +14,15 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
-import sys
-import copy
+
 import threading
 import time
-import os
-import platform
-from omniORB import CORBA, PortableServer
+
+
+
 
 import OpenRTM_aist
-import OpenRTM
+
 import RTC, RTC__POA
 
 DEFAULT_PERIOD = 0.000001

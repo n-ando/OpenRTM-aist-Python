@@ -8,7 +8,7 @@
 # @author Nobuhiko Miyamoto
 #
 
-import sys
+
 import mmap, os
 import platform, ctypes
 from omniORB import cdrMarshal
@@ -74,7 +74,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
       pass
     else:
       from ctypes.util import find_library
-      librt = find_library("librt")
+      #librt = find_library("librt")
       #if librt is None:
       #  raise
       #self.rt = ctypes.CDLL(librt)

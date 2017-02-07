@@ -418,7 +418,7 @@ class PeriodicTask(OpenRTM_aist.Task):
     if self._periodCount > self._periodCountMax:
       guard = OpenRTM_aist.ScopedLock(self._periodStat.mutex)
       self._periodStat.stat = self._periodTime.getStatistics()
-      self_periodCount = 0
+      self._periodCount = 0
 
     self._periodCount += 1
     return

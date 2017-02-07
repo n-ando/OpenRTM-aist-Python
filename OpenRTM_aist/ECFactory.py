@@ -15,9 +15,7 @@
 #     All rights reserved.
 
 
-import string
 
-import OpenRTM_aist
 
 
 ##

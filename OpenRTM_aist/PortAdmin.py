@@ -14,9 +14,7 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
-import traceback
-import sys
-from omniORB import CORBA
+
 
 import RTC
 import OpenRTM_aist

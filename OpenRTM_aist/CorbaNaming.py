@@ -351,7 +351,7 @@ class CorbaNaming:
 
     except CosNaming.NamingContext.CannotProceed, err:
       if force:
-        self.rebindRecursive(err.cxt, err,rest_of_name, obj)
+        self.rebindRecursive(err.cxt, err.rest_of_name, obj)
       else:
         self.__print_exception()
         raise
@@ -573,7 +573,7 @@ class CorbaNaming:
     try:
       obj = self._rootContext.resolve(name_)
       return obj
-    except CosNaming.NamingContext.NotFound, ex:
+    except CosNaming.NamingContext.NotFound:
       self.__print_exception()
       return None
 
@@ -1092,8 +1092,8 @@ class CorbaNaming:
       end = len(name_list) - 1
 
     sub_len = end - (begin -1)
-    objId = ""
-    kind  = ""
+    #objId = ""
+    #kind  = ""
     
     sub_name = []
     for i in range(sub_len):
@@ -1267,8 +1267,8 @@ class CorbaNaming:
     kind = string_kind
     tmp_bl = self.listBinding(string_name)
     bl = []
-    tmp_len = len(tmp_bl)
-    list_len = 0
+    #tmp_len = len(tmp_bl)
+    #list_len = 0
     for b in tmp_bl:
       if b.binding_type == CosNaming.nobject:
         last_index = len(b.binding_name)-1

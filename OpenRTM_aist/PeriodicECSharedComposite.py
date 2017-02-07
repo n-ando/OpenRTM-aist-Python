@@ -18,9 +18,8 @@
 # $Id$
 #
 
-import string
-import sys
-import time
+
+
 
 from omniORB import CORBA
 import OpenRTM
@@ -300,7 +299,7 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
   def stopOwnedEC(self, member):
     ecs = member._eclist
     for ec in ecs:
-      ret = ec.stop()
+      ec.stop()
 
     return
 
@@ -315,7 +314,7 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
   def startOwnedEC(self, member):
     ecs = member._eclist
     for ec in ecs:
-      ret = ec.start()
+      ec.start()
 
     return
 
@@ -351,7 +350,7 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
       return
     
     # set organization to target RTC's conf
-    ret = member._config.remove_organization(self._pId)
+    member._config.remove_organization(self._pId)
     return
 
 
@@ -371,7 +370,7 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
       else:
         return
     # set ec to target RTC
-    ret = self._ec.add_component(member._rtobj)
+    self._ec.add_component(member._rtobj)
 
     orglist = member._rtobj.get_organizations()
     for org in orglist:
@@ -448,7 +447,7 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
     if len(portlist) == 0:
       return
         
-    comp_name = member._profile.instance_name
+    #comp_name = member._profile.instance_name
     plist = member._profile.port_profiles
       
     # port delegation
@@ -481,7 +480,7 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
     if len(portlist) == 0:
       return
 
-    comp_name = member._profile.instance_name
+    #comp_name = member._profile.instance_name
     plist = member._profile.port_profiles
     
     # port delegation

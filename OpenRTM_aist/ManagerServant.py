@@ -16,13 +16,12 @@
 #     All rights reserved.
 
 import copy
-import sys
 import threading
 import time
 from omniORB import CORBA
 import OpenRTM_aist
 import RTC,RTM,RTM__POA
-import SDOPackage
+
 
 
 class terminate_Task(OpenRTM_aist.Task):

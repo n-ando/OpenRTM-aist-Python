@@ -17,7 +17,7 @@
 
 
 import OpenRTM_aist
-import SDOPackage, SDOPackage__POA
+
 
 
 ##

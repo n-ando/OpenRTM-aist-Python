@@ -16,10 +16,9 @@
 #     All rights reserved.
 #
 
-from omniORB import *
-from omniORB import any
 
-import OpenRTM_aist
+
+
 
 ## const char* toTypename(value)
 def toTypename(value):

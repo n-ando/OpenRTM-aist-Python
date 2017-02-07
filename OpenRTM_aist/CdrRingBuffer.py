@@ -17,7 +17,7 @@
 
 
 import OpenRTM_aist
-from OpenRTM_aist import *
+
 
 class CdrRingBuffer(OpenRTM_aist.RingBuffer):
   """

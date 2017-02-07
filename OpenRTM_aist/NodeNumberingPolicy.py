@@ -8,7 +8,7 @@
 # @author Nobuhiko Miyamoto
 #
 
-import string
+
 import OpenRTM_aist
 
 

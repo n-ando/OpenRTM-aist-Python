@@ -16,7 +16,7 @@
 #     All rights reserved.
 
 import threading
-from omniORB import any
+
 
 import OpenRTM_aist
 

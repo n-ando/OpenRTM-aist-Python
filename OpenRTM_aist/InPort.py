@@ -14,13 +14,13 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
-from omniORB import *
-from omniORB import any
-import sys
+
+
 import copy
-import time
+
 
 import OpenRTM_aist
+import threading
 
 ##
 # @if jp

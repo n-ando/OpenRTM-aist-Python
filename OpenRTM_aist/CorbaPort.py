@@ -17,8 +17,8 @@
 
 from omniORB import CORBA
 from omniORB import any
-import traceback
-import sys
+
+
 
 import OpenRTM_aist
 import RTC

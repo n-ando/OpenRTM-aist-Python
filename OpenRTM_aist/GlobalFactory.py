@@ -17,7 +17,7 @@
 #
 
 
-import OpenRTM_aist
+
 
 
 class Factory:

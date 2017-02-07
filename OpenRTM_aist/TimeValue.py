@@ -16,7 +16,7 @@
 #     All rights reserved.
 
 
-import OpenRTM_aist
+
 
 TIMEVALUE_ONE_SECOND_IN_USECS = 1000000 # 1 [sec] = 1000000 [usec]
 

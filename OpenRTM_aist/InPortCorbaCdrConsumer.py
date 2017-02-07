@@ -16,7 +16,7 @@
 #     All rights reserved.
 #
 
-import sys
+
 from omniORB import any
 from omniORB import CORBA
 import OpenRTM_aist

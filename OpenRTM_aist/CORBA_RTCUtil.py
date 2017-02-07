@@ -11,7 +11,7 @@
 import OpenRTM_aist
 from omniORB import CORBA
 import RTC
-import SDOPackage
+
 
 ##
 # @if jp
@@ -62,7 +62,7 @@ def is_existing(rtc):
     if rtc._non_existent():
       return False
     return True
-  except CORBA.SystemException, ex:
+  except CORBA.SystemException:
     return False
 
 

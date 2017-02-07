@@ -13,7 +13,7 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
-import SDOPackage
+
 import OpenRTM_aist
 
 

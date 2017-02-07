@@ -15,7 +15,7 @@
 #     All rights reserved.
 # 
 
-import SDOPackage, SDOPackage__POA
+
 
 ##
 # @if jp

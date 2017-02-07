@@ -15,9 +15,8 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
-import sys
-from omniORB import *
-from omniORB import any
+
+
 
 import OpenRTM_aist
 import OpenRTM__POA,OpenRTM

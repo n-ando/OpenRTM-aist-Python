@@ -16,7 +16,7 @@
 
 import sys
 import traceback
-import time
+
 import threading
 import logging
 import logging.handlers
@@ -126,10 +126,10 @@ class Logger:
     if len(args) == 0:
       return
     elif len(args) == 2:
-      name = args[0]
+      #name = args[0]
       mode = args[1]
     elif len(args) == 3:
-      name = args[0]
+      #name = args[0]
       mode = args[1]
       fileName = args[2]
 

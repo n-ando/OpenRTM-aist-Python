@@ -17,7 +17,7 @@
 # $Id$
 #
 
-from omniORB import CORBA, PortableServer
+from omniORB import CORBA
 
 import OpenRTM_aist
 import RTC
@@ -300,7 +300,7 @@ class RTObjectStateMachine:
     poa = OpenRTM_aist.Manager.instance().getPOA()
     try:
       self._rtObjPtr = poa.reference_to_servant(comp)
-    except CORBA.SystemException, ex:
+    except CORBA.SystemException:
       self._rtObjPtr = None
     except:
       self._rtObjPtr = None
