@@ -1729,7 +1729,7 @@ class Manager:
         self._poa.destroy(False, True)
         self._poa = PortableServer.POA._nil
         self._rtcout.RTC_DEBUG("POA was destroyed.")
-      except CORBA.SystemException, ex:
+      except CORBA.SystemException:
         self._rtcout.RTC_ERROR("Caught SystemException during root POA destruction")
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       except:

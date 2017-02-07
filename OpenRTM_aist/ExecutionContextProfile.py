@@ -18,7 +18,7 @@
 #
 
 import threading
-from omniORB import CORBA, PortableServer
+from omniORB import CORBA
 
 import OpenRTM_aist
 import RTC

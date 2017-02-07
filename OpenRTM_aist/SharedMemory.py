@@ -73,7 +73,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     if platform.system() == "Windows":
       pass
     else:
-      from ctypes.util import find_library
+      #from ctypes.util import find_library
       #librt = find_library("librt")
       #if librt is None:
       #  raise

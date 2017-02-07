@@ -9,7 +9,7 @@
 #
 
 
-import string
+
 import OpenRTM_aist
 
 
