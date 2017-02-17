@@ -1539,7 +1539,7 @@ class Manager:
       if logstream is None:
         self._rtcout.RTC_WARN("Logstream %s creation failed."%lstype)
         continue
-      self._rtcout.RTC_WARN("Logstream %s created."%lstype)
+      self._rtcout.RTC_INFO("Logstream %s created."%lstype)
       if not logstream.init(l):
         self._rtcout.RTC_WARN("Logstream %s init failed."%lstype)
       

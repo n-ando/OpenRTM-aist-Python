@@ -176,13 +176,17 @@ class LogstreamFile(OpenRTM_aist.LogstreamBase):
       return True
 
     else:
-      fhdlr = logging.FileHandler(fname)
-      mhdlr = logging.handlers.MemoryHandler(1024,logging.NOTSET, fhdlr)
-      fhdlr.setFormatter(formatter)
-      mhdlr.set_name(f)
-      self.logger.addHandler(mhdlr)
-      self.handlers.append(mhdlr)
-      self.logger.setLevel(logging.NOTSET)
+      try:
+        fhdlr = logging.FileHandler(fname)
+        mhdlr = logging.handlers.MemoryHandler(1024,logging.NOTSET, fhdlr)
+        fhdlr.setFormatter(formatter)
+        mhdlr.set_name(f)
+        self.logger.addHandler(mhdlr)
+        self.handlers.append(mhdlr)
+        self.logger.setLevel(logging.NOTSET)
+      except:
+        pass
+      
       return True
 
   ##
