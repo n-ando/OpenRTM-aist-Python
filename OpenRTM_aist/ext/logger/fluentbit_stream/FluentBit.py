@@ -374,6 +374,7 @@ class FluentBit(OpenRTM_aist.LogstreamBase):
 	def shutdown(self):
 		for h in self.handlers:
 			logging.Handler.close(h)
+			self.logger.removeHandler(h)
 		
 		FluentBit.s_logger = None
 		return True
