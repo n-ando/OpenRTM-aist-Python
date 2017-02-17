@@ -22,7 +22,7 @@ import logging
 import logging.handlers
 import OpenRTM_aist
 
-logger = None
+
 
 
 ##
@@ -67,7 +67,7 @@ class Logger:
   # @else
   #
   # @endif
-  def strToLogLevel(self, lv):
+  def strToLogLevel(lv):
     if lv == "SILENT":
       return Logger.SILENT
     elif lv == "FATAL":
@@ -89,119 +89,10 @@ class Logger:
     else:
       return Logger.INFO
 
-
-
-  ##
-  # @if jp
-  #
-  # @brief コンストラクタ
-  #
-  # コンストラクタ
-  #
-  # @param self
-  # @param (mode,file_name,address)
-  #
-  # @else
-  #
-  # @brief constructor.
-  #
-  # @endif
-  def __init__(self, *args):
-    self._mutex = threading.RLock()
-    self._fhdlr = None
-
-
-  def init(*args):
-    global logger
-    
-
-    if logger is not None:
-      return logger
-
-
-    logger = Logger()
-    mode = None
-    fileName = None
-
-    if len(args) == 0:
-      return
-    elif len(args) == 2:
-      #name = args[0]
-      mode = args[1]
-    elif len(args) == 3:
-      #name = args[0]
-      mode = args[1]
-      fileName = args[2]
-
-
-    logging.PARANOID  = logging.DEBUG - 3
-    logging.VERBOSE   = logging.DEBUG - 2
-    logging.TRACE     = logging.DEBUG - 1
-    logging.FATAL     = logging.ERROR + 1
-
-    logging.addLevelName(logging.PARANOID,  "PARANOID")
-    logging.addLevelName(logging.VERBOSE,   "VERBOSE")
-    logging.addLevelName(logging.TRACE,     "TRACE")
-    logging.addLevelName(logging.FATAL,     "FATAL")
-
-    """
-    logging.root.setLevel([logging.NOTSET,
-                           logging.PARANOID,
-                           logging.VERBOSE,
-                           logging.TRACE,
-                           logging.DEBUG,
-                           logging.INFO,
-                           logging.WARNING,
-                           logging.ERROR,
-                           logging.FATAL,
-                           logging.CRITICAL])
-    """
-
-    
-    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-
-    if mode is None or mode == "FILE":
-      if fileName:
-        logger._fhdlr = logging.FileHandler(fileName)
-      else:
-        logger._fhdlr = logging.FileHandler('rtcsystem.log')
-
-      mhdlr = logging.handlers.MemoryHandler(1024,logging.NOTSET, logger._fhdlr)
-      logger._fhdlr.setFormatter(formatter)
-      logging.getLogger("").addHandler(mhdlr)
-      logging.getLogger("").setLevel(logging.NOTSET)
-      
-    elif mode == "STDOUT":
-      ch = logging.StreamHandler()
-      ch.setLevel(logging.NOTSET)
-      ch.setFormatter(formatter)
-      logging.getLogger("").addHandler(ch)
-
-    return logger
-
-  init = staticmethod(init)
+  strToLogLevel = staticmethod(strToLogLevel)
 
 
 
-  ##
-  # @if jp
-  #
-  # @brief デストラクタ
-  #
-  # デストラクタ。ファイルをクローズする。
-  #
-  # @param self
-  #
-  # @else
-  #
-  # @brief destractor.
-  #
-  # @endif
-  def __del__(self):
-    #if self._fhdlr is not None:
-    #  self._fhdlr.close()
-    #  self._fhdler = None
-    pass
 
   ##
   # @if jp
@@ -221,39 +112,10 @@ class Logger:
   # @brief Formatted output like printf
   #
   # @endif
-  def printf(self, fmt):
+  def printf(fmt):
     return fmt
 
-
-  def addHandler(self, *args):
-    mode = None
-    fileName = None
-
-    if len(args) == 0:
-      return
-    elif len(args) == 1:
-      mode = args[0]
-    elif len(args) == 2:
-      mode = args[0]
-      fileName = args[1]
-    
-    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-
-    if mode is None or mode == "FILE":
-      if fileName:
-        self._fhdlr = logging.FileHandler(fileName)
-      else:
-        self._fhdlr = logging.FileHandler('rtcsystem.log')
-
-      mhdlr = logging.handlers.MemoryHandler(1024,logging.NOTSET, self._fhdlr)
-      self._fhdlr.setFormatter(formatter)
-      logging.getLogger("").addHandler(mhdlr)
-      
-    elif mode.lower() == "stdout":
-      ch = logging.StreamHandler()
-      ch.setLevel(logging.NOTSET)
-      ch.setFormatter(formatter)
-      logging.getLogger("").addHandler(ch)
+  printf = staticmethod(printf)
 
 
   ##
@@ -319,14 +181,10 @@ class LogStream:
     self._loggerObj = None
     name = ""
 
-    if len(args) == 0:
-      return
-    elif len(args) > 0:
-      name = args[0]
 
-    self._loggerObj = Logger.init(*args)
+    self._mutex = threading.RLock()
+    self._loggerObj = []
     self._log_enable = True
-    self.logger = logging.getLogger(name)
     self.guard = None
 
 
@@ -334,13 +192,15 @@ class LogStream:
     return
 
   def shutdown(self):
-    logging.shutdown()
+    for log in self._loggerObj:
+      log.shutdown()
+    self._loggerObj = []
     return
 
-  def addHandler(self, *args):
-    if self._loggerObj is not None:
-      self._loggerObj.addHandler(*args)
-
+  def addLogger(self, loggerObj):
+    self.acquire()
+    self._loggerObj.append(loggerObj)
+    self.release()
 
   ##
   # @if jp
@@ -356,26 +216,11 @@ class LogStream:
   #
   # @endif
   def setLogLevel(self, level):
-    if level == "INFO":
-      self.logger.setLevel(logging.INFO)
-    elif level == "FATAL":
-      self.logger.setLevel(logging.FATAL)
-    elif level == "ERROR":
-      self.logger.setLevel(logging.ERROR)
-    elif level == "WARN":
-      self.logger.setLevel(logging.WARNING)
-    elif level == "DEBUG":
-      self.logger.setLevel(logging.DEBUG)
-    elif level == "SILENT":
-      self.logger.setLevel(logging.NOTSET)
-    elif level == "TRACE":
-      self.logger.setLevel(logging.TRACE)
-    elif level == "VERBOSE":
-      self.logger.setLevel(logging.VERBOSE)
-    elif level == "PARANOID":
-      self.logger.setLevel(logging.PARANOID)
-    else:
-      self.logger.setLevel(logging.INFO)
+    lvl = Logger.strToLogLevel(level)
+    for log in self._loggerObj:
+      log.setLogLevel(lvl)
+    
+    
 
 
   ##
@@ -443,7 +288,7 @@ class LogStream:
   # @endif
   def acquire(self):
     if self._LogLock:
-      self.guard = OpenRTM_aist.ScopedLock(self._loggerObj._mutex)
+      self.guard = OpenRTM_aist.ScopedLock(self._mutex)
 
 
   ##
@@ -492,8 +337,9 @@ class LogStream:
         except:
           print "RTC_LOG : argument error"
           return
-
-      self.logger.log(LV,messages)
+      for log in self._loggerObj:
+        log.log(messages, LV)
+      
 
       self.release()
 
@@ -529,7 +375,8 @@ class LogStream:
           print "RTC_FATAL : argument error"
           return
 
-      self.logger.log(logging.FATAL,messages)
+      for log in self._loggerObj:
+        log.log(messages, Logger.FATAL)
 
       self.release()
 
@@ -565,7 +412,9 @@ class LogStream:
           print "RTC_ERROR : argument error"
           return
 
-      self.logger.error(messages)
+      
+      for log in self._loggerObj:
+        log.log(messages, Logger.ERROR)
 
       self.release()
 
@@ -605,7 +454,9 @@ class LogStream:
           print "RTC_WARN : argument error"
           return
 
-      self.logger.warning(messages)
+      
+      for log in self._loggerObj:
+        log.log(messages, Logger.WARN)
 
       self.release()
 
@@ -645,7 +496,9 @@ class LogStream:
           print "RTC_INFO : argument error"
           return
 
-      self.logger.info(messages)
+      
+      for log in self._loggerObj:
+        log.log(messages, Logger.INFO)
     
       self.release()
 
@@ -685,7 +538,9 @@ class LogStream:
           print "RTC_DEBUG : argument error"
           return
         
-      self.logger.debug(messages)
+      
+      for log in self._loggerObj:
+        log.log(messages, Logger.DEBUG)
       
       self.release()
 
@@ -726,7 +581,9 @@ class LogStream:
           print "RTC_TRACE : argument error"
           return
 
-      self.logger.log(logging.TRACE,messages)
+      
+      for log in self._loggerObj:
+        log.log(messages, Logger.TRACE)
     
       self.release()
 
@@ -767,7 +624,9 @@ class LogStream:
           print "RTC_VERBOSE : argument error"
           return
 
-      self.logger.log(logging.VERBOSE,messages)
+      
+      for log in self._loggerObj:
+        log.log(messages, Logger.VERBOSE)
     
       self.release()
 
@@ -809,8 +668,14 @@ class LogStream:
           print "RTC_PARANOID : argument error"
           return
 
-      self.logger.log(logging.PARANOID,messages)
+      
+      for log in self._loggerObj:
+        log.log(messages, Logger.PARANOID)
     
       self.release()
+
+
+
+
 
 

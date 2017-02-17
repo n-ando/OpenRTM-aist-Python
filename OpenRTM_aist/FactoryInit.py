@@ -45,3 +45,4 @@ def FactoryInit():
     OpenRTM_aist.DefaultNumberingPolicyInit()
     OpenRTM_aist.NodeNumberingPolicyInit()
     OpenRTM_aist.NamingServiceNumberingPolicyInit()
+    OpenRTM_aist.LogstreamFileInit()

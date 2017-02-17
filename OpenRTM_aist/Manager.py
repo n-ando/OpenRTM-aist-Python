@@ -204,10 +204,10 @@ class Manager:
 
       manager = Manager()
       manager.initManager(argv)
+      manager.initFactories()
       manager.initLogger()
       manager.initORB()
       manager.initNaming()
-      manager.initFactories()
       manager.initExecContext()
       manager.initComposite()
       manager.initTimer()
@@ -246,10 +246,10 @@ class Manager:
       guard = OpenRTM_aist.ScopedLock(mutex)
       manager = Manager()
       manager.initManager(None)
+      manager.initFactories()
       manager.initLogger()
       manager.initORB()
       manager.initNaming()
-      manager.initFactories()
       manager.initExecContext()
       manager.initComposite()
       manager.initTimer()
@@ -1444,6 +1444,115 @@ class Manager:
 
   ##
   # @if jp
+  # @brief
+  #
+  # 
+  # 
+  # 
+  #
+  # @param self
+  #
+  #
+  # @else
+  # @brief
+  #
+  # 
+  # 
+  # @param self
+  #
+  # 
+  # @endif
+  def initLogstreamFile(self):
+
+    logprop = self._config.getNode("logger")
+    logstream = OpenRTM_aist.LogstreamFactory.instance().createObject("file")
+
+    if logstream is None:
+      return
+    
+
+    if not logstream.init(logprop):
+      logstream = OpenRTM_aist.LogstreamFactory.instance().deleteObject(logstream)
+      return
+    
+    self._rtcout.addLogger(logstream)
+
+  ##
+  # @if jp
+  # @brief
+  #
+  # 
+  # 
+  # 
+  #
+  # @param self
+  #
+  #
+  # @else
+  # @brief
+  #
+  # 
+  # 
+  # @param self
+  #
+  # 
+  # @endif
+  def initLogstreamPlugins(self):
+    lmod_ = [s.strip() for s in self._config.getProperty("logger.plugins").split(",")]
+    for mod_ in lmod_:
+      if len(mod_) == 0: continue
+      basename_ = mod_.split(".")[0]+"Init"
+      try:
+        self._module.load(mod_, basename_)
+      except:
+        self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+
+  ##
+  # @if jp
+  # @brief
+  #
+  # 
+  # 
+  # 
+  #
+  # @param self
+  #
+  #
+  # @else
+  # @brief
+  #
+  # 
+  # 
+  # @param self
+  #
+  # 
+  # @endif
+  def initLogstreamOthers(self):
+    factory = OpenRTM_aist.LogstreamFactory.instance()
+    pp = self._config.getNode("logger.logstream")
+
+    leaf0 = pp.getLeaf()
+
+    for l in leaf0:
+      lstype = l.getName()
+      logstream = factory.createObject(lstype)
+      if logstream is None:
+        self._rtcout.RTC_WARN("Logstream %s creation failed."%lstype)
+        continue
+      self._rtcout.RTC_WARN("Logstream %s created."%lstype)
+      if not logstream.init(l):
+        self._rtcout.RTC_WARN("Logstream %s init failed."%lstype)
+      
+        factory.deleteObject(logstream)
+        self._rtcout.RTC_WARN("Logstream %s deleted."%lstype)
+        continue
+      
+      self._rtcout.RTC_INFO("Logstream %s added."%lstype)
+      self._rtcout.addLogger(logstream)
+      
+
+  ##
+  # @if jp
   # @brief System logger の初期化
   #
   # System logger の初期化を実行する。
@@ -1458,38 +1567,16 @@ class Manager:
   # @brief System logger initialization
   # @endif
   def initLogger(self):
-
+    self._rtcout = OpenRTM_aist.LogStream()
     if not OpenRTM_aist.toBool(self._config.getProperty("logger.enable"), "YES", "NO", True):
-      self._rtcout = OpenRTM_aist.LogStream()
       return True
-
-    logfile = "./rtc.log"
-
-    logouts = self._config.getProperty("logger.file_name")
-    logouts = [s.strip() for s in logouts.split(",")]
     
-    self._rtcout = None
 
-    for i in range(len(logouts)):
-      tmp = [logouts[i]]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      logouts[i] = tmp[0]
-      if logouts[i].lower() == "stdout":
-        if self._rtcout is None:
-          self._rtcout = OpenRTM_aist.LogStream("manager","STDOUT")
-        else:
-          self._rtcout.addHandler(logouts[i])
-      else:
-        if logouts[i] == "":
-          logfile = "./rtc.log"
-        else:
-          logfile = logouts[i]
-          
-        if self._rtcout is None:
-          self._rtcout = OpenRTM_aist.LogStream("manager","FILE", logfile)
-        else:
-          self._rtcout.addHandler("FILE",logfile)
+    
+    self.initLogstreamFile()
+    self.initLogstreamPlugins()
+    self.initLogstreamOthers()
+    
 
     self._rtcout.setLogLevel(self._config.getProperty("logger.log_level"))
     self._rtcout.setLogLock(OpenRTM_aist.toBool(self._config.getProperty("logger.stream_lock"),
@@ -1935,7 +2022,7 @@ class Manager:
   # @endif
   #
   def initFactories(self):
-    self._rtcout.RTC_TRACE("Manager.initFactories()")
+    #self._rtcout.RTC_TRACE("Manager.initFactories()")
     OpenRTM_aist.FactoryInit()
     return True
 

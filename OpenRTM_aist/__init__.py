@@ -114,4 +114,7 @@ from NumberingPolicy import *
 from NodeNumberingPolicy import *
 from NamingServiceNumberingPolicy import *
 from CPUAffinity import *
+from LogstreamBase import *
+from LogstreamFile import *
+
 
