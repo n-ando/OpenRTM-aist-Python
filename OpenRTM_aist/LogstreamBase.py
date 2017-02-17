@@ -69,7 +69,7 @@ class LogstreamBase:
   #
   # @endif
   #
-  def __del__(self, CorbaConsumer=OpenRTM_aist.CorbaConsumer):
+  def __del__(self):
     pass
     
 
