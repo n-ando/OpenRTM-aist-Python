@@ -19,7 +19,7 @@ import traceback
 
 import threading
 import logging
-import logging.handlers
+
 import OpenRTM_aist
 
 
@@ -179,7 +179,7 @@ class LogStream:
     self._LogLock = False
     self._log_enable = False
     self._loggerObj = None
-    name = ""
+
 
 
     self._mutex = threading.RLock()

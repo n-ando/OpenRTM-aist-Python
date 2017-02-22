@@ -843,6 +843,8 @@ class Manager:
       self._rtcout.RTC_ERROR("createComponent: Factory not found: %s",
                              comp_id.getProperty("implementation_id"))
 
+      if not OpenRTM_aist.toBool(self._config.getProperty("manager.modules.search_auto"), "YES", "NO", True):
+        return False
       # automatic module loading
       mp = self._module.getLoadableModules()
       self._rtcout.RTC_INFO("%d loadable modules found", len(mp))

@@ -81,6 +81,7 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "manager.modules.C++.manager_cmd", "rtcd",
                  "manager.modules.Python.manager_cmd", "rtcd_python",
                  "manager.modules.Java.manager_cmd", "rtcd_java",
+                 "manager.modules.search_auto", "YES",
                  "manager.local_service.enabled_services","ALL",
                  "sdo.service.provider.enabled_service",  "ALL",
                  "sdo.service.consumer.enabled_service",  "ALL",
