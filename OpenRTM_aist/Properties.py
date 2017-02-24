@@ -175,7 +175,6 @@ class Properties:
 
       keys = prop.propertyNames()
       for _key in keys:
-        node = None
         node = prop.getNode(_key)
         if node:
           self.setDefault(_key, node.default_value)
