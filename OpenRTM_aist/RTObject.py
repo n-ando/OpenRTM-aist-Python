@@ -643,17 +643,21 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
                                         self.deactivate_comps(self._objref))
 
     # stop and detach myself from owned EC
-    for ec in self._ecMine:
-      if not CORBA.is_nil(ec) or not ec._non_existent():
+    #for ec in self._ecMine:
+    #  if not CORBA.is_nil(ec) or not ec._non_existent():
         # ret = ec.stop()
         # ec.remove_component(self._this())
-        pass
+    #    pass
+
 
     # detach myself from other EC
     for ec in self._ecOther:
-      if not CORBA.is_nil(ec):
-        # ec.stop()
-        ec.remove_component(self._this())
+      try:
+        if not CORBA.is_nil(ec) or not ec._non_existent():
+          # ec.stop()
+          ec.remove_component(self._this())
+      except:
+        pass
         
 
     self._exiting = True

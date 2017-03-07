@@ -67,7 +67,7 @@ class ManagerServant(RTM__POA.Manager):
       self._rtcout.RTC_WARN("Manager CORBA servant creation failed.")
       return
     self._rtcout.RTC_TRACE("Manager CORBA servant was successfully created.")
-
+    
     if OpenRTM_aist.toBool(config.getProperty("manager.is_master"), "YES", "NO", True):
       # this is master manager
       self._rtcout.RTC_TRACE("This manager is master.")

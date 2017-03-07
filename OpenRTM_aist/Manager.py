@@ -129,6 +129,7 @@ class Manager:
     self._initProc   = None
     self._runner     = None
     self._terminator = None
+    self.shutdown_thread = None
     self._compManager = OpenRTM_aist.ObjectManager(self.InstanceName)
     self._factory = OpenRTM_aist.ObjectManager(self.FactoryPredicate)
     self._ecfactory = OpenRTM_aist.ObjectManager(self.ECFactoryPredicate)
@@ -291,6 +292,7 @@ class Manager:
   def shutdown(self):
     self._rtcout.RTC_TRACE("Manager.shutdown()")
     self._listeners.manager_.preShutdown()
+    self.shutdownTimer()
     self.shutdownComponents()
     self.shutdownNaming()
     self.shutdownORB()
@@ -1402,10 +1404,6 @@ class Manager:
   # @endif
   def shutdownManager(self):
     self._rtcout.RTC_TRACE("Manager.shutdownManager()")
-    if self._timer:
-      self._timer.stop()
-      self._timer.join()
-      self._timer = None
 
     return
 
@@ -1435,7 +1433,8 @@ class Manager:
       comps = self.getComponents()
       
       if len(comps) == 0:
-        self.shutdown()
+        self.shutdown_thread = threading.Thread(target=self.shutdown)
+        self.shutdown_thread.start()
 
     return
 
@@ -2046,6 +2045,24 @@ class Manager:
   def initTimer(self):
     return True
 
+  ##
+  # @if jp
+  # @brief Timer の終了
+  #
+  # 使用する各 Timer の終了処理を実行する。
+  #
+  # @param self
+  #
+  # @else
+  #
+  # @endif
+  def shutdownTimer(self):
+    self._rtcout.RTC_TRACE("Manager.shutdownTimer()")
+    if self._timer:
+      self._timer.stop()
+      self._timer.join()
+      self._timer = None
+    
 
   ##
   # @if jp
