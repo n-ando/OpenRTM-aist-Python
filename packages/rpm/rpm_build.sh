@@ -7,6 +7,7 @@
 # $Id$
 #
 export LC_ALL=C
+arch=`uname -i | sed -s 's/i[3-5]/i6/g'`
 
 clean_dirs()
 {
@@ -86,7 +87,7 @@ create_rpmbuilddir()
 {
     clean_dirs
     mkdir {BUILD,RPMS,SOURCES,SPECS,SRPMS}
-    mkdir RPMS/{i386,i586,i686,x86_64,noarch}
+    mkdir RPMS/{$arch,noarch}
     export BUILD_DIR=`pwd`
 }
 
@@ -121,7 +122,7 @@ build_rpm()
 {
     cd SPECS
     rpm_def="_topdir $BUILD_DIR"
-    if rpmbuild --target `uname -i` --define "$rpm_def" -ba openrtm-aist.spec ; then
+    if rpmbuild --target "$arch" --define "$rpm_def" -ba openrtm-aist.spec ; then
 	echo "Build successful"
     else
 	echo "Build failed"
