@@ -24,13 +24,7 @@ import RTC,RTM,RTM__POA
 
 
 
-class terminate_Task(OpenRTM_aist.Task):
-  def __init__(self, mgr):
-    OpenRTM_aist.Task.__init__(self)
-    self._mgr = mgr
-  def svc(self):
-    time.sleep(1)
-    self._mgr.terminate()
+
 
 
 class ManagerServant(RTM__POA.Manager):
@@ -60,6 +54,7 @@ class ManagerServant(RTM__POA.Manager):
     self._masterMutex = threading.RLock()
     self._slaveMutex = threading.RLock()
     self._objref = None
+    
 
     config = copy.deepcopy(self._mgr.getConfig())
 
@@ -803,8 +798,8 @@ class ManagerServant(RTM__POA.Manager):
   #
   # ReturnCode_t shutdown()
   def shutdown(self):
-    task = terminate_Task(self._mgr)
-    task.activate()
+    self._mgr.createShutdownThread(1)
+    
     return RTC.RTC_OK
 
   

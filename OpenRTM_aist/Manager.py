@@ -95,6 +95,30 @@ def handler(signum, frame):
 
 ##
 # @if jp
+# @brief マネージャ終了スレッド生成
+#
+# 
+#
+#
+# @else
+#
+# @endif
+class terminate_Task(OpenRTM_aist.Task):
+  ##
+  # @brief コンストラクタ
+  # @param self
+  # @param mgr マネージャ
+  # @param sleep_time 待機時間
+  def __init__(self, mgr, sleep_time):
+    OpenRTM_aist.Task.__init__(self)
+    self._mgr = mgr
+    self._sleep_time = sleep_time
+  def svc(self):
+    time.sleep(self._sleep_time)
+    self._mgr.terminate()
+
+##
+# @if jp
 # @class Manager
 # @brief Manager クラス
 #
@@ -129,7 +153,7 @@ class Manager:
     self._initProc   = None
     self._runner     = None
     self._terminator = None
-    self.shutdown_thread = None
+    self._shutdown_thread = None
     self._compManager = OpenRTM_aist.ObjectManager(self.InstanceName)
     self._factory = OpenRTM_aist.ObjectManager(self.FactoryPredicate)
     self._ecfactory = OpenRTM_aist.ObjectManager(self.ECFactoryPredicate)
@@ -493,7 +517,9 @@ class Manager:
         self.join()
       except:
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-
+      if self._shutdown_thread:
+        self._shutdown_thread.wait()
+    
     return
 
 
@@ -1433,8 +1459,7 @@ class Manager:
       comps = self.getComponents()
       
       if len(comps) == 0:
-        self.shutdown_thread = threading.Thread(target=self.shutdown)
-        self.shutdown_thread.start()
+        self.createShutdownThread()
 
     return
 
@@ -3126,7 +3151,26 @@ class Manager:
     self._rtcout.RTC_TRACE("Manager.getNaming()")
     return self._namingManager
 
-
+  ##
+  # @if jp
+  # @brief マネージャ終了スレッド生成
+  # 
+  # 
+  # @param self
+  # @param sleep_time 待機時間
+  # @return task
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @param sleep_time 
+  # @return task
+  # @endif
+  def createShutdownThread(self, sleep_time=0):
+    self._rtcout.RTC_TRACE("Manager.createShutdownThread()")
+    self._shutdown_thread = terminate_Task(self, sleep_time)
+    self._shutdown_thread.activate()
+    return self._shutdown_thread
 
   #============================================================
   # コンポーネントマネージャ
