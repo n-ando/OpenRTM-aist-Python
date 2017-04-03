@@ -95,7 +95,7 @@ class Timer:
   def join(self):
     try:
       self._thread.join()
-      self._thread = threading.Thread(target=self.run)
+      #self._thread = threading.Thread(target=self.run)
     except:
       pass
 

@@ -1157,7 +1157,7 @@ class Manager:
                                                      "YES","NO",False):
         comps = self.getComponents()
         if len(comps) == 0:
-          self.shutdown()
+          self.createShutdownThread()
 
     return
 
