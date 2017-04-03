@@ -27,10 +27,10 @@ if plat == "win32":
     os.system("rd /S /Q SimpleService")
     os.system("rd /S /Q SimpleService__POA")
     os.system("omniidl.exe -bpython MyService.idl")
-    os.system("start python ..\\..\\..\\bin\\rtm-naming.py")
+    os.system("start \"\" \"%RTM_ROOT%\\bin\\rtm-naming.bat\"")
     os.system("start python MyServiceConsumer.py")
     os.system("start python MyServiceProvider.py")
-    time.sleep(3)
+    time.sleep(5)
     os.system("python Connector.py")
 
 else:
