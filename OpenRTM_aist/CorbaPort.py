@@ -1438,7 +1438,8 @@ class CorbaPort(OpenRTM_aist.PortBase):
       try:
         OpenRTM_aist.Manager.instance().getPOA().deactivate_object(self._oid)
       except:
-        print OpenRTM_aist.Logger.print_exception()
+        pass
+        #print OpenRTM_aist.Logger.print_exception()
       return
     
 
