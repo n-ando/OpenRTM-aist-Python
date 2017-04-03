@@ -25,10 +25,10 @@ plat=sys.platform
 
 def main():
   if plat == "win32":
-    os.system("start python ..\\..\\..\\bin\\rtm-naming.py")
+    os.system("start \"\" \"%RTM_ROOT%\\bin\\rtm-naming.bat\"")
     os.system("start python ConsoleIn.py")
     os.system("start python Consoleout.py")
-    time.sleep(3)
+    time.sleep(5)
     os.system("python Connector.py")
 
   else:
