@@ -104,7 +104,7 @@ rm -rf %{buildroot}
 # example package file list
 %files example
 %defattr(755,root,root,-)
-%{_datadir}/openrtm-%{short_version}/example/python/
+%{_datadir}/openrtm-%{short_version}/components/python/
 
 
 #------------------------------------------------------------
