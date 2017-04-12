@@ -234,7 +234,7 @@ ext_match_regex_win32 = ".*\.(py|conf|bat|xml|idl)$"
 # examples
 #
 example_dir           = "OpenRTM_aist/examples"
-target_example_dir    = "share/openrtm-" + pkg_shortver + "/example/python"
+target_example_dir    = "share/openrtm-" + pkg_shortver + "/components/python"
 example_match_regex   = ".*\.(py|conf|sh|xml|idl)$"
 example_path          = os.path.normpath(current_dir + "/" + example_dir)
 #
@@ -273,14 +273,14 @@ document_path         = os.path.normpath(current_dir + "/" + document_dir)
 # Now we assume that the following arguments are set to create_filelist()
 # start_path  = OpenRTM_aist/examples/
 # subs_path   = OpenRTM_aist/examples/
-# target_path = share/openrtm-1.1/examples/python/
+# target_path = share/openrtm-1.2/components/python/
 # regex_match = .*\.py$
 #
 # A file matched: OpenRTM_aist/examples/SimpleIO/ConsoleIn.py
 # "OpenRTM_aist/examples" (subs_path) is removed from the
 # path. obtained file path: SimpleIO/ConsoleIn.py is merged
 # target_path, and then we get final target path
-# <prefix>/share/openrtm-1.1/examples/python/SimpleIO/ConsoleIn.py
+# <prefix>/share/openrtm-1.2/components/python/SimpleIO/ConsoleIn.py
 #
 #------------------------------------------------------------
 def create_filelist(start_path, subs_path, target_path, regex_match, 
