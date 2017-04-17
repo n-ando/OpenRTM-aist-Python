@@ -21,6 +21,7 @@ import time
 from omniORB import CORBA
 import OpenRTM_aist
 import RTC,RTM,RTM__POA
+import platform
 
 
 
@@ -290,6 +291,7 @@ class ManagerServant(RTM__POA.Manager):
   #
   # RTObject_ptr create_component(const char* module_name)
   def create_component(self, module_name):
+    
     self._rtcout.RTC_TRACE("create_component(%s)", module_name)
 
     
@@ -304,6 +306,7 @@ class ManagerServant(RTM__POA.Manager):
     
 
 
+    module_name = module_name.split("&")[0]
     
     if self._isMaster:
       guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
@@ -1131,8 +1134,10 @@ class ManagerServant(RTM__POA.Manager):
       if not rtcd_cmd:
         rtcd_cmd = "rtcd_python"
       #rtcd_cmd = "rtcd_python.bat"
-      
-      cmd = rtcd_cmd
+      if platform.system() == "Windows":
+        cmd = "cmd /c " + rtcd_cmd
+      else:
+        cmd = rtcd_cmd
       cmd += " -o " + "manager.is_master:NO"
       cmd += " -o " + "manager.corba_servant:YES"
       cmd += " -o " + "corba.master_manager:" + config.getProperty("corba.master_manager")
@@ -1143,6 +1148,7 @@ class ManagerServant(RTM__POA.Manager):
       
       
       self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
+      
       ret = OpenRTM_aist.launch_shell(cmd)
 
       
@@ -1239,7 +1245,10 @@ class ManagerServant(RTM__POA.Manager):
         rtcd_cmd = "rtcd_python"
 
 
-      cmd = rtcd_cmd
+      if platform.system() == "Windows":
+        cmd = "cmd /c " + rtcd_cmd
+      else:
+        cmd = rtcd_cmd
       cmd += " -o corba.master_manager:"
       cmd += mgrstr # port number
       cmd += " -d "
