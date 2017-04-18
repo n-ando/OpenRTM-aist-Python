@@ -1,7 +1,7 @@
 @echo off
 echo "<<< ComponentObserverConsumer Test setup start >>>"
 
-set idlfiles=BasicDataType.idl DataPort.idl OpenRTM.idl RTC.idl SDOPackage.idl
+set idlfiles=BasicDataType.idl DataPort.idl OpenRTM.idl RTC.idl SDOPackage.idl SharedMemory.idl IORProfile.idl
 
 rem # idl file copy
 for %%x in (%idlfiles%) do copy ..\..\..\..\RTM_IDL\%%x .

@@ -40,7 +40,7 @@ def main():
   oid = poa.servant_to_id(servant)
   provider = poa.id_to_reference(oid)
 
-  rtc = naming.resolve("ConsoleIn0.rtc")._narrow(RTC.RTObject)
+  rtc = naming.resolve("COCTestRTC0.rtc")._narrow(RTC.RTObject)
   config = rtc.get_configuration()
   properties = [OpenRTM_aist.NVUtil.newNV("heartbeat.enable","YES"),
                 OpenRTM_aist.NVUtil.newNV("heartbeat.interval","10"),
