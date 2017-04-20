@@ -97,6 +97,21 @@ class ManagerServant(RTM__POA.Manager):
   # 
   # @endif
   def __del__(self):
+    pass
+
+
+
+  ##
+  # @if jp
+  #
+  # @brief ½ªÎ»´Ø¿ô
+  # 
+  # @else
+  # 
+  # @brief 
+  # 
+  # @endif
+  def exit(self):
     guard_master = OpenRTM_aist.ScopedLock(self._masterMutex)
     for i in range(len(self._masters)):
       try:
@@ -122,7 +137,6 @@ class ManagerServant(RTM__POA.Manager):
     if self._objref:
       self._objref._release()
     return
-
 
   ##
   # @if jp
@@ -306,7 +320,12 @@ class ManagerServant(RTM__POA.Manager):
     
 
 
-    module_name = module_name.split("&")[0]
+    #module_name = module_name.split("&")[0]
+    module_name = [module_name]
+    self.get_parameter_by_modulename("manager_address",module_name)
+    self.get_parameter_by_modulename("manager_name",module_name)
+    module_name = module_name[0]
+    
     
     if self._isMaster:
       guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
@@ -1057,7 +1076,11 @@ class ManagerServant(RTM__POA.Manager):
 
     endpos = arg.find('&', pos + 1)
     if endpos == -1:
-      paramstr = arg[(pos + 1):]
+      endpos = arg.find('?', pos + 1)
+      if endpos == -1:
+        paramstr = arg[(pos + 1):]
+      else:
+        paramstr = arg[(pos + 1): endpos]
     else:
       paramstr = arg[(pos + 1): endpos]
     self._rtcout.RTC_VERBOSE("%s arg: %s", (param_name, paramstr))

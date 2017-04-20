@@ -318,6 +318,7 @@ class Manager:
     self._listeners.manager_.preShutdown()
     self.shutdownTimer()
     self.shutdownComponents()
+    self.shutdownManagerServant()
     self.shutdownNaming()
     self.shutdownORB()
     self.shutdownManager()
@@ -1415,6 +1416,23 @@ class Manager:
 
     return
 
+  ##
+  # @if jp
+  # @brief Managerサーバントの終了処理(未実装)
+  #
+  # Managerサーバントを終了する
+  # 
+  #
+  # @param self
+  #
+  # @else
+  #
+  # @endif
+  def shutdownManagerServant(self):
+    self._rtcout.RTC_TRACE("Manager.shutdownManagerServant()")
+    self._mgrservant.exit()
+    self._mgrservant = None
+    return
 
   ##
   # @if jp
