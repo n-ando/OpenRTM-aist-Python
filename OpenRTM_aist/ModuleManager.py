@@ -254,10 +254,11 @@ class ModuleManager:
         raise ModuleManager.NotAllowedOperation, "Downloading module is not allowed."
       else:
         raise ModuleManager.NotFound, "Not implemented."
-
+    
     import_name = os.path.split(file_name)[-1]
     pathChanged=False
     file_path = None
+    
     if OpenRTM_aist.isAbsolutePath(file_name):
       if not self._absoluteAllowed:
         raise ModuleManager.NotAllowedOperation, "Absolute path is not allowed"
@@ -265,6 +266,7 @@ class ModuleManager:
         splitted_name = os.path.split(file_name)
         save_path = sys.path[:]
         sys.path.append(splitted_name[0])
+        
         pathChanged = True
         import_name = splitted_name[-1]
         file_path = file_name
@@ -273,7 +275,7 @@ class ModuleManager:
       file_path = self.findFile(file_name, self._loadPath)
       if not file_path:
         raise ModuleManager.InvalidArguments, "Invalid file name."
-
+  
     if not self.fileExist(file_path):
       raise ModuleManager.FileNotFound, file_name
 
@@ -284,6 +286,7 @@ class ModuleManager:
     ext_pos = import_name.find(".py")
     if ext_pos > 0:
       import_name = import_name[:ext_pos]
+    
     mo = __import__(str(import_name))
 
     if pathChanged:
@@ -322,7 +325,9 @@ class ModuleManager:
     dll = self._modules.find(file_name)
     if not dll:
       raise ModuleManager.NotFound, file_name
-    sys.modules.pop(dll.dll.__name__)
+    dll_name = dll.dll.__name__
+    if dll_name in sys.modules.keys():
+      sys.modules.pop(dll_name)
     self._modules.unregisterObject(file_name)
     return
 
