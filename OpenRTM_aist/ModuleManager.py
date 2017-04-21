@@ -322,7 +322,7 @@ class ModuleManager:
     dll = self._modules.find(file_name)
     if not dll:
       raise ModuleManager.NotFound, file_name
-
+    sys.modules.pop(dll.dll.__name__)
     self._modules.unregisterObject(file_name)
     return
 
