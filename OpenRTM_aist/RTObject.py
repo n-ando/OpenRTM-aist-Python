@@ -4724,7 +4724,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
         self._rtcout.RTC_DEBUG("Invalid EC type specified: %s", ec_tmp)
         continue
 
-      p_ = default_opts_
+      p_ = copy.deepcopy(default_opts_)
       
 
       # create EC's properties
