@@ -534,6 +534,11 @@ class Manager:
   # @param self
   # @param fname   モジュールファイル名
   # @param initfunc 初期化関数名
+  # @return エラーコード
+  #         RTC::RTC_OK 正常終了
+  #         RTC::RTC_ERROR ロード失敗・不明なエラー
+  #         RTC::PRECONDITION_NOT_MET 設定により許可されない操作
+  #         RTC::BAD_PARAMETER 不正なパラメータ
   # 
   # @else
   #
@@ -544,6 +549,11 @@ class Manager:
   #
   # @param fname    The module file name
   # @param initfunc The initialize function name
+  # @return Return code
+  #         RTC::RTC_OK Normal return
+  #         RTC::RTC_ERROR Load failed, or unknown error
+  #         RTC::PRECONDITION_NOT_MET Not allowed operation by conf
+  #         RTC::BAD_PARAMETER Invalid parameter
   #
   # @endif
   def load(self, fname, initfunc):
@@ -552,6 +562,7 @@ class Manager:
     self._listeners.module_.preLoad(fname, initfunc)
     try:
       fname_ = fname.split(os.sep)
+      
       if len(fname_) > 1:
         fname_ = fname_[-1]
       else:
@@ -563,10 +574,27 @@ class Manager:
       path = self._module.load(fname, initfunc)
       self._rtcout.RTC_DEBUG("module path: %s", path)
       self._listeners.module_.postLoad(path, initfunc)
+    except OpenRTM_aist.ModuleManager.NotAllowedOperation as e:
+      self._rtcout.RTC_ERROR("Operation not allowed: %s",(e.reason))
+      return RTC.PRECONDITION_NOT_MET
+    except OpenRTM_aist.ModuleManager.NotFound:
+      self._rtcout.RTC_ERROR("Not found: %s",(fname))
+      return RTC.RTC_ERROR
+    except OpenRTM_aist.ModuleManager.FileNotFound:
+      self._rtcout.RTC_ERROR("Not found: %s",(fname))
+      return RTC.RTC_ERROR
+    except OpenRTM_aist.ModuleManager.InvalidArguments as e:
+      self._rtcout.RTC_ERROR("Invalid argument: %s",(e.reason))
+      return RTC.BAD_PARAMETER
+    #except OpenRTM_aist.ModuleManager.Error as e:
+    #  self._rtcout.RTC_ERROR("Error: %s",(e.reason))
+    #  return RTC.RTC_ERROR
     except:
-      self.__try_direct_load(fname)
+      self._rtcout.RTC_ERROR("Unknown error.")
+      return RTC.RTC_ERROR
+      #self.__try_direct_load(fname)
 
-    return
+    return RTC.RTC_OK
 
 
   ##
@@ -3388,7 +3416,8 @@ class Manager:
 
 
     def __del__(self):
-      self._th.join()
+      pass
+      #self._th.join()
       #self._th = None
       #return
 

@@ -274,7 +274,7 @@ class ModuleManager:
     else:
       file_path = self.findFile(file_name, self._loadPath)
       if not file_path:
-        raise ModuleManager.InvalidArguments, "Invalid file name."
+        raise ModuleManager.FileNotFound, file_name
   
     if not self.fileExist(file_path):
       raise ModuleManager.FileNotFound, file_name
