@@ -1180,10 +1180,15 @@ class ManagerServant(RTM__POA.Manager):
         return RTC.RTObject._nil
       time.sleep(0.01)
       count = 0
+      t0_ = OpenRTM_aist.Time()
       while CORBA.is_nil(mgrobj):
         mgrobj = self.findManager_by_name(mgrstr)
         count += 1
         if count > 1000:
+          break
+        
+        t1_ = OpenRTM_aist.Time()
+        if (t1_ - t0_).getTime().toDouble() > 10.0:
           break
         time.sleep(0.01)
       
@@ -1287,10 +1292,15 @@ class ManagerServant(RTM__POA.Manager):
       # find manager
       time.sleep(0.01)
       count = 0
+      t0_ = OpenRTM_aist.Time()
       while CORBA.is_nil(mgrobj):
         mgrobj = self.findManager(mgrstr)
         count += 1
         if count > 1000:
+          break
+        
+        t1_ = OpenRTM_aist.Time()
+        if (t1_ - t0_).getTime().toDouble() > 10.0:
           break
         time.sleep(0.01)
 
