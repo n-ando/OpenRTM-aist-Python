@@ -14,8 +14,9 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
-
-
+import sys
+if sys.version_info[0] == 3:
+    long = int
 
 
 ##
@@ -407,7 +408,7 @@ def includes(_list, value, ignore_case = True):
   tmp_list = _list
   if ignore_case:
     value = value.lower()
-    tmp_list = map((lambda x: x.lower()),_list)
+    tmp_list = list(map((lambda x: x.lower()),_list))
     
   if tmp_list.count(value) > 0:
     return True
@@ -532,6 +533,8 @@ def _stringToList(_type, _str):
       _type[0][i] = float(list_[i])
     elif type(_type[0][i]) == str:
       _type[0][i] = str(list_[i])
+    
+      
     else:
       return False
 
@@ -571,6 +574,7 @@ def stringTo(_type, _str):
     elif type(_type[0]) == str:
       _type[0] = str(_str)
       return True
+
   #except ValueError:
   #  return False
   except:

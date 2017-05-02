@@ -178,7 +178,7 @@ class LogStream:
   def __init__(self, *args):
     self._LogLock = False
     self._log_enable = False
-    self._loggerObj = None
+    
 
 
 
@@ -335,7 +335,7 @@ class LogStream:
         try:
           messages = msg%(opt)
         except:
-          print "RTC_LOG : argument error"
+          print("RTC_LOG : argument error")
           return
       for log in self._loggerObj:
         log.log(messages, LV)
@@ -372,7 +372,7 @@ class LogStream:
         try:
           messages = msg%(opt)
         except:
-          print "RTC_FATAL : argument error"
+          print("RTC_FATAL : argument error")
           return
 
       for log in self._loggerObj:
@@ -409,7 +409,7 @@ class LogStream:
         try:
           messages = msg%(opt)
         except:
-          print "RTC_ERROR : argument error"
+          print("RTC_ERROR : argument error")
           return
 
       
@@ -451,7 +451,7 @@ class LogStream:
         try:
           messages = msg%(opt)
         except:
-          print "RTC_WARN : argument error"
+          print("RTC_WARN : argument error")
           return
 
       
@@ -493,7 +493,7 @@ class LogStream:
         try:
           messages = msg%(opt)
         except:
-          print "RTC_INFO : argument error"
+          print("RTC_INFO : argument error")
           return
 
       
@@ -535,7 +535,7 @@ class LogStream:
         try:
           messages = msg%(opt)
         except:
-          print "RTC_DEBUG : argument error"
+          print("RTC_DEBUG : argument error")
           return
         
       
@@ -578,7 +578,7 @@ class LogStream:
         try:
           messages = msg%(opt)
         except:
-          print "RTC_TRACE : argument error"
+          print("RTC_TRACE : argument error")
           return
 
       
@@ -621,7 +621,7 @@ class LogStream:
         try:
           messages = msg%(opt)
         except:
-          print "RTC_VERBOSE : argument error"
+          print("RTC_VERBOSE : argument error")
           return
 
       
@@ -665,7 +665,7 @@ class LogStream:
         try:
           messages = msg%(opt)
         except:
-          print "RTC_PARANOID : argument error"
+          print("RTC_PARANOID : argument error")
           return
 
       

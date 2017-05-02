@@ -407,7 +407,7 @@ class NamingOnManager(NamingBase):
   # @endif
   def bindObject(self, name, rtobj):
     self._rtcout.RTC_TRACE("bindObject(name = %s, rtobj or mgr)", name)
-    """print isinstance(rtobj, OpenRTM.ManagerServant)
+    """print(isinstance(rtobj, OpenRTM.ManagerServant))
     if isinstance(rtobj, OpenRTM.ManagerServant):
       
       self.manager = rtobj"""

@@ -50,7 +50,7 @@ def newNV(name, value):
   try:
     any_val = any.to_any(value)
   except:
-    print "ERROR  NVUtil.newNV : Can't convert to any. ", type(value)
+    print("ERROR  NVUtil.newNV : Can't convert to any. ", type(value))
     raise
 
     
@@ -120,7 +120,7 @@ def copyToProperties(prop, nvlist):
       val = str(any.from_any(nv.value, keep_structs=True))
       prop.setProperty(str(nv.name),val)
     except:
-      print OpenRTM_aist.Logger.print_exception()
+      print(OpenRTM_aist.Logger.print_exception())
       pass
 
 
@@ -319,7 +319,7 @@ def toString(nv, name=None):
     if type(val) == str:
       str_value = val
   except:
-    print OpenRTM_aist.Logger.print_exception()
+    print(OpenRTM_aist.Logger.print_exception())
     pass
   
   return str_value
@@ -421,4 +421,4 @@ def dump_to_stream(out, nv):
 # @endif
 def dump(nv):
   out = [""]
-  print dump_to_stream(out, nv)
+  print(dump_to_stream(out, nv))

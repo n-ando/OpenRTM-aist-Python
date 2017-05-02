@@ -21,10 +21,11 @@ import signal, os
 import sys
 import time
 from omniORB import CORBA, PortableServer
-from types import IntType, ListType
+#from types import IntType, ListType
 
 
 import OpenRTM_aist
+import OpenRTM_aist.CORBA_RTCUtil
 import RTC
 
 import CosNaming
@@ -166,6 +167,8 @@ class Manager:
     self._finalized = self.Finalized()
     self._listeners = OpenRTM_aist.ManagerActionListeners()
     signal.signal(signal.SIGINT, handler)
+    self._rtcout = None
+    
     
     return
 
@@ -215,13 +218,13 @@ class Manager:
     if len(arg) == 1:
       argv = arg[0]
     elif len(arg) == 2 and \
-             isinstance(arg[0], IntType) and \
-             isinstance(arg[1], ListType):
+             isinstance(arg[0], int) and \
+             isinstance(arg[1], list):
       # for 0.4.x
       argv = arg[1]
     else:
-      print "Invalid arguments for init()"
-      print "init(argc,argv) or init(argv)"
+      print("Invalid arguments for init()")
+      print("init(argc,argv) or init(argv)")
       return None
         
     if manager is None:
@@ -1018,6 +1021,7 @@ class Manager:
                            comp_id.getProperty("implementation_id"))
     self._listeners.rtclifecycle_.postInitialize()
     self.registerComponent(comp)
+    
     return comp
 
 
@@ -1548,6 +1552,7 @@ class Manager:
       return
     
     self._rtcout.addLogger(logstream)
+    
 
   ##
   # @if jp
@@ -1639,7 +1644,8 @@ class Manager:
   # @brief System logger initialization
   # @endif
   def initLogger(self):
-    self._rtcout = OpenRTM_aist.LogStream()
+    #self._rtcout = OpenRTM_aist.LogStream()
+    self._rtcout = self.getLogbuf()
     if not OpenRTM_aist.toBool(self._config.getProperty("logger.enable"), "YES", "NO", True):
       return True
     
@@ -1649,7 +1655,7 @@ class Manager:
     self.initLogstreamPlugins()
     self.initLogstreamOthers()
     
-
+    
     self._rtcout.setLogLevel(self._config.getProperty("logger.log_level"))
     self._rtcout.setLogLock(OpenRTM_aist.toBool(self._config.getProperty("logger.stream_lock"),
                                                 "enable", "disable", False))
@@ -2215,8 +2221,13 @@ class Manager:
     re_ipv6 = r"(([0-9a-f]{1,4})(:([0-9a-f]{1,4})){7}((\.|#|p| port )\d{1,4})?)|\[([0-9a-f]{1,4})(:([0-9a-f]{1,4})){7}\]"
 
     iorstr = self._orb.object_to_string(objref)
+
     ior = CORBA_IORUtil.toIOR(iorstr)
+
+      
+    
     endpoints = CORBA_IORUtil.getEndpoints(ior)
+    
 
     epstr = ""; epstr_ipv4 = ""; epstr_ipv6 = "";
     ipv4_count = 0; ipv6_count = 0
@@ -2272,12 +2283,12 @@ class Manager:
     otherref = None
 
     try:
-      otherref = file(self._config.getProperty("manager.refstring_path"),'r')
+      otherref = open(self._config.getProperty("manager.refstring_path"),'r')
       #refstring = otherref.readline()
       otherref.close()
     except:
       try:
-        reffile = file(self._config.getProperty("manager.refstring_path"),'w')
+        reffile = open(self._config.getProperty("manager.refstring_path"),'w')
       except:
         self._rtcout.RTC_WARN(OpenRTM_aist.Logger.print_exception())
         return False
@@ -2523,7 +2534,7 @@ class Manager:
         self._rtcout.RTC_DEBUG(name_prop)
         config_fname.append(self._config.getProperty(name_conf))
       except:
-        print "Not found. : %s" % self._config.getProperty(name_conf)
+        print("Not found. : %s" % self._config.getProperty(name_conf))
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       else:
         name_prop.load(conff)
@@ -2547,7 +2558,7 @@ class Manager:
         self._rtcout.RTC_DEBUG(type_prop)
         config_fname.append(self._config.getProperty(type_conf))
       except:
-        print "Not found. : %s" % self._config.getProperty(type_conf)
+        print("Not found. : %s" % self._config.getProperty(type_conf))
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       else:
         type_prop.load(conff)
@@ -2606,7 +2617,7 @@ class Manager:
       try:
         conff = open(file_name)
       except:
-        print "Not found. : %s" % file_name
+        print("Not found. : %s" % file_name)
         self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
       else:
         prop.load(conff)
@@ -2652,22 +2663,31 @@ class Manager:
 
     try:
       while 1:
-        n = it.next()
+        if sys.version_info[0] == 2:
+          n = it.next()
+        else:
+          n = it.__next__()
         if n == '%':
           count+=1
           if not (count % 2):
             str_ += n
         elif n == '$':
           count = 0
-          n = it.next()
+          if sys.version_info[0] == 2:
+            n = it.next()
+          else:
+            n = it.__next__()
           if n == '{' or n == '(':
             n = it.next()
             env = ""
-            for i in xrange(len_):
+            for i in range(len_):
               if n == '}' or n == ')':
                 break
               env += n
-              n = it.next()
+              if sys.version_info[0] == 2:
+                n = it.next()
+              else:
+                n = it.__next__()
             envval = os.getenv(env)
             if envval:
               str_ += envval
@@ -2713,9 +2733,12 @@ class Manager:
     if not OpenRTM_aist.toBool(self._config.getProperty("logger.enable"), "YES", "NO", True):
       return OpenRTM_aist.LogStream()
 
-    logbuf = OpenRTM_aist.LogStream(name)
-    logbuf.setLogLevel(self._config.getProperty("logger.log_level"))
-    return logbuf
+    if self._rtcout is None:
+        self._rtcout = OpenRTM_aist.LogStream(name)
+        self._rtcout.setLogLevel(self._config.getProperty("logger.log_level"))
+        return self._rtcout
+    else:
+        return self._rtcout
 
 
   ##
@@ -3025,7 +3048,7 @@ class Manager:
       comp_ports = conn_prop[0].split("^")
       if len(comp_ports) != 2:
         self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
-        self._rtcout.RTC_ERROR("Format must be Comp0.port0:Comp1.port1")
+        self._rtcout.RTC_ERROR("Format must be Comp0.port0^Comp1.port1()")
         continue
       
       comp0_name = comp_ports[0].split(".")[0]
@@ -3438,7 +3461,7 @@ class Manager:
         self._orb.run()
         #Manager.instance().shutdown()
       except:
-        print OpenRTM_aist.Logger.print_exception()
+        print(OpenRTM_aist.Logger.print_exception())
       return
 
 

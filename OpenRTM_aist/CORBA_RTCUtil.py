@@ -9,6 +9,7 @@
 # 
 
 import OpenRTM_aist
+import OpenRTM_aist.RTObject
 from omniORB import CORBA
 import RTC
 

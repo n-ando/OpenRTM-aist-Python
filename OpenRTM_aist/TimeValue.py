@@ -16,9 +16,12 @@
 #     All rights reserved.
 
 
-
+import sys
 
 TIMEVALUE_ONE_SECOND_IN_USECS = 1000000 # 1 [sec] = 1000000 [usec]
+
+if sys.version_info[0] == 3:
+  long = int
 
 ##
 # @if jp
@@ -56,6 +59,7 @@ class TimeValue:
   # @endif
   def __init__(self, sec=None, usec=None):
     global TIMEVALUE_ONE_SECOND_IN_USECS
+
 
     if type(sec) == str:
       sec = float(sec)

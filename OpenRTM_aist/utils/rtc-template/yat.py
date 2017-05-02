@@ -275,7 +275,7 @@ class Template:
         try:
             # split into (TEXT DIRECTIVE BRACKET)* TEXT
             self.__parse()
-        except YATException, e:
+        except YATException as e:
             self.__print_error(e)
             sys.exit(-1)
 
@@ -397,7 +397,7 @@ class Template:
             self.__write_cmd("self.pop_dict()")
             self.__pop_level()
         except:
-            print args, self.lineno()
+            print(args, self.lineno())
             raise UnmatchedBlock(self.lineno(), "endfor")
         return
 
@@ -450,7 +450,7 @@ class Template:
         cmd = args[3]
         if len(self.re_number.findall(cmd)) == 1:
             cmd_text = "if %s_index == %s:" % (key, cmd)
-        elif cmdlist.has_key(cmd):
+        elif cmd in cmdlist:
             if cmd == "last":
                 cmd_text = cmdlist[cmd] % (key,key)
             else:
@@ -474,7 +474,7 @@ class Template:
         cmd = args[3]
         if len(self.re_number.findall(cmd)) == 1:
             cmd_text = "elif %s_index == %s:" % (key, cmd)
-        elif cmdlist.has_key(cmd):
+        elif cmd in cmdlist:
             if cmd == "last":
                 cmd_text = cmdlist[cmd] % (key,key)
             else:
@@ -525,19 +525,19 @@ class Template:
     #------------------------------------------------------------
 
     def __print_error(self, e):
-        print "Parse Error: line", e.lineno, "in input data"
-        print "  " + ''.join(nesteditem(e.value))
+        print("Parse Error: line", e.lineno, "in input data")
+        print("  " + ''.join(nesteditem(e.value)))
         lines = self.template.split("\n")
         length = len(lines)
-        print "------------------------------------------------------------"
+        print("------------------------------------------------------------")
         for i in range(1,10):
             l = e.lineno - 6 + i
             if l > 0 and l < length:
-                print lines[l]
+                print(lines[l])
                 if i == 5:
                     uline = '~'*len(lines[l])
-                    print uline
-        print "------------------------------------------------------------"
+                    print(uline)
+        print("------------------------------------------------------------")
     
     def del_nl_after_cmd(self):
         # next text index after command
@@ -591,8 +591,8 @@ class GeneratorBase:
         self.text = ""
 
     def print_error(self, e):
-        print "\nTemplate Generation Error: line", e.lineno, "in input data"
-        print "  " + ''.join(nesteditem(e.value))
+        print("\nTemplate Generation Error: line", e.lineno, "in input data")
+        print("  " + ''.join(nesteditem(e.value)))
         temp = ""
         for i, s in enumerate(self.token):
             if s != None:
@@ -602,15 +602,15 @@ class GeneratorBase:
                     temp += s
         lines = temp.split("\n")
         length = len(lines)
-        print "------------------------------------------------------------"
+        print("------------------------------------------------------------")
         for i in range(1,10):
             l = e.lineno - 6 + i
             if l > 0 and l < length:
-                print lines[l]
+                print(lines[l])
                 if i == 5:
                     uline = '~'*len(lines[l])
-                    print uline
-        print "------------------------------------------------------------"
+                    print(uline)
+        print("------------------------------------------------------------")
         
     def set_index(self, index):
         self.index = index
@@ -663,7 +663,7 @@ class GeneratorBase:
         try:
             self.get_value(keytext)
             return True
-        except NotFound, e:
+        except NotFound as e:
             return False
 
     def get_value(self, keytext):
@@ -678,7 +678,7 @@ class GeneratorBase:
         length = len(keys)
         d = dict
         for i in range(length):
-            if isinstance(d, DictType) and d.has_key(keys[i]):
+            if isinstance(d, DictType) and keys[i] in d:
                 d = d[keys[i]]
             else:
                 return None
@@ -818,18 +818,18 @@ key3 does not exists.
     if len(dict) == len(template):
         for i in range(len(dict)-1,len(dict)):
             t = Template(template[i])
-            print "-" * 60
-            print "Example:", i
-            print "-" * 60
-            print "Template:\n"
-            print template[i]
-            print "-" * 60
-            print "Dictionary:\n"
-            print yaml.dump(dict[i], default_flow_style=False)
-            print "-" * 60
-            print "Generated Script:\n"
-            print t.get_script()
-            print "-" * 60
-            print "Generated Text:\n"
-            print t.generate(dict[i])
-            print ""
+            print("-" * 60)
+            print("Example:", i)
+            print("-" * 60)
+            print("Template:\n")
+            print(template[i])
+            print("-" * 60)
+            print("Dictionary:\n")
+            print(yaml.dump(dict[i], default_flow_style=False))
+            print("-" * 60)
+            print("Generated Script:\n")
+            print(t.get_script())
+            print("-" * 60)
+            print("Generated Text:\n")
+            print(t.generate(dict[i]))
+            print("")

@@ -28,7 +28,7 @@ class ComponentObserver_i(OpenRTM__POA.ComponentObserver):
     pass
 
   def update_status(self, status_kind, hint):
-    print "update_status: ", status_kind, ", ", hint
+    print("update_status: ", status_kind, ", ", hint)
     return
 
 def main():
@@ -52,10 +52,10 @@ def main():
 
   ret = config.add_service_profile(sprof)
   flag = True
-  print "If you exit program, please input 'q'."
+  print("If you exit program, please input 'q'.")
   sys.stdin.readline()
   ret = config.remove_service_profile("test_id")
-  print "test program end. ret : ", ret
+  print("test program end. ret : ", ret)
   return
     
 ############### test #################

@@ -158,7 +158,7 @@ class ListenerHolder:
     guard = OpenRTM_aist.ScopedLock(self.listener_mutex)
     
     for listener_ in self.listeners:
-      for (l,f) in listener_.iteritems():
+      for (l,f) in listener_.items():
         if f:
           del l
     #del guard
@@ -196,7 +196,7 @@ class ListenerHolder:
   def LISTENERHOLDER_CALLBACK(self, func, *args):
     guard = OpenRTM_aist.ScopedLock(self.listener_mutex)
     for listener in self.listeners:
-      for (l,f) in listener.iteritems():
+      for (l,f) in listener.items():
         func_ = getattr(l,func,None)
         func_(*args)
     return

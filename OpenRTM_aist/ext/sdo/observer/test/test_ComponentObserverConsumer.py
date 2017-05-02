@@ -34,7 +34,7 @@ class ComponentObserver_i(OpenRTM__POA.ComponentObserver):
     pass
 
   def update_status(self, status_kind, hint):
-    print "update_status: ", status_kind, ", ", hint
+    print("update_status: ", status_kind, ", ", hint)
     return
 
 
@@ -121,11 +121,11 @@ class TestComponentObserverConsumer(unittest.TestCase):
 
 
   def setfunc(self):
-    print "setfunc"
+    print("setfunc")
     return
 
   def unsetfunc(self):
-    print "unsetfunc"
+    print("unsetfunc")
     return
 
   def test_switchListeners(self):

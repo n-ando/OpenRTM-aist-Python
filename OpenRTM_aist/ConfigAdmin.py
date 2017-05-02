@@ -1183,8 +1183,8 @@ class ConfigAdmin:
   #
   # void setOnUpdate(OnUpdateCallback* cb);
   def setOnUpdate(self, cb):
-    print "setOnUpdate function is obsolete."
-    print "Use addConfigurationSetNameListener instead."
+    print("setOnUpdate function is obsolete.")
+    print("Use addConfigurationSetNameListener instead.")
     self._listeners.configsetname_[OpenRTM_aist.ConfigurationSetNameListenerType.ON_UPDATE_CONFIG_SET].addListener(cb, False)
     return
 
@@ -1210,8 +1210,8 @@ class ConfigAdmin:
   #
   # void setOnUpdateParam(OnUpdateParamCallback* cb);
   def setOnUpdateParam(self, cb):
-    print "setOnUpdateParam function is obsolete."
-    print "Use addConfigurationParamListener instead."
+    print("setOnUpdateParam function is obsolete.")
+    print("Use addConfigurationParamListener instead.")
     self._listeners.configparam_[OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM].addListener(cb, False)
     return
 
@@ -1237,8 +1237,8 @@ class ConfigAdmin:
   #
   # void setOnSetConfigurationSet(OnSetConfigurationSetCallback* cb);
   def setOnSetConfigurationSet(self, cb):
-    print "setOnSetConfigurationSet function is obsolete."
-    print "Use addConfigurationSetListener instead."
+    print("setOnSetConfigurationSet function is obsolete.")
+    print("Use addConfigurationSetListener instead.")
     self._listeners.configset_[OpenRTM_aist.ConfigurationSetListenerType.ON_SET_CONFIG_SET].addListener(cb, False)
     return
 
@@ -1264,8 +1264,8 @@ class ConfigAdmin:
   #
   # void setOnAddConfigurationSet(OnAddConfigurationAddCallback* cb);
   def setOnAddConfigurationSet(self, cb):
-    print "setOnAddConfigurationSet function is obsolete."
-    print "Use addConfigurationSetListener instead."
+    print("setOnAddConfigurationSet function is obsolete.")
+    print("Use addConfigurationSetListener instead.")
     self._listeners.configset_[OpenRTM_aist.ConfigurationSetListenerType.ON_ADD_CONFIG_SET].addListener(cb, False)
     return
 
@@ -1291,8 +1291,8 @@ class ConfigAdmin:
   #
   # void setOnRemoveConfigurationSet(OnRemoveConfigurationSetCallback* cb);
   def setOnRemoveConfigurationSet(self, cb):
-    print "setOnRemoveConfigurationSet function is obsolete."
-    print "Use addConfigurationSetNameListener instead."
+    print("setOnRemoveConfigurationSet function is obsolete.")
+    print("Use addConfigurationSetNameListener instead.")
     self._listeners.configsetname_[OpenRTM_aist.ConfigurationSetNameListenerType.ON_REMOVE_CONFIG_SET].addListener(cb, False)
     return
 
@@ -1318,8 +1318,8 @@ class ConfigAdmin:
   #
   # void setOnActivateSet(OnActivateSetCallback* cb);
   def setOnActivateSet(self, cb):
-    print "setOnActivateSet function is obsolete."
-    print "Use addConfigurationSetNameListener instead."
+    print("setOnActivateSet function is obsolete.")
+    print("Use addConfigurationSetNameListener instead.")
     self._listeners.configsetname_[OpenRTM_aist.ConfigurationSetNameListenerType.ON_ACTIVATE_CONFIG_SET].addListener(cb, False)
     return
 

@@ -226,7 +226,7 @@ class StateMachine:
   # @brief Set Entry action function
   # @endif
   def setEntryAction(self, state, call_back):
-    if self._entry.has_key(state):
+    if state in self._entry:
       self._entry[state] = call_back
     else:
       return False
@@ -249,7 +249,7 @@ class StateMachine:
   # @brief Set PreDo action function
   # @endif
   def setPreDoAction(self, state, call_back):
-    if self._predo.has_key(state):
+    if state in self._predo:
       self._predo[state] = call_back
     else:
       return False
@@ -272,7 +272,7 @@ class StateMachine:
   # @brief Set Do action function
   # @endif
   def setDoAction(self, state, call_back):
-    if self._do.has_key(state):
+    if state in self._do:
       self._do[state] = call_back
     else:
       return False
@@ -295,7 +295,7 @@ class StateMachine:
   # @brief Set PostDo action function
   # @endif
   def setPostDoAction(self, state, call_back):
-    if self._postdo.has_key(state):
+    if state in self._postdo:
       self._postdo[state] = call_back
     else:
       return False
@@ -318,7 +318,7 @@ class StateMachine:
   # @brief Set Exit action function
   # @endif
   def setExitAction(self, state, call_back):
-    if self._exit.has_key(state):
+    if state in self._exit:
       self._exit[state] = call_back
     else:
       return False
@@ -558,7 +558,7 @@ class StateMachine:
   # @endif
   def setNullFunc(self, s, nullfunc):
     for i in range(self._num):
-      if s.has_key(StateMachine.state_array[i]):
+      if StateMachine.state_array[i] in s:
         s[StateMachine.state_array[i]] = nullfunc
       else:
         s.setdefault(StateMachine.state_array[i], nullfunc)

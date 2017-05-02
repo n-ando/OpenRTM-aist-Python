@@ -49,7 +49,7 @@ class NumberingPolicy(OpenRTM_aist.NumberingPolicyBase):
   # @else
   #
   # @endif
-  class ObjectNotFound:
+  class ObjectNotFound(Exception):
     pass
 
 

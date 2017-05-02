@@ -18,6 +18,10 @@
 
 import sys
 
+if sys.version_info[0] == 2:
+    maxint = sys.maxint
+else:
+    maxint = sys.maxsize
 
 import OpenRTM_aist
 
@@ -204,7 +208,7 @@ class Properties:
 
     if defaults_str:
       if num is None:
-        _num = sys.maxint
+        _num = maxint
       else:
         _num = num
       self.setDefaults(defaults_str, _num)
@@ -384,7 +388,7 @@ class Properties:
   def getProperty(self, key, default=None):
     if default is None:
       keys = []
-      #keys = string.split(key, ".")
+      #keys = str.split(key, ".")
       self.split(key, ".", keys)
 
       node = None
@@ -421,7 +425,7 @@ class Properties:
   # @endif
   def getDefault(self, key):
     keys = []
-    #keys = string.split(key, ".")
+    #keys = str.split(key, ".")
     self.split(key, ".", keys)
     node = None
     node = self._getNode(keys, 0, self)
@@ -462,7 +466,7 @@ class Properties:
   def setProperty(self, key, value=None):
     if value is not None:
       keys = []
-      #keys = string.split(key, ".")
+      #keys = str.split(key, ".")
       self.split(key, ".", keys)
       curr = self
       for _key in keys:
@@ -500,7 +504,7 @@ class Properties:
   def setDefault(self, key, value):
     keys = []
     self.split(key, ".", keys)
-    #keys = string.split(key, ".")
+    #keys = str.split(key, ".")
 
     curr = self
     for _key in keys:
@@ -534,7 +538,7 @@ class Properties:
   # @endif
   def setDefaults(self, defaults, num = None):
     if num is None:
-      num = sys.maxint
+      num = maxint
 
     i = 0
     len_ = len(defaults)

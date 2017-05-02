@@ -188,11 +188,11 @@ class ManagerConfig :
     prop.setDefaults(OpenRTM_aist.default_config)
     if self.findConfigFile():
       #try:
-      with file(self._configFile,"r") as fd:
+      with open(self._configFile,"r") as fd:
         prop.load(fd)
         fd.close()
       #except:
-      #  print OpenRTM_aist.Logger.print_exception()
+      #  print(OpenRTM_aist.Logger.print_exception())
 
 
     self.setSystemInformation(prop)
@@ -256,7 +256,7 @@ class ManagerConfig :
     try:
       opts, args = getopt.getopt(argv[1:], "adlf:o:p:")
     except getopt.GetoptError:
-      print OpenRTM_aist.Logger.print_exception()
+      print(OpenRTM_aist.Logger.print_exception())
       return
 
     for opt, arg in opts:
@@ -327,7 +327,7 @@ class ManagerConfig :
   def findConfigFile(self):
     if self._configFile != "":
       if not self.fileExist(self._configFile):
-        print OpenRTM_aist.Logger.print_exception()
+        print(OpenRTM_aist.Logger.print_exception())
         return False
       return True
 

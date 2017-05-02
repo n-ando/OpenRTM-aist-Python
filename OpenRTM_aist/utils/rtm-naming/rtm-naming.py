@@ -72,7 +72,7 @@ def del_file(file_path):
 
 
 def usage():
-    print "Usage: python rtm-naming.py port_number"
+    print("Usage: python rtm-naming.py port_number")
 
 
 def omninames(port = "", endpoint = ""):
@@ -100,7 +100,7 @@ def omninames(port = "", endpoint = ""):
     if port == "":
         port = default_port
 
-    print "Starting omniORB omniNames: ", hostname, ":", port
+    print("Starting omniORB omniNames: ", hostname, ":", port)
 
     if sys.platform == "win32":
         omniNames = find_nscmd("omniNames.exe", "OMNI_ROOT")
@@ -108,13 +108,13 @@ def omninames(port = "", endpoint = ""):
         omniNames = find_nscmd("omniNames")
 
     if not omniNames:
-        print "Not found omniNames."
+        print("Not found omniNames.")
         sys.exit()
 
     cmd  = omniNames 
     cmd += " -start " + str(port)
     cmd += " -logdir \"" + str(log_path) + "\""
-    print cmd
+    print(cmd)
     os.system(cmd)
 
 

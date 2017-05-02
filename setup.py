@@ -128,7 +128,10 @@ Common commands: (see '--help-commands' for more)
 import os,os.path
 import sys
 import string
-import commands
+if sys.version_info[0] == 2:
+  import commands
+else:
+  import subprocess as commands
 import glob
 import shutil
 from distutils import core
@@ -233,7 +236,10 @@ ext_match_regex_win32 = ".*\.(py|conf|bat|xml|idl)$"
 #
 # examples
 #
-example_dir           = "OpenRTM_aist/examples"
+if sys.version_info[0] == 2:
+  example_dir           = "OpenRTM_aist/examples"
+else:
+  example_dir           = "OpenRTM_aist/python3_examples"
 target_example_dir    = "share/openrtm-" + pkg_shortver + "/components/python"
 example_match_regex   = ".*\.(py|conf|sh|xml|idl)$"
 example_path          = os.path.normpath(current_dir + "/" + example_dir)
@@ -298,7 +304,7 @@ not_included_modules=[]):
         subdir = re.sub(subs_path, "", root)
         dir_name = os.path.join(target_path, subdir)
         file_path = os.path.join(root, filename)
-        if not temp_hash.has_key(dir_name):
+        if not dir_name in temp_hash:
           temp_hash[dir_name] = []
         temp_hash[dir_name].append(file_path)
 
@@ -352,7 +358,7 @@ def convert_file_code(file_name, char_code, crlf_code, hint=None):
   def coding_name(coding):
     conv = {"euc_jp": "euc-jp",
             "shift_jis": "cp932"}
-    if conv.has_key(coding):
+    if coding in conv:
       return conv[coding]
     return coding
   sub_str = "coding: " + coding_name(char_code)
@@ -363,9 +369,9 @@ def convert_file_code(file_name, char_code, crlf_code, hint=None):
       outdata = conv_encoding(line.rstrip('\r\n'), char_code)
       outdata = re.sub("coding: [^ ]*", sub_str, outdata)
       outdata = re.sub("encoding: [^ ]*", sub_str, outdata)
-    except Exception, e:
-      print "Exception cought in " + file_name + ": " + line
-      print e
+    except Exception as e:
+      print("Exception cought in " + file_name + ": " + line)
+      print(e)
       infd.close()
       outfd.close()
       os.remove(temp_fname)
@@ -394,7 +400,8 @@ def compile_idl(idl_compiler, include_dirs, current_dir, files):
   cmd += files
   # function to be given dist.util.execute
   def exec_idl_compile(cmd_str):
-    cmdline = string.join(cmd_str)
+    #cmdline = string.join(cmd_str)
+    cmdline = " ".join(cmd_str)
     if os_is() == "win32":
       os.system(cmdline)
       return
@@ -425,7 +432,8 @@ def create_doc(doxygen_conf, target_dir):
     if os.path.exists(target_dir):
       shutil.rmtree(target_dir)
 
-    cmdline = string.join(cmd)
+    #cmdline = string.join(cmd)
+    cmdline = " ".join(cmd)
     if os_is() == "win32":
       os.system(cmdline)
       return
@@ -643,13 +651,13 @@ class build_doc(build):
         self.doxygen = "doxygen"
 
   def build_doc_common(self, infile, outfile):
-		f_input = open(infile, 'r')
-		src = f_input.read()
-		f_input.close()
-		dst = src.replace("__VERSION__", pkg_version)
-		f_output = open(outfile, 'w')
-		f_output.write(dst)
-		f_output.close()
+    f_input = open(infile, 'r')
+    src = f_input.read()
+    f_input.close()
+    dst = src.replace("__VERSION__", pkg_version)
+    f_output = open(outfile, 'w')
+    f_output.write(dst)
+    f_output.close()
   
   def run(self):
     conf_in_file = os.path.normpath(document_path + "/Doxyfile_en.in")

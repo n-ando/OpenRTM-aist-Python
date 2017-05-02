@@ -109,7 +109,7 @@ class SdoServiceAdmin:
     self._rtobj = rtobj
     self._consumerTypes = []
     self._providers = []
-    self._allConsumerEnabled = True
+    self._allConsumerEnabled = False
 
 
     ##

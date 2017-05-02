@@ -27,6 +27,9 @@ import OpenRTM_aist
 
 ULLONG_MAX = 0xffffffffffffffff
 
+if sys.version_info[0] == 3:
+  long = int
+
 ##
 # @if jp
 # @brief 時間単位変換用定数
@@ -114,6 +117,8 @@ class Time:
     
   def gettimeofday(self):
     global usec_per_sec
+
+      
     tm = time.time()
     tm_f       = float(tm - long(tm))     # 小数部の取り出し
     self.sec   = long(float(tm) - float(tm_f))   # 整数部の取り出し
@@ -144,10 +149,11 @@ class Time:
         _fields_ = [('low', c_ulong), 
                     ('high', c_long)]
 
+      global usec_per_sec
 
       tm = long(tv.tv_sec*1e6) + long(tv.tv_usec)
       st = SYSTEMTIME(0,0,0,0,0,0,0,0)
-      ft = LARGE_INTEGER(tm&0xFFFFFFFFL,tm>>32)
+      ft = LARGE_INTEGER(tm&0xFFFFFFFF,tm>>32)
       # 100 nanosecond units (since 16010101)
       ret = windll.kernel32.FileTimeToSystemTime(byref(ft),
                                                  byref(st))
@@ -155,10 +161,10 @@ class Time:
         return -1
 
       #windll.kernel32.SetSystemTime(byref(st))
-      print "settime Yer:", st.wYear, " Month:", st.wMonth, \
+      print("settime Yer:", st.wYear, " Month:", st.wMonth, \
           " DayOfWeek:", st.wDayOfWeek, " wDay:", st.wDay,  \
           " Hour:", st.wHour, "Minute:", st.wMinute, \
-          " Second:", st.wSecond, "Milliseconds:", st.wMilliseconds
+          " Second:", st.wSecond, "Milliseconds:", st.wMilliseconds)
       
 
     else:

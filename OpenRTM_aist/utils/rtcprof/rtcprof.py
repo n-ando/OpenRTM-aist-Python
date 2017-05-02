@@ -23,8 +23,8 @@ import OpenRTM_aist
 def main():
 
   if len(sys.argv) != 2:
-    print "usage: "
-    print sys.argv[0], " *.py "
+    print("usage: ")
+    print(sys.argv[0], " *.py ")
     return
 
   # file name with full path
@@ -89,18 +89,18 @@ def main():
         
   # loaded component profile have to be one
   if len(profs) == 0:
-    print "Load failed. file name: ", fname
+    print("Load failed. file name: ", fname)
     sys.path = tmp_path
     return OpenRTM_aist.Properties()
 
   if len(profs) > 1:
-    print "One or more modules loaded."
+    print("One or more modules loaded.")
     sys.path = tmp_path
     return OpenRTM_aist.Properties()
 
   keys = profs[0].propertyNames()
   for key in keys:
-    print "%s:%s"%(key,profs[0].getProperty(key))
+    print("%s:%s"%(key,profs[0].getProperty(key)))
 
   sys.path = tmp_path
   return

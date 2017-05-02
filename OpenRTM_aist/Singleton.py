@@ -16,7 +16,14 @@
 #     All rights reserved.
 #
 
-import thread
+
+import sys
+if sys.version_info[0] == 2:
+    import thread
+    allocate_lock = thread.allocate_lock
+else:
+    import threading
+    allocate_lock = threading.Lock
 
 ##
 # @if jp
@@ -29,7 +36,7 @@ import thread
 #   def __init__(self):
 #     pass
 class Singleton(object):
-  __lockObj = thread.allocate_lock()
+  __lockObj = allocate_lock()
   __instance = None
 
   def __new__(self, *args, **kargs):

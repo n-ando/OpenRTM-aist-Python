@@ -17,6 +17,7 @@
 import copy
 import threading
 import OpenRTM_aist
+import OpenRTM_aist.StringUtil
 import RTC
 
 ##

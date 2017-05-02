@@ -273,9 +273,11 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
            self.rt.shm_unlink(self._shm_address)
       self._shmem = None
 
-      if not CORBA.is_nil(self._smInterface):
-        self._smInterface.close_memory(False)
-
+      try:
+        if not CORBA.is_nil(self._smInterface) and self._smInterface._non_existent():
+          self._smInterface.close_memory(False)
+      except:
+        pass
   
     
 

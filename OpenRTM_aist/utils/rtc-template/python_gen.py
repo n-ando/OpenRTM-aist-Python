@@ -284,7 +284,7 @@ class python_gen(gen_base.gen_base):
             break
           f.close()
         except IOError:
-          print "Can't find file:", file
+          print("Can't find file:", file)
     return
 
   def CreateDataPorts(self, dict):
@@ -357,9 +357,9 @@ class python_gen(gen_base.gen_base):
         sys.stderr.write("Generate error: " \
                            + sidl["impl_py"] + "\n")
         
-      print "  File \"" \
+      print("  File \"" \
           + sidl["impl_py"] \
-          + "\" was generated."
+          + "\" was generated.")
 
     for cons in self.data["consumer_idl"]:
       dup = False

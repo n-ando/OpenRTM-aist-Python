@@ -64,7 +64,7 @@ class gen_base:
 			m = re.search("</rtc-template>", l)
 			if m:
 				in_tag = False
-				if data.has_key(tag_name):
+				if tag_name in data:
 					ret_lines += data[tag_name] + "\n"
 				ret_lines += l + "\n"
 				tag_name = ""
@@ -98,5 +98,5 @@ class gen_base:
 		gen_txt = self.replace_tags(taged_txt.split("\n"), tags)
 		f.write(gen_txt)
 		f.close()
-		print "  File \"" + fname + "\"" " was generated."
+		print("  File \"" + fname + "\"" " was generated.")
 		return

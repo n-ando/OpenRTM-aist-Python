@@ -90,11 +90,11 @@ class CorbaNaming:
         obj = orb.string_to_object(self._nameServer)
         self._rootContext = obj._narrow(CosNaming.NamingContext)
         if CORBA.is_nil(self._rootContext):
-          print "CorbaNaming: Failed to narrow the root naming context."
+          print("CorbaNaming: Failed to narrow the root naming context.")
 
       except CORBA.ORB.InvalidName:
         self.__print_exception()
-        print "Service required is invalid [does not exist]."
+        print("Service required is invalid [does not exist].")
 
     return
   
@@ -221,7 +221,7 @@ class CorbaNaming:
         self.bindRecursive(self._rootContext, name_list, obj)
       else:
         raise
-    except CosNaming.NamingContext.CannotProceed, err:
+    except CosNaming.NamingContext.CannotProceed as err:
       if force:
         self.bindRecursive(err.cxt, err.rest_of_name, obj)
       else:
@@ -349,7 +349,7 @@ class CorbaNaming:
         self.__print_exception()
         raise
 
-    except CosNaming.NamingContext.CannotProceed, err:
+    except CosNaming.NamingContext.CannotProceed as err:
       if force:
         self.rebindRecursive(err.cxt, err.rest_of_name, obj)
       else:
@@ -454,7 +454,7 @@ class CorbaNaming:
   #
   # @endif
   def bindContext(self, name, name_cxt, force=True):
-    if isinstance(name, basestring):
+    if isinstance(name, str):
       self.bind(self.toName(name), name_cxt, force)
     else:
       self.bind(name, name_cxt, force)
@@ -508,7 +508,7 @@ class CorbaNaming:
   #
   # @endif
   def rebindContext(self, name, name_cxt, force=True):
-    if isinstance(name, basestring):
+    if isinstance(name, str):
       self.rebind(self.toName(name), name_cxt, force)
     else:
       self.rebind(name, name_cxt, force)
@@ -565,7 +565,7 @@ class CorbaNaming:
   #
   # @endif
   def resolve(self, name):
-    if isinstance(name, basestring):
+    if isinstance(name, str):
       name_ = self.toName(name)
     else:
       name_ = name
@@ -606,7 +606,7 @@ class CorbaNaming:
   # void unbind(const CosNaming::Name& name)
   #   throw(NotFound, CannotProceed, InvalidName);
   def unbind(self, name):
-    if isinstance(name, basestring):
+    if isinstance(name, str):
       name_ = self.toName(name)
     else:
       name_ = name
@@ -668,7 +668,7 @@ class CorbaNaming:
     #if force is None:
     #  force = True
       
-    if isinstance(name, basestring):
+    if isinstance(name, str):
       name_ = self.toName(name)
     else:
       name_ = name
@@ -681,7 +681,7 @@ class CorbaNaming:
       else:
         self.__print_exception()
         raise
-    except CosNaming.NamingContext.CannotProceed, err:
+    except CosNaming.NamingContext.CannotProceed as err:
       if force:
         self.bindRecursive(err.cxt, err.rest_of_name, self.newContext())
       else:
@@ -873,7 +873,7 @@ class CorbaNaming:
     name_list = [CosNaming.NameComponent("","") for i in range(nc_length)]
 
     for i in range(nc_length):
-      pos = string.rfind(name_comps[i][0:],".")
+      pos = str.rfind(name_comps[i][0:],".")
       if pos == -1:
         name_list[i].id   = name_comps[i]
         name_list[i].kind = ""
@@ -1205,7 +1205,7 @@ class CorbaNaming:
       pre_pos = delim_size
 
     while 1:
-      found_pos = string.find(input[begin_pos:],delimiter)
+      found_pos = str.find(input[begin_pos:],delimiter)
       if found_pos == -1:
         results.append(input[pre_pos:])
         break
@@ -1235,11 +1235,11 @@ class CorbaNaming:
   # @endif
   def __print_exception(self):
     if sys.version_info[0:3] >= (2, 4, 0):
-      print traceback.format_exc()
+      print(traceback.format_exc())
     else:
       _exc_list = traceback.format_exception(*sys.exc_info())
       _exc_str = "".join(_exc_list)
-      print _exc_str
+      print(_exc_str)
 
     return
 

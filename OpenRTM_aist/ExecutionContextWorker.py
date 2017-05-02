@@ -484,7 +484,7 @@ class ExecutionContextWorker:
           "ACTIVE_STATE",
           "ERROR_STATE"]
 
-    f = lambda x: st[x._v] if x >= RTC.CREATED_STATE and x <= RTC.ERROR_STATE else ""
+    f = lambda x: st[x._v] if x._v >= RTC.CREATED_STATE._v and x._v <= RTC.ERROR_STATE._v else ""
     return f(state)
 
   ##

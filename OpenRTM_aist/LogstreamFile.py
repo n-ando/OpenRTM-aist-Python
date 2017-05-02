@@ -17,6 +17,7 @@
 
 
 import OpenRTM_aist
+import OpenRTM_aist.StringUtil
 import logging
 import logging.handlers
 

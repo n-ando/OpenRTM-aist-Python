@@ -227,14 +227,22 @@ def toIOR(iorstr):
   if iorstr[0:4] != 'IOR:': return
 
   pos = len("IOR:")
-  iorvalue = [chr(int(i + j, 16))
+  if sys.version_info[0] == 2:
+    iorvalue = [chr(int(i + j, 16))
+              for (i, j) in zip(iorstr[pos::2], iorstr[(pos + 1)::2])]
+  else:
+    iorvalue = [int(i + j, 16)
               for (i, j) in zip(iorstr[pos::2], iorstr[(pos + 1)::2])]
   # Endian flag
   pos = 0
   endian = (iorvalue[pos] != 0)
   pos += 4
-  ior = cdrUnmarshal(_0__GlobalIDL._tc_IOR,
+  if sys.version_info[0] == 2:
+    ior = cdrUnmarshal(_0__GlobalIDL._tc_IOR,
                      "".join(iorvalue[pos:]), endian)
+  else:
+    ior = cdrUnmarshal(_0__GlobalIDL._tc_IOR,
+                     bytes(iorvalue[pos:]), endian)
   return ior
 
 def getEndpoints(ior):
@@ -243,36 +251,56 @@ def getEndpoints(ior):
   for p in ior.profiles:
     # TAG_INTERNET_IOP
     if p.tag == IOP.TAG_INTERNET_IOP:
-      pbody = cdrUnmarshal(_0__GlobalIDL._tc_ProfileBody,
-                           "".join(p.profile_data), endian)
+      if sys.version_info[0] == 2:
+        pbody = cdrUnmarshal(_0__GlobalIDL._tc_ProfileBody,
+                             "".join(p.profile_data), endian)
+      else:
+        pbody = cdrUnmarshal(_0__GlobalIDL._tc_ProfileBody,
+                             p.profile_data, endian)
       addr.append(pbody.address_)
       addr += extractAddrs(pbody.components)
 
     # TAG_MULTIPLE_COMPONENTS
     elif p.tag == IOP.TAG_MULTIPLE_COMPONENTS:
-      profiles = cdrUnmarshal(_0__GlobalIDL._tc_MultipleComponentProfile,
+      if sys.version_info[0] == 2:
+        profiles = cdrUnmarshal(_0__GlobalIDL._tc_MultipleComponentProfile,
                               "".join(p.profile_data), endian)
+      else:
+        profiles = cdrUnmarshal(_0__GlobalIDL._tc_MultipleComponentProfile,
+                              p.profile_data, endian)
       addr += extractAddrs(profiles)
     else:
-      print "Other Profile"
+      print("Other Profile")
   return addr
 
 def extractAddrs(comps):
   global endian
   addr = []
   for c in comps:
-    # print "TAG component type: ", IOP.ComponentID[c.tag]
+    # print("TAG component type: ", IOP.ComponentID[c.tag])
     if c.tag == IOP.TAG_ALTERNATE_IIOP_ADDRESS:
-      size = cdrUnmarshal(CORBA.TC_ulong,
-                          "".join(c.component_data[0:4]), endian)
-      address = cdrUnmarshal(_0__GlobalIDL._tc_Address,
-                             "".join(c.component_data[4:]), endian)
+      if sys.version_info[0] == 2:
+        size = cdrUnmarshal(CORBA.TC_ulong,
+                            "".join(c.component_data[0:4]), endian)
+        address = cdrUnmarshal(_0__GlobalIDL._tc_Address,
+                               "".join(c.component_data[4:]), endian)
+      else:
+        size = cdrUnmarshal(CORBA.TC_ulong,
+                            c.component_data[0:4], endian)
+        address = cdrUnmarshal(_0__GlobalIDL._tc_Address,
+                               c.component_data[4:], endian)
       addr.append(address)
     elif c.tag == IOP.TAG_ORB_TYPE:
-      size = cdrUnmarshal(CORBA.TC_ulong,
-                          "".join(c.component_data[0:4]), endian)
-      orb_type = cdrUnmarshal(CORBA.TC_ulong,
-                              "".join(c.component_data[4:8]), endian)
+      if sys.version_info[0] == 2:
+        size = cdrUnmarshal(CORBA.TC_ulong,
+                            "".join(c.component_data[0:4]), endian)
+        orb_type = cdrUnmarshal(CORBA.TC_ulong,
+                                "".join(c.component_data[4:8]), endian)
+      else:
+        size = cdrUnmarshal(CORBA.TC_ulong,
+                            c.component_data[0:4], endian)
+        orb_type = cdrUnmarshal(CORBA.TC_ulong,
+                                c.component_data[4:8], endian)
   return addr
 
 iorstr = "IOR:000000000000003549444c3a6f70656e72746d2e616973742e676f2e6a702f4f70656e52544d2f44617461466c6f77436f6d706f6e656e743a312e3000000000000000010000000000000064000102000000000d31302e3231312e35352e31350000ffa90000000efed593815800002090000000000100000000000200000000000000080000000041545400000000010000001c00000000000100010000000105010001000101090000000100010109"
@@ -283,4 +311,4 @@ iorstr = "IOR:010000002b00000049444c3a6f6d672e6f72672f436f734e616d696e672f4e616d
 
 # orb = CORBA.ORB_init()
 # ior = toIOR(iorstr)
-# print getEndpoints(ior)
+# print(getEndpoints(ior))

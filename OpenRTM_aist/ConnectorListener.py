@@ -539,7 +539,7 @@ class ConnectorDataListenerHolder:
   #
   def __del__(self):
     for listener in self._listeners:
-      for (k,v) in listener.iteritems():
+      for (k,v) in listener.items():
         if v:
           del k
     return
@@ -626,7 +626,7 @@ class ConnectorDataListenerHolder:
   #             const cdrMemoryStream& cdrdata);
   def notify(self, info, cdrdata):
     for listener in self._listeners:
-      for (k,v) in listener.iteritems():
+      for (k,v) in listener.items():
         k(info, cdrdata)
     return
 
@@ -669,7 +669,7 @@ class ConnectorListenerHolder:
   #
   def __del__(self):
     for listener in self._listeners:
-      for (k,v) in listener.iteritems():
+      for (k,v) in listener.items():
         if v:
           del k
     return
@@ -753,7 +753,7 @@ class ConnectorListenerHolder:
   # void notify(const ConnectorInfo& info);
   def notify(self, info):
     for listener in self._listeners:
-      for (k,v) in listener.iteritems():
+      for (k,v) in listener.items():
         k(info)
     return
 

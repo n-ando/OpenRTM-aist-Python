@@ -715,7 +715,7 @@ class PeriodicECSharedComposite(OpenRTM_aist.RTObject_impl):
       rtc = mgr.getComponent(member)
 
       if rtc is None:
-        print "no RTC found: ", member
+        print("no RTC found: ", member)
         continue
 
       sdo = rtc.getObjRef()

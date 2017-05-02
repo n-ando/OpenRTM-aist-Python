@@ -51,10 +51,10 @@ def launch_shell(command):
   except OSError:
     # fork failed
     if sys.version_info[0:3] >= (2, 4, 0):
-      print traceback.format_exc()
+      print(traceback.format_exc())
     else:
       _exc_list = traceback.format_exception(*sys.exc_info())
-      print "".join(_exc_list)
+      print("".join(_exc_list))
 
     return -1
   return 0

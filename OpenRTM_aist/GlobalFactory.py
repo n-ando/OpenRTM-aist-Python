@@ -82,7 +82,7 @@ class Factory:
 
   ## bool hasFactory(const Identifier& id)
   def hasFactory(self, id):
-    if not self._creators.has_key(id):
+    if not id in self._creators:
       return False
     return True
 
@@ -104,7 +104,7 @@ class Factory:
     if not creator or not destructor:
       return self.INVALID_ARG
 
-    if self._creators.has_key(id):
+    if id in self._creators:
       return self.ALREADY_EXISTS
     
     self._creators[id] = Factory.FactoryEntry(id, creator, destructor)
@@ -113,7 +113,7 @@ class Factory:
 
   ## ReturnCode removeFactory(const Identifier& id)
   def removeFactory(self, id):
-    if not self._creators.has_key(id):
+    if not id in self._creators:
       return self.NOT_FOUND
 
     del self._creators[id]
@@ -122,11 +122,11 @@ class Factory:
 
   ## AbstractClass* createObject(const Identifier& id)
   def createObject(self, id):
-    if not self._creators.has_key(id):
-      print "Factory.createObject return None id: ", id
+    if not id in self._creators:
+      print("Factory.createObject return None id: ", id)
       return None
     obj_ = self._creators[id].creator_()
-    #assert(not self._objects.has_key(obj_))
+    #assert(not obj_ in self._objects)
     self._objects[obj_] = self._creators[id]
     return obj_
 
@@ -134,12 +134,12 @@ class Factory:
   ## ReturnCode deleteObject(const Identifier& id, AbstractClass*& obj)
   def deleteObject(self, obj, id=None):
     if id:
-      if self._creators.has_key(id):
+      if id in self._creators:
         self._creators[id].destructor_(obj)
         del self._objects[obj]
         return self.FACTORY_OK
 
-    if not self._objects.has_key(obj):
+    if not obj in self._objects:
       return self.NOT_FOUND
 
     tmp = obj
@@ -197,7 +197,7 @@ class Factory:
   # @endif
   # bool isProducerOf(AbstractClass* obj)
   def isProducerOf(self, obj):
-    return self._objects.has_key(obj)
+    return obj in self._objects
 
 
   ##
@@ -224,7 +224,7 @@ class Factory:
   # @endif
   # ReturnCode objectToIdentifier(AbstractClass* obj, Identifier& id)
   def objectToIdentifier(self, obj, id):
-    if not self._objects.has_key(obj):
+    if not obj in self._objects:
       return self.NOT_FOUND
 
     id[0] = self._objects[obj].id_

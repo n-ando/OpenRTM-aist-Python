@@ -282,7 +282,7 @@ class ExecutionContextProfile:
     else:
       kind_ = kind
 
-    if kind_ < RTC.PERIODIC or kind_ > RTC.OTHER:
+    if kind_._v < RTC.PERIODIC._v or kind_._v > RTC.OTHER._v:
       return ""
 
     return kinds_[kind_._v]
@@ -307,7 +307,7 @@ class ExecutionContextProfile:
   # @endif
   # RTC::ReturnCode_t setKind(RTC::ExecutionKind kind);
   def setKind(self, kind):
-    if kind < RTC.PERIODIC or kind > RTC.OTHER:
+    if kind._v < RTC.PERIODIC._v or kind._v > RTC.OTHER._v:
       self._rtcout.RTC_ERROR("Invalid kind is given. %d", kind._v)
       return RTC.BAD_PARAMETER
 

@@ -25,30 +25,30 @@ class DataListener(OpenRTM_aist.ConnectorDataListenerT):
     self._name = name
     
   def __del__(self):
-    print "dtor of ", self._name
+    print("dtor of ", self._name)
 
   def __call__(self, info, cdrdata):
     data = OpenRTM_aist.ConnectorDataListenerT.__call__(self, info, cdrdata, RTC.TimedLong(RTC.Time(0,0),0))
-    print "------------------------------"
-    print "Listener:       ", self._name
-    print "Profile::name:  ", info.name
-    print "Profile::id:    ", info.id
-    print "Data:           ", data.data
-    print "------------------------------"
+    print("------------------------------")
+    print("Listener:       ", self._name)
+    print("Profile::name:  ", info.name)
+    print("Profile::id:    ", info.id)
+    print("Data:           ", data.data)
+    print("------------------------------")
     
 class ConnListener(OpenRTM_aist.ConnectorListener):
   def __init__(self, name):
     self._name = name
 
   def __del__(self):
-    print "dtor of ", self._name
+    print("dtor of ", self._name)
 
   def __call__(self, info):
-    print "------------------------------"
-    print "Listener:       ", self._name
-    print "Profile::name:  ", info.name
-    print "Profile::id:    ", info.id
-    print "------------------------------"
+    print("------------------------------")
+    print("Listener:       ", self._name)
+    print("Profile::name:  ", info.name)
+    print("Profile::id:    ", info.id)
+    print("------------------------------")
 
 
 class COCTestRTC(OpenRTM_aist.DataFlowComponentBase):
@@ -91,10 +91,10 @@ class COCTestRTC(OpenRTM_aist.DataFlowComponentBase):
 
         
   def onExecute(self, ec_id):
-    print "Please input number: ",
+    print("Please input number: ")
     self._data.data = long(sys.stdin.readline())
     OpenRTM_aist.setTimestamp(self._data)
-    print "Sending to subscriber: ", self._data.data
+    print("Sending to subscriber: ", self._data.data)
     self._outport.write()
     return RTC.RTC_OK
 
