@@ -18,6 +18,7 @@
 import os,sys
 import traceback
 import subprocess
+import shlex
 
 ##
 # @if jp
@@ -28,7 +29,8 @@ import subprocess
 #
 # int launch_shell(std::string command)
 def launch_shell(command):
-  args = command.split(" ")
+  #args = command.split(" ")
+  args = shlex.split(command," ")
 
   if sys.platform == "win32":
     CREATE_NEW_PROCESS_GROUP = 0x00000200

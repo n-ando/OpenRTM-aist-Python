@@ -22,7 +22,7 @@ from omniORB import CORBA
 import OpenRTM_aist
 import RTC,RTM,RTM__POA
 import platform
-
+import re
 
 
 
@@ -339,12 +339,16 @@ class ManagerServant(RTM__POA.Manager):
           self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
       del guard
 
+      module_name = module_name + "&manager_name=manager_%p"
+      
+      rtc = self.create_component_by_mgrname(module_name)
+      return rtc
 
-    # create on this manager
-    
-    rtc = self._mgr.createComponent(module_name)
-    if rtc:
-      return rtc.getObjRef()
+    else:
+      # create on this manager
+      rtc = self._mgr.createComponent(module_name)
+      if rtc:
+        return rtc.getObjRef()
     
 
     
@@ -911,10 +915,12 @@ class ManagerServant(RTM__POA.Manager):
       mgrloc = "corbaloc:iiop:"
       mgrloc += host_port
       mgrloc += "/" + config.getProperty("manager.name")
+      
       self._rtcout.RTC_DEBUG("corbaloc: %s", mgrloc)
 
       mobj = self._mgr.getORB().string_to_object(mgrloc)
       mgr = mobj._narrow(RTM.Manager)
+      
       return mgr
 
     except CORBA.SystemException:
@@ -1135,8 +1141,10 @@ class ManagerServant(RTM__POA.Manager):
       return RTC.RTObject._nil
     
 
-
-    mgrobj = self.findManager_by_name(mgrstr)
+    if mgrstr == "manager_%p":
+      mgrobj = None
+    else:
+      mgrobj = self.findManager_by_name(mgrstr)
     
 
     tmp = [arg]
@@ -1157,6 +1165,11 @@ class ManagerServant(RTM__POA.Manager):
       if not rtcd_cmd:
         rtcd_cmd = "rtcd_python"
       #rtcd_cmd = "rtcd_python.bat"
+
+      load_path = config.getProperty("manager.modules.load_path")
+      load_path_language = config.getProperty("manager.modules."+language+".load_path")
+      load_path = load_path + "," + load_path_language
+      
       if platform.system() == "Windows":
         cmd = "cmd /c " + rtcd_cmd
       else:
@@ -1164,8 +1177,9 @@ class ManagerServant(RTM__POA.Manager):
       cmd += " -o " + "manager.is_master:NO"
       cmd += " -o " + "manager.corba_servant:YES"
       cmd += " -o " + "corba.master_manager:" + config.getProperty("corba.master_manager")
-      cmd += " -o " + "manger.name:" + config.getProperty("manger.name")
+      cmd += " -o " + "manager.name:" + config.getProperty("manager.name")
       cmd += " -o " + "manager.instance_name:" + mgrstr
+      cmd += " -o " + "\"manager.modules.load_path:" + load_path + "\""
       #cmd += " -o " + "manager.supported_languages:" + language
       
       
@@ -1180,15 +1194,56 @@ class ManagerServant(RTM__POA.Manager):
         return RTC.RTObject._nil
       time.sleep(0.01)
       count = 0
+      
+      slaves_names = []
+      regex = r'manager_[0-9]+'
+      if mgrstr == "manager_%p":
+        guard_slave = OpenRTM_aist.ScopedLock(self._slaveMutex)
+        for slave in self._slaves[:]:
+          try:
+            prof = slave.get_configuration()
+            prop = OpenRTM_aist.Properties()
+            OpenRTM_aist.NVUtil.copyToProperties(prop, prof)
+            name = prop.getProperty("manager.instance_name")
+            if re.match(regex, name):
+              slaves_names.append(name)
+          except:
+            self._rtcout.RTC_ERROR("Unknown exception cought.")
+            self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+            self.remove_slave_manager(slave)
+            
+        del guard_slave
+
       t0_ = OpenRTM_aist.Time()
+      
       while CORBA.is_nil(mgrobj):
-        mgrobj = self.findManager_by_name(mgrstr)
+        if mgrstr == "manager_%p":
+          
+          guard_slave = OpenRTM_aist.ScopedLock(self._slaveMutex)
+          
+          for slave in self._slaves[:]:
+            try:
+              prof = slave.get_configuration()
+              prop = OpenRTM_aist.Properties()
+              OpenRTM_aist.NVUtil.copyToProperties(prop, prof)
+              name = prop.getProperty("manager.instance_name")
+
+              if re.match(regex, name) and not (name in slaves_names):
+                mgrobj = slave
+            except:
+              self._rtcout.RTC_ERROR("Unknown exception cought.")
+              self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+              self.remove_slave_manager(slave)
+          del guard_slave
+          
+        else:
+          mgrobj = self.findManager_by_name(mgrstr)
         count += 1
         if count > 1000:
           break
         
         t1_ = OpenRTM_aist.Time()
-        if (t1_ - t0_).getTime().toDouble() > 10.0:
+        if (t1_ - t0_).getTime().toDouble() > 10.0 and count > 10:
           break
         time.sleep(0.01)
       
@@ -1272,6 +1327,9 @@ class ManagerServant(RTM__POA.Manager):
       if not rtcd_cmd:
         rtcd_cmd = "rtcd_python"
 
+      load_path = config.getProperty("manager.modules.load_path")
+      load_path_language = config.getProperty("manager.modules."+language+".load_path")
+      load_path = load_path + "," + load_path_language
 
       if platform.system() == "Windows":
         cmd = "cmd /c " + rtcd_cmd
@@ -1279,6 +1337,8 @@ class ManagerServant(RTM__POA.Manager):
         cmd = rtcd_cmd
       cmd += " -o corba.master_manager:"
       cmd += mgrstr # port number
+      cmd += " -o \"manager.modules.load_path:"
+      cmd += load_path + "\""
       cmd += " -d "
       
 
@@ -1300,7 +1360,7 @@ class ManagerServant(RTM__POA.Manager):
           break
         
         t1_ = OpenRTM_aist.Time()
-        if (t1_ - t0_).getTime().toDouble() > 10.0:
+        if (t1_ - t0_).getTime().toDouble() > 10.0 and count > 10:
           break
         time.sleep(0.01)
 
