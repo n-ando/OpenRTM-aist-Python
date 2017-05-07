@@ -1247,9 +1247,9 @@ class ManagerServant(RTM__POA.Manager):
           break
         time.sleep(0.01)
       
-      if CORBA.is_nil(mgrobj):
-        self._rtcout.RTC_WARN("Manager cannot be found.")
-        return RTC.RTObject._nil
+    if CORBA.is_nil(mgrobj):
+      self._rtcout.RTC_WARN("Manager cannot be found.")
+      return RTC.RTObject._nil
       
 
 
