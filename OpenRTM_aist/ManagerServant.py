@@ -1142,7 +1142,7 @@ class ManagerServant(RTM__POA.Manager):
     
 
     if mgrstr == "manager_%p":
-      mgrobj = None
+      mgrobj = RTM.Manager._nil
     else:
       mgrobj = self.findManager_by_name(mgrstr)
     
