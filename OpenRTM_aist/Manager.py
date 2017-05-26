@@ -967,7 +967,11 @@ class Manager:
                     "logger.log_level",
                     "naming.enable",
                     "naming.type",
-                    "naming.formats"]
+                    "naming.formats",
+                    "sdo.service.provider.available_services",
+                    "sdo.service.consumer.available_services",
+                    "sdo.service.provider.enabled_services",
+                    "sdo.service.consumer.enabled_services"]
 
     prop_ = prop.getNode("port")
     prop_.mergeProperties(self._config.getNode("port"))
@@ -991,6 +995,7 @@ class Manager:
     # The property("instance_name") specified by the parameter of createComponent()
     # must be merged here.
     prop.mergeProperties(comp_prop)
+    
 
     #------------------------------------------------------------
     # Load configuration file specified in "rtc.conf"
@@ -1022,6 +1027,7 @@ class Manager:
                            comp_id.getProperty("implementation_id"))
     self._listeners.rtclifecycle_.postInitialize()
     self.registerComponent(comp)
+    
     
     return comp
 

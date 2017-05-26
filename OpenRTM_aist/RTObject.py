@@ -515,7 +515,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       ec_.start()
 
     # ret must be RTC_OK
-    assert(ret_ == RTC.RTC_OK)
+    #assert(ret_ == RTC.RTC_OK)
+    self._sdoservice.init(self)
+    
     return ret_
 
 
@@ -4925,6 +4927,9 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     
     return ret_
 
+
+
+    
     
   ##
   # @if jp

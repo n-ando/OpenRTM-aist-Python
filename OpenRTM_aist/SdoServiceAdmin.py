@@ -137,6 +137,36 @@ class SdoServiceAdmin:
     # @brief logger
     # @endif
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("SdoServiceAdmin")
+    
+    return
+
+
+  ##
+  # @if jp
+  # @brief 仮想デストラクタ
+  # 仮想デストラクタ。
+  # 
+  # @else
+  # @brief Virtual destractor
+  # Virtual destractor.
+  # @endif
+  def __del__(self):
+    pass
+
+
+  ##
+  # @if jp
+  # @brief 初期化
+  # @param self
+  # @param rtobj
+  # 
+  # @else
+  # @brief 
+  # @param self
+  # @param rtobj
+  #
+  def init(self, rtobj):
+
 
     self._rtcout.RTC_TRACE("SdoServiceAdmin::SdoServiceAdmin(%s)",
                            rtobj.getProperties().getProperty("instance_name"))
@@ -189,6 +219,7 @@ class SdoServiceAdmin:
     # SDO service consumer
     # getting consumer types from RTC's properties
     constypes = prop.getProperty("sdo.service.consumer.enabled_services")
+    
     self._consumerTypes = [s.strip() for s in constypes.split(",")]
     self._rtcout.RTC_DEBUG("sdo.service.consumer.enabled_services: %s",
                            str(constypes))
@@ -209,18 +240,16 @@ class SdoServiceAdmin:
     return
 
 
+
   ##
   # @if jp
-  # @brief 仮想デストラクタ
-  # 仮想デストラクタ。
+  # @brief 終了処理
+  # @param self
   # 
   # @else
-  # @brief Virtual destractor
-  # Virtual destractor.
-  # @endif
-  def __del__(self):
-    pass
-
+  # @brief 
+  # @param self
+  #
   def exit(self):
     len_ = len(self._providers)
     for i in range(len_):
@@ -352,7 +381,7 @@ class SdoServiceAdmin:
     self._rtcout.RTC_TRACE("addSdoServiceConsumer(IFR = %s)",
                            sProfile.interface_type)
     profile = copy.deepcopy(sProfile)
-
+    
     # Not supported consumer type -> error return
     if not self.isEnabledConsumerType(sProfile):
       self._rtcout.RTC_ERROR("Not supported consumer type. %s", profile.id)
