@@ -251,6 +251,18 @@ class ManagerServant(RTM__POA.Manager):
     for i in range(len(prof)):
       OpenRTM_aist.NVUtil.copyFromProperties(cprof[i].properties, prof[i])
 
+
+    if self._isMaster:
+      guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
+      for slave in self._slaves[:]:
+        try:
+          profs = slave.get_loaded_modules()
+          cprof.extend(profs)
+        except:
+          self._rtcout.RTC_ERROR("Unknown exception cought.")
+          self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+          self.remove_slave_manager(slave)
+
     return cprof
 
 
@@ -281,6 +293,18 @@ class ManagerServant(RTM__POA.Manager):
     
     for i in range(len(prof)):
       OpenRTM_aist.NVUtil.copyFromProperties(cprof[i].properties, prof[i])
+
+
+    if self._isMaster:
+      guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
+      for slave in self._slaves[:]:
+        try:
+          profs = slave.get_factory_profiles()
+          cprof.extend(profs)
+        except:
+          self._rtcout.RTC_ERROR("Unknown exception cought.")
+          self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+          self.remove_slave_manager(slave)
 
     return cprof
 
@@ -329,7 +353,7 @@ class ManagerServant(RTM__POA.Manager):
     
     if self._isMaster:
       guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
-      for slave in self._slaves:
+      for slave in self._slaves[:]:
         try:
           rtc = slave.create_component(module_name)
           if not CORBA.is_nil(rtc):
@@ -337,6 +361,7 @@ class ManagerServant(RTM__POA.Manager):
         except:
           self._rtcout.RTC_ERROR("Unknown exception cought.")
           self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+          self.remove_slave_manager(slave)
       del guard
 
       module_name = module_name + "&manager_name=manager_%p"
@@ -423,18 +448,21 @@ class ManagerServant(RTM__POA.Manager):
 
     # get slaves' component references
     self._rtcout.RTC_DEBUG("%d slave managers exists.", len(self._slaves))
-    for i in range(len(self._slaves)):
+    for slave in self._slaves[:]:
       try:
-        if not CORBA.is_nil(self._slaves[i]):
-          srtcs = self._slaves[i].get_components()
+        if not CORBA.is_nil(slave):
+          srtcs = slave.get_components()
           OpenRTM_aist.CORBA_SeqUtil.push_back_list(crtcs, srtcs)
           
       except:
-        self._rtcout.RTC_INFO("slave (%d) has disappeared.", i)
+        self._rtcout.RTC_ERROR("Unknown exception cought.")
+        self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+        self.remove_slave_manager(slave)
+        #self._rtcout.RTC_INFO("slave (%d) has disappeared.", i)
         #self._slaves[i] = RTM.Manager._nil
 
-        OpenRTM_aist.CORBA_SeqUtil.erase(self._slaves, i)
-        i -= 1
+        #OpenRTM_aist.CORBA_SeqUtil.erase(self._slaves, i)
+        #i -= 1
 
     return crtcs
   
@@ -467,17 +495,20 @@ class ManagerServant(RTM__POA.Manager):
     guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
     self._rtcout.RTC_DEBUG("%d slave managers exists.", len(self._slaves))
 
-    for i in range(len(self._slaves)):
+    for slave in self._slaves[:]:
       try:
-        if not CORBA.is_nil(self._slaves[i]):
-          sprofs = self._slaves[i].get_component_profiles()
+        if not CORBA.is_nil(slave):
+          sprofs = slave.get_component_profiles()
           OpenRTM_aist.CORBA_SeqUtil.push_back_list(cprofs, sprofs)
       except:
-        self._rtcout.RTC_INFO("slave (%d) has disappeared.", i)
+        self._rtcout.RTC_ERROR("Unknown exception cought.")
+        self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
+        self.remove_slave_manager(slave)
+        #self._rtcout.RTC_INFO("slave (%d) has disappeared.", i)
         #self._slaves[i] = RTM.Manager._nil
 
-        OpenRTM_aist.CORBA_SeqUtil.erase(self._slaves, i)
-        i -= 1
+        #OpenRTM_aist.CORBA_SeqUtil.erase(self._slaves, i)
+        #i -= 1
 
     del guard
     return cprofs
@@ -810,7 +841,11 @@ class ManagerServant(RTM__POA.Manager):
   # ReturnCode_t fork()
   def fork(self):
     # self._mgr.fork()
-    return RTC.RTC_OK
+    pid = OpenRTM_aist.fork()
+    if pid >= 0:
+      return RTC.RTC_OK
+    else:
+      return RTC.RTC_ERROR
 
   
   ##

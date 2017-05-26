@@ -19,6 +19,7 @@ import os,sys
 import traceback
 import subprocess
 import shlex
+import platform
 
 ##
 # @if jp
@@ -61,3 +62,31 @@ def launch_shell(command):
     return -1
   return 0
 
+
+##
+# @if jp
+# @brief プロセスを複製する
+# @else
+# @brief fork process
+# @endif
+#
+# int fork()
+def fork():
+  if platform.system() == "Windows":
+    return -1
+  else:
+    pid = os.fork()
+    return pid
+
+##
+# @if jp
+# @brief プロセスを起動し出力を取得する
+# @else
+# @brief fork process
+# @endif
+#
+# int fork()
+def popen(command):
+  args = shlex.split(command," ")
+  sp = subprocess.Popen(args, stdout=subprocess.PIPE)
+  return sp.communicate()[0]

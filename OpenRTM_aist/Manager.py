@@ -168,6 +168,7 @@ class Manager:
     self._listeners = OpenRTM_aist.ManagerActionListeners()
     signal.signal(signal.SIGINT, handler)
     self._rtcout = None
+    self._mgrservant = None
     
     
     return
@@ -1465,8 +1466,9 @@ class Manager:
   # @endif
   def shutdownManagerServant(self):
     self._rtcout.RTC_TRACE("Manager.shutdownManagerServant()")
-    self._mgrservant.exit()
-    self._mgrservant = None
+    if self._mgrservant:
+      self._mgrservant.exit()
+      self._mgrservant = None
     return
 
   ##

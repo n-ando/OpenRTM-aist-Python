@@ -17,6 +17,15 @@
 
 
 import OpenRTM_aist
+import platform
+
+
+if platform.system() == "Windows":
+    cpp_suffixes = "dll"
+elif platform.system() == "Linux":
+    cpp_suffixes = "so"
+else:
+    cpp_suffixes = "dylib"
 
 ##
 # @if jp
@@ -85,4 +94,14 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "manager.local_service.enabled_services","ALL",
                  "sdo.service.provider.enabled_services",  "ALL",
                  "sdo.service.consumer.enabled_services",  "ALL",
+                 "manager.supported_languages",  "C++, Python, Java",
+                 "manager.modules.C++.profile_cmd",  "rtcprof",
+                 "manager.modules.Python.profile_cmd",  "rtcd_python",
+                 "manager.modules.Java.profile_cmd",  "rtcprof_java",
+                 "manager.modules.C++.suffixes",  cpp_suffixes,
+                 "manager.modules.Python.suffixes",  "py",
+                 "manager.modules.Java.suffixes",  "class",
+                 "manager.modules.C++.load_paths",  "./",
+                 "manager.modules.Python.load_paths",  "./",
+                 "manager.modules.Java.load_paths",  "./",
                  ""]

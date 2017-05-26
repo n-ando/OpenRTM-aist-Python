@@ -18,6 +18,7 @@
 
 import sys,os
 import glob
+import platform
 
 import OpenRTM_aist
 
@@ -98,6 +99,9 @@ class ModuleManager:
     self._modules = OpenRTM_aist.ObjectManager(self.DLLPred)
     self._rtcout = None
     self._mgr = OpenRTM_aist.Manager.instance()
+    if not self._rtcout:
+      self._rtcout = self._mgr.getLogbuf("ModuleManager")
+    self._modprofs = []
 
   ##
   # @if jp
@@ -242,8 +246,7 @@ class ModuleManager:
   # std::string ModuleManager::load(const std::string& file_name,
   #                                 const std::string& init_func)
   def load(self, file_name, init_func=None):
-    if not self._rtcout:
-      self._rtcout = self._mgr.getLogbuf("ModuleManager")
+    
 
     self._rtcout.RTC_TRACE("load(fname = %s)", file_name)
     if file_name == "":
@@ -503,6 +506,192 @@ class ModuleManager:
     return profs[0]
 
 
+
+  ##
+  # @if jp
+  # @brief 指定言語におけるロードパス上のローダブルなファイルリストを返す
+  #
+  #
+  # @param self
+  # @param lang
+  # @param modules
+  #
+  #
+  # @else
+  # @brief Getting loadable file list on the loadpath for given language
+  # @endif
+  def getModuleList(self, lang, modules):
+    l = "manager.modules." + lang
+    lprop = self._properties.getNode(l)
+
+    paths = lprop.getProperty("load_paths").split(",")
+    
+    
+    paths.extend(self._loadPath)
+    paths = self.deleteSamePath(paths)
+
+    suffixes = lprop.getProperty("suffixes").split(",")
+
+      
+    self._rtcout.RTC_DEBUG("suffixes: %s", OpenRTM_aist.flatten(suffixes))
+
+    for path in paths:
+      if not path:
+        self._rtcout.RTC_WARN("Given load path is empty")
+        continue
+      self._rtcout.RTC_DEBUG("Module load path: %s", path)
+      flist = []
+      for suffix in suffixes:
+        tmp = [suffix]
+        OpenRTM_aist.eraseHeadBlank(tmp)
+        suffix = tmp[0]
+        
+        tmp = glob.glob(path + os.sep + '*.' + suffix)
+        if lang == "Python":
+          for f in tmp:
+            if f.find("__init__.py") != -1:
+              tmp.remove(f)
+
+        self._rtcout.RTC_DEBUG("File list (path:%s, ext:%s): %s", (path,suffix,OpenRTM_aist.flatten(suffixes)))
+        flist.extend(tmp)
+      
+      for f in flist:
+        f = f.replace("\\","/")
+        self.addNewFile(f, modules)
+
+        
+
+  ##
+  # @if jp
+  # @brief キャッシュに無いパスだけmodulesに追加する
+  #
+  #
+  # @param self
+  # @param fpath
+  # @param modules
+  #
+  #
+  # @else
+  # @brief Adding file path not existing cache
+  # @endif
+  def addNewFile(self, fpath, modules):
+    exists = False
+    for modprof in self._modprofs:
+      if modprof == fpath:
+        exists = True
+        self._rtcout.RTC_DEBUG("Module %s already exists in cache.",fpath)
+        break
+    if not exists:
+      self._rtcout.RTC_DEBUG("New module: %s",fpath)
+      modules.append(fpath)
+
+
+  ##
+  # @if jp
+  # @brief 指定言語、ファイルリストからモジュールのプロパティを返す
+  #
+  #
+  # @param self
+  # @param lang
+  # @param modules
+  # @param modprops
+  #
+  #
+  # @else
+  # @brief Getting loadable file list on the loadpath for given language
+  # @endif
+  def getModuleProfiles(self, lang, modules, modprops):
+    l = "manager.modules." + lang
+    lprop = self._properties.getNode(l)
+
+    paths = lprop.getProperty("load_paths").split(",")
+    
+    
+
+    for mod_ in modules:
+      if lang == "Python":
+        prop = self.__getRtcProfile(mod_)
+        if prop:
+          prop.setProperty("module_file_name",os.path.basename(mod_))
+          prop.setProperty("module_file_path", mod_)
+          modprops.append(prop)
+      else:
+        prop = OpenRTM_aist.Properties()
+        cmd = lprop.getProperty("profile_cmd")
+        if platform.system() == "Windows":
+          cmd = "cmd /c " + cmd
+        cmd = cmd + " \""+mod_+"\""
+        
+        try:
+          ret = OpenRTM_aist.popen(cmd).split("\r\n")
+          for r in ret:
+            pos = r.find(":")
+            if r.find(":") != -1:
+              key = r[0:pos]
+              tmp = [key]
+              OpenRTM_aist.eraseHeadBlank(tmp)
+              key = tmp[0]
+              
+              value = r[pos:]
+              tmp = [value]
+              OpenRTM_aist.eraseHeadBlank(tmp)
+              value = tmp[0]
+
+              prop.setProperty(key, value)
+          self._rtcout.RTC_DEBUG("rtcprof cmd sub process done.")
+          prop.setProperty("module_file_name",os.path.basename(mod_))
+          prop.setProperty("module_file_path", mod_)
+          modprops.append(prop)
+              
+          
+        except:
+          self._rtcout.RTC_ERROR("popen faild")
+
+
+  ##
+  # @if jp
+  # @brief 無効なモジュールプロファイルを削除する
+  #
+  #
+  # @param self
+  #
+  #
+  # @else
+  # @brief Removing incalid module profiles
+  # @endif
+  def removeInvalidModules(self):
+    for modprof in self._modprofs:
+      if not os.path.isfile(modprof.getProperty("module_file_path")):
+        self._modprofs.remove(modprof)
+      
+
+      
+  ##
+  # @if jp
+  # @brief 同じパスを削除
+  #
+  #
+  # @param self
+  # @param paths
+  #
+  #
+  # @else
+  # @brief 
+  # @endif
+  def deleteSamePath(self, paths):
+    tmp_paths = []
+    for path in paths:
+      if path:
+        abs_path = os.path.abspath(path).replace("\\","/")
+        abs_tmp_paths = []
+        for tmp_path in tmp_paths:
+          abs_tmp_path = os.path.abspath(tmp_path).replace("\\","/")
+          abs_tmp_paths.append(abs_tmp_path)
+        if abs_path not in abs_tmp_paths:
+          tmp_paths.append(path)
+    return tmp_paths
+      
+
   ##
   # @if jp
   # @brief ロード可能モジュールリストを取得する(未実装)
@@ -517,27 +706,33 @@ class ModuleManager:
   # @brief Get loadable module names
   # @endif
   def getLoadableModules(self):
+    self._rtcout.RTC_TRACE("getLoadableModules()")
     # getting loadable module file path list.
-    modules_ = []
-    for path in self._loadPath:
-      if path == "":
-        continue
+    langs = self._properties.getProperty("manager.supported_languages").split(",")
+    self._rtcout.RTC_DEBUG("langs: %s",self._properties.getProperty("manager.supported_languages"))
 
-      flist = glob.glob(path + os.sep + '*.py')
-      for file in flist:
-        if file.find("__init__.py") == -1:
-          modules_.append(file)
+    for lang in langs:
+      tmp = [lang]
+      OpenRTM_aist.eraseHeadBlank(tmp)
+      lang = tmp[0]
+      
+      modules_ = []
+      self.getModuleList(lang, modules_)
+      self._rtcout.RTC_DEBUG("%s: %s", (lang, OpenRTM_aist.flatten(modules_)))
+
+      tmpprops = []
+      self.getModuleProfiles(lang, modules_, tmpprops)
+      self._rtcout.RTC_DEBUG("Modile profile size: %d (newly founded modules)",len(tmpprops))
+      
+      self._modprofs.extend(tmpprops)
+
+    self._rtcout.RTC_DEBUG("Modile profile size: %d",len(self._modprofs))
+    self.removeInvalidModules()
+    self._rtcout.RTC_DEBUG("Modile profile size: %d (invalid mod-profiles deleted)",len(self._modprofs))
+
+    return self._modprofs
     
-    props = []
-    # getting module properties from loadable modules
-    for mod_ in modules_:
-      prop = self.__getRtcProfile(mod_)
-      if prop:
-        prop.setProperty("module_file_name",os.path.basename(mod_))
-        prop.setProperty("module_file_path", mod_)
-        props.append(prop)
 
-    return props
 
 
 
