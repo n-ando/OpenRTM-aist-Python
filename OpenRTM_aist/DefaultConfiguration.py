@@ -96,7 +96,7 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "sdo.service.consumer.enabled_services",  "ALL",
                  "manager.supported_languages",  "C++, Python, Java",
                  "manager.modules.C++.profile_cmd",  "rtcprof",
-                 "manager.modules.Python.profile_cmd",  "rtcd_python",
+                 "manager.modules.Python.profile_cmd",  "rtcprof_python",
                  "manager.modules.Java.profile_cmd",  "rtcprof_java",
                  "manager.modules.C++.suffixes",  cpp_suffixes,
                  "manager.modules.Python.suffixes",  "py",
