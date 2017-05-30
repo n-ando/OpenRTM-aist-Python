@@ -47,10 +47,10 @@ class PublisherPeriodic(OpenRTM_aist.PublisherBase):
   """
 
   # Policy
-  ALL  = 0
-  FIFO = 1
-  SKIP = 2
-  NEW  = 3
+  PUBLISHER_POLICY_ALL  = 0
+  PUBLISHER_POLICY_FIFO = 1
+  PUBLISHER_POLICY_SKIP = 2
+  PUBLISHER_POLICY_NEW  = 3
 
   ##
   # @if jp
@@ -76,7 +76,7 @@ class PublisherPeriodic(OpenRTM_aist.PublisherBase):
     self._task       = None
     self._retcode    = self.PORT_OK
     self._retmutex   = threading.RLock()
-    self._pushPolicy = self.NEW
+    self._pushPolicy = self.PUBLISHER_POLICY_NEW
     self._skipn      = 0
     self._active     = False
     self._readback   = False
@@ -129,20 +129,20 @@ class PublisherPeriodic(OpenRTM_aist.PublisherBase):
     push_policy = OpenRTM_aist.normalize([push_policy])
 
     if push_policy == "all":
-      self._pushPolicy = self.ALL
+      self._pushPolicy = self.PUBLISHER_POLICY_ALL
 
     elif push_policy == "fifo":
-      self._pushPolicy = self.FIFO
+      self._pushPolicy = self.PUBLISHER_POLICY_FIFO
 
     elif push_policy == "skip":
-      self._pushPolicy = self.SKIP
+      self._pushPolicy = self.PUBLISHER_POLICY_SKIP
 
     elif push_policy == "new":
-      self._pushPolicy = self.NEW
+      self._pushPolicy = self.PUBLISHER_POLICY_NEW
 
     else:
       self._rtcout.RTC_ERROR("invalid push_policy value: %s", push_policy)
-      self._pushPolicy = self.NEW
+      self._pushPolicy = self.PUBLISHER_POLICY_NEW
   
     skip_count = prop.getProperty("publisher.skip_count","0")
     self._rtcout.RTC_DEBUG("skip_count: %s", skip_count)
@@ -619,19 +619,19 @@ class PublisherPeriodic(OpenRTM_aist.PublisherBase):
   def svc(self):
     guard = OpenRTM_aist.ScopedLock(self._retmutex)
 
-    if self._pushPolicy == self.ALL:
+    if self._pushPolicy == self.PUBLISHER_POLICY_ALL:
       self._retcode = self.pushAll()
       return 0
 
-    elif self._pushPolicy == self.FIFO:
+    elif self._pushPolicy == self.PUBLISHER_POLICY_FIFO:
       self._retcode = self.pushFifo()
       return 0
 
-    elif self._pushPolicy == self.SKIP:
+    elif self._pushPolicy == self.PUBLISHER_POLICY_SKIP:
       self._retcode = self.pushSkip()
       return 0
 
-    elif self._pushPolicy == self.NEW:
+    elif self._pushPolicy == self.PUBLISHER_POLICY_NEW:
       self._retcode = self.pushNew()
       return 0
 
