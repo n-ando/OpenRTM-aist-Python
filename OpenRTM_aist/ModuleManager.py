@@ -529,6 +529,7 @@ class ModuleManager:
     
     paths.extend(self._loadPath)
     paths = self.deleteSamePath(paths)
+    
 
     suffixes = lprop.getProperty("suffixes").split(",")
 
@@ -558,6 +559,8 @@ class ModuleManager:
       for f in flist:
         f = f.replace("\\","/")
         self.addNewFile(f, modules)
+
+
 
         
 

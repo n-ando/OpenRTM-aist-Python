@@ -71,6 +71,8 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "corba.nameservers",               "localhost",
                  "corba.master_manager",             "localhost:2810",
                  "corba.nameservice.replace_endpoint", "NO",
+                 "corba.update_master_manager.enable", "YES",
+                 "corba.update_master_manager.interval", "10.0",
                  "exec_cxt.periodic.type",           "PeriodicExecutionContext",
                  "exec_cxt.periodic.rate",           "1000",
                  "exec_cxt.sync_transition",         "YES",

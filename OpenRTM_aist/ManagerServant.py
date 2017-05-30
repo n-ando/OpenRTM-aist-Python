@@ -86,6 +86,11 @@ class ManagerServant(RTM__POA.Manager):
     return
 
 
+      
+      
+         
+        
+
   ##
   # @if jp
   #
@@ -261,7 +266,7 @@ class ManagerServant(RTM__POA.Manager):
         except:
           self._rtcout.RTC_ERROR("Unknown exception cought.")
           self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-          self.remove_slave_manager(slave)
+          self._slaves.remove(slave)
 
     return cprof
 
@@ -304,7 +309,7 @@ class ManagerServant(RTM__POA.Manager):
         except:
           self._rtcout.RTC_ERROR("Unknown exception cought.")
           self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-          self.remove_slave_manager(slave)
+          self._slaves.remove(slave)
 
     return cprof
 
@@ -361,7 +366,7 @@ class ManagerServant(RTM__POA.Manager):
         except:
           self._rtcout.RTC_ERROR("Unknown exception cought.")
           self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-          self.remove_slave_manager(slave)
+          self._slaves.remove(slave)
       del guard
 
       module_name = module_name + "&manager_name=manager_%p"
@@ -457,7 +462,7 @@ class ManagerServant(RTM__POA.Manager):
       except:
         self._rtcout.RTC_ERROR("Unknown exception cought.")
         self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-        self.remove_slave_manager(slave)
+        self._slaves.remove(slave)
         #self._rtcout.RTC_INFO("slave (%d) has disappeared.", i)
         #self._slaves[i] = RTM.Manager._nil
 
@@ -503,7 +508,7 @@ class ManagerServant(RTM__POA.Manager):
       except:
         self._rtcout.RTC_ERROR("Unknown exception cought.")
         self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-        self.remove_slave_manager(slave)
+        self._slaves.remove(slave)
         #self._rtcout.RTC_INFO("slave (%d) has disappeared.", i)
         #self._slaves[i] = RTM.Manager._nil
 
@@ -1043,7 +1048,7 @@ class ManagerServant(RTM__POA.Manager):
         except:
           self._rtcout.RTC_ERROR("Unknown exception cought.")
           self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-          self.remove_slave_manager(slave)
+          self._slaves.remove(slave)
       del guard
     else:
       guard = OpenRTM_aist.ScopedLock(self._masterMutex)
@@ -1245,7 +1250,7 @@ class ManagerServant(RTM__POA.Manager):
           except:
             self._rtcout.RTC_ERROR("Unknown exception cought.")
             self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-            self.remove_slave_manager(slave)
+            self._slaves.remove(slave)
             
         del guard_slave
 
@@ -1268,7 +1273,7 @@ class ManagerServant(RTM__POA.Manager):
             except:
               self._rtcout.RTC_ERROR("Unknown exception cought.")
               self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
-              self.remove_slave_manager(slave)
+              self._slaves.remove(slave)
           del guard_slave
           
         else:
@@ -1417,6 +1422,46 @@ class ManagerServant(RTM__POA.Manager):
     except:
       self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
       return RTC.RTObject._nil
+
+  ##
+  # @if jp
+  # @brief マスターマネージャの有無を確認してリストを更新する
+  # 
+  # @param self
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @endif
+  # void update_master_manager()
+  def update_master_manager(self):
+    if not self._isMaster and self._objref:
+      guard = OpenRTM_aist.ScopedLock(self._masterMutex)
+      if len(self._masters) > 0:
+        for master in self._masters[:]:
+          try:
+            if master._non_existent():
+              self._masters.remove(master)
+          except:
+            self._rtcout.RTC_ERROR("Unknown exception cought.")
+            self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+            self._masters.remove(master)
+      del guard
+      
+      if len(self._masters) == 0:
+        try:
+          config = self._mgr.getConfig()
+          owner = self.findManager(config.getProperty("corba.master_manager"))
+          if not owner:
+            self._rtcout.RTC_INFO("Master manager not found")
+            return
+          self.add_master_manager(owner)
+          owner.add_slave_manager(self._objref)
+          
+          return
+        except:
+          self._rtcout.RTC_ERROR("Unknown exception cought.")
+          self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
 
 

@@ -2278,6 +2278,7 @@ class Manager:
     if not OpenRTM_aist.toBool(
       self._config.getProperty("manager.corba_servant"), "YES","NO",True):
       return True
+    
 
     self._mgrservant = OpenRTM_aist.ManagerServant()
     if self._config.getProperty("corba.endpoints_ipv4") == "":
@@ -2290,6 +2291,22 @@ class Manager:
       for name in names:
         mgr_name = self.formatString(name, prop)
         self._namingManager.bindManagerObject(mgr_name, self._mgrservant)
+
+
+    
+    if OpenRTM_aist.toBool(self._config.getProperty("corba.update_master_manager.enable"),
+                           "YES", "NO", True) and \
+                           not OpenRTM_aist.toBool(self._config.getProperty("manager.is_master"),
+                                                   "YES", "NO", False):
+      tm = OpenRTM_aist.TimeValue(10, 0)
+      if self._config.findNode("corba.update_master_manager.interval"):
+        duration = float(self._config.getProperty("corba.update_master_manager.interval"))
+        if duration:
+          tm.set_time(duration)
+        if self._timer:
+          self._timer.registerListenerObj(self._mgrservant,
+                                        OpenRTM_aist.ManagerServant.update_master_manager,
+                                        tm)
 
     otherref = None
 
@@ -2306,6 +2323,8 @@ class Manager:
       else:
         reffile.write(self._orb.object_to_string(self._mgrservant.getObjRef()))
         reffile.close()
+
+
     return True
 
   
