@@ -1,0 +1,32 @@
+Source: openrtm-aist-python
+Section: main
+Priority: extra
+Maintainer: Noriaki Ando <n-ando@aist.go.jp>
+Build-Depends: debhelper, python, python-omniorb
+Standards-Version: 3.8.4
+Homepage: http://www.openrtm.org
+
+Package: openrtm-aist-python
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, omniorb-nameserver
+Description: OpenRTM-aist, RT-Middleware distributed by AIST
+ OpenRTM-aist is a reference implementation of RTC (Robotic Technology
+ Component Version 1.1, formal/12-09-01) specification which is OMG
+ standard (http://www.omg.org/spec/RTC/). OpenRTM-aist includes
+ RT-Middleware runtime environment and RTC framework. The OMG standard
+ defines a component model and certain important infrastructure
+ services applicable to the domain of robotics software
+ development. OpenRTM-aist is being developed and distributed by
+ National Institute of Advanced Industrial Science and Technology
+ (AIST), Japan. Please see http://www.openrtm.org/ for more detail.
+
+Package: openrtm-aist-python-example
+Architecture: any
+Depends: openrtm-aist-python
+Description: OpenRTM-aist-Python examples
+ Example components and sources of OpenRTM-aist.
+
+Package: openrtm-aist-python-doc
+Architecture: all
+Description: Documentation for openrtm-aist-python
+ Class reference manual of OpenRTM-aist.
