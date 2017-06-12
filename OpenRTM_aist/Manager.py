@@ -2024,6 +2024,7 @@ class Manager:
     OpenRTM_aist.PeriodicExecutionContextInit(self)
     OpenRTM_aist.ExtTrigExecutionContextInit(self)
     OpenRTM_aist.OpenHRPExecutionContextInit(self)
+    OpenRTM_aist.SimulatorExecutionContextInit(self)
     self.initCpuAffinity()
     return True
 
