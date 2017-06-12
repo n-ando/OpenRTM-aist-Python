@@ -18,6 +18,7 @@
 import threading
 
 import OpenRTM_aist
+import OpenRTM_aist.Macho
 import RTC
 
 

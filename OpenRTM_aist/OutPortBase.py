@@ -273,6 +273,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
 
     self._rtcout.RTC_DEBUG("available subscription_type: %s",  pubs)
     self.addProperty("dataport.subscription_type", pubs)
+    self.addProperty("dataport.io_mode", pubs)
 
     self._properties    = OpenRTM_aist.Properties()
     self._name          = name

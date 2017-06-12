@@ -17,7 +17,6 @@
 
 
 
-
 import copy
 
 from omniORB import any
@@ -65,7 +64,7 @@ default_conf = [
 # @else
 #
 # @endif
-class RTObject_impl(OpenRTM__POA.DataFlowComponent):
+class RTObject_impl:
   """
   """
 
@@ -131,6 +130,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._outports = []
     self._actionListeners = OpenRTM_aist.ComponentActionListeners()
     self._portconnListeners = OpenRTM_aist.PortConnectListeners()
+    self._fsmActionListeners = OpenRTM_aist.FsmActionListeners()
     return
 
 
@@ -441,6 +441,25 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # @endif
   def onRateChanged(self, ec_id):
     self._rtcout.RTC_TRACE("onRatechanged(%d)",ec_id)
+    return RTC.RTC_OK
+
+
+
+  ##
+  # @if jp
+  #
+  # @brief 
+  #
+  # @param self
+  # @param ec_id 参加している ExecutionContext の ID
+  # 
+  # @return ReturnCode_t 型のリターンコード
+  # 
+  # @else
+  # 
+  # @endif
+  def onAction(self, ec_id):
+    self._rtcout.RTC_TRACE("onAction(%d)",ec_id)
     return RTC.RTC_OK 
 
 
@@ -838,7 +857,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     return execlist
 
 
-  #
+  ##
   # @if jp
   # @brief [CORBA interface] ExecutionContext のハンドルを返す
   #
@@ -1513,165 +1532,12 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     return ret
 
 
-  ##
-  # @if jp
-  #
-  # @brief [DataFlowComponentAction CORBA interface] RTC の定常処理(第一周期)
-  #
-  # 以下の状態が保持されている場合に、設定された周期で定期的に呼び出される。
-  # - RTC は Alive 状態である。
-  # - 指定された ExecutionContext が Running 状態である。
-  # 本オペレーションは、Two-Pass Execution の第一周期で実行される。
-  # このオペレーション呼び出しの結果として onExecute() コールバック関数が呼び
-  # 出される。
-  #
-  # 制約
-  # - 指定された ExecutionContext の ExecutionKind は、 PERIODIC でなければな
-  #   らない
-  #
-  # @param self
-  # @param ec_id 定常処理対象 ExecutionContext の ID
-  #
-  # @return ReturnCode_t 型のリターンコード
-  #
-  # @else
-  #
-  # @brief [DataFlowComponentAction CORBA interface] Primary Periodic 
-  #        Operation of RTC
-  #
-  # This operation will be invoked periodically at the rate of the given
-  # execution context as long as the following conditions hold:
-  # - The RTC is Active.
-  # - The given execution context is Running
-  # This callback occurs during the first execution pass.
-  #
-  # Constraints
-  # - The execution context of the given context shall be PERIODIC.
-  #
-  # @param ec_id
-  #
-  # @return
-  #
-  # @endif
-  def on_execute(self, ec_id):
-    self._rtcout.RTC_TRACE("on_execute(%d)", ec_id)
-    ret = RTC.RTC_ERROR
-    try:
-      self.preOnExecute(ec_id)
-      if self._readAll:
-        self.readAll()
-      
-      ret = self.onExecute(ec_id)
-
-      if self._writeAll:
-        self.writeAll()
-      
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      ret = RTC.RTC_ERROR
-    self.postOnExecute(ec_id, ret)
-    return ret
 
 
-  ##
-  # @if jp
-  #
-  # @brief [DataFlowComponentAction CORBA interface] RTC の定常処理(第二周期)
-  #
-  # 以下の状態が保持されている場合に、設定された周期で定期的に呼び出される。
-  # - RTC は Alive 状態である。
-  # - 指定された ExecutionContext が Running 状態である。
-  # 本オペレーションは、Two-Pass Execution の第二周期で実行される。
-  # このオペレーション呼び出しの結果として onStateUpdate() コールバック関数が
-  # 呼び出される。
-  #
-  # 制約
-  # - 指定された ExecutionContext の ExecutionKind は、 PERIODIC でなければな
-  #   らない
-  #
-  # @param self
-  # @param ec_id 定常処理対象 ExecutionContext の ID
-  #
-  # @return ReturnCode_t 型のリターンコード
-  #
-  # @else
-  #
-  # @brief [DataFlowComponentAction CORBA interface] Secondary Periodic 
-  #        Operation of RTC
-  #
-  # This operation will be invoked periodically at the rate of the given
-  # execution context as long as the following conditions hold:
-  # - The RTC is Active.
-  # - The given execution context is Running
-  # This callback occurs during the second execution pass.
-  #
-  # Constraints
-  # - The execution context of the given context shall be PERIODIC.
-  #
-  # @param ec_id
-  #
-  # @return
-  #
-  # @endif
-  def on_state_update(self, ec_id):
-    self._rtcout.RTC_TRACE("on_state_update(%d)", ec_id)
-    ret = RTC.RTC_ERROR
-    try:
-      self.preOnStateUpdate(ec_id)
-      ret = self.onStateUpdate(ec_id)
-      self._configsets.update()
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      ret = RTC.RTC_ERROR
-    self.postOnStateUpdate(ec_id, ret)
-    return ret
 
 
-  ##
-  # @if jp
-  #
-  # @brief [DataFlowComponentAction CORBA interface] 実行周期変更通知
-  #
-  # 本オペレーションは、ExecutionContext の実行周期が変更されたことを通知する
-  # 際に呼び出される。
-  # このオペレーション呼び出しの結果として onRateChanged() コールバック関数が
-  # 呼び出される。
-  #
-  # 制約
-  # - 指定された ExecutionContext の ExecutionKind は、 PERIODIC でなければな
-  #   らない
-  #
-  # @param self
-  # @param ec_id 定常処理対象 ExecutionContext の ID
-  #
-  # @return ReturnCode_t 型のリターンコード
-  #
-  # @else
-  #
-  # @brief [DataFlowComponentAction CORBA interface] Notify rate chenged
-  #
-  # This operation is a notification that the rate of the indicated execution 
-  # context has changed.
-  #
-  # Constraints
-  # - The execution context of the given context shall be PERIODIC.
-  #
-  # @param ec_id
-  #
-  # @return
-  #
-  # @endif
-  def on_rate_changed(self, ec_id):
-    self._rtcout.RTC_TRACE("on_rate_changed(%d)", ec_id)
-    ret = RTC.RTC_ERROR
-    try:
-      self.preOnRateChanged(ec_id)
-      ret = self.onRateChanged(ec_id)
-    except:
-      self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      ret = RTC.RTC_ERROR
-    self.postOnRateChanged(ec_id, ret)
-    return ret
+
+
 
 
   #============================================================
@@ -4474,6 +4340,432 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     self._configsets.removeConfigurationSetNameListener(type, listener)
     return
 
+  ##
+  # @if jp
+  # @brief PreFsmActionListener リスナを追加する
+  #
+  # FsmAction 実装関数の呼び出し直前のイベントに関連する各種リ
+  # スナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - PRE_ON_INITIALIZE:    onInitialize 直前
+  # - PRE_ON_FINALIZE:      onFinalize 直前
+  # - PRE_ON_STARTUP:       onStartup 直前
+  # - PRE_ON_SHUTDOWN:      onShutdown 直前
+  # - PRE_ON_ACTIVATED:     onActivated 直前
+  # - PRE_ON_DEACTIVATED:   onDeactivated 直前
+  # - PRE_ON_ABORTED:       onAborted 直前
+  # - PRE_ON_ERROR:         onError 直前
+  # - PRE_ON_RESET:         onReset 直前
+  # - PRE_ON_EXECUTE:       onExecute 直前
+  # - PRE_ON_STATE_UPDATE:  onStateUpdate 直前
+  #
+  # リスナは PreFsmActionListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # PreFsmActionListener::operator()(UniqueId ec_id)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removePreFsmActionListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding PreFsmAction type listener
+  #
+  # This operation adds certain listeners related to FsmActions
+  # pre events.
+  # The following listener types are available.
+  #
+  # - PRE_ON_INITIALIZE:    before onInitialize
+  # - PRE_ON_FINALIZE:      before onFinalize
+  # - PRE_ON_STARTUP:       before onStartup
+  # - PRE_ON_SHUTDOWN:      before onShutdown
+  # - PRE_ON_ACTIVATED:     before onActivated
+  # - PRE_ON_DEACTIVATED:   before onDeactivated
+  # - PRE_ON_ABORTED:       before onAborted
+  # - PRE_ON_ERROR:         before onError
+  # - PRE_ON_RESET:         before onReset
+  # - PRE_ON_EXECUTE:       before onExecute
+  # - PRE_ON_STATE_UPDATE:  before onStateUpdate
+  #
+  # Listeners should have the following function operator().
+  #
+  # PreFsmActionListener::operator()(UniqueId ec_id)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removePreFsmActionListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  def addPreFsmActionListener(self, listener_type,
+                             memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.PreFsmActionListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, state):
+        self._memfunc(state)
+        return
+
+    listener = Noname(memfunc)
+    self._fsmActionListeners.preaction_[listener_type].addListener(listener, autoclean)
+    return listener
+
+  ##
+  # @if jp
+  # @brief PreFsmActionListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing PreFsmAction type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  #
+  def removePreFsmActionListener(self, listener_type, listener):
+    self._fsmActionListeners.preaction_[listener_type].removeListener(listener)
+    return
+
+
+  ##
+  # @if jp
+  # @brief PostFsmActionListener リスナを追加する
+  #
+  # FsmAction 実装関数の呼び出し直後のイベントに関連する各種リ
+  # スナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - POST_ON_INITIALIZE:    onInitialize 直後
+  # - POST_ON_FINALIZE:      onFinalize 直後
+  # - POST_ON_STARTUP:       onStartup 直後
+  # - POST_ON_SHUTDOWN:      onShutdown 直後
+  # - POST_ON_ACTIVATED:     onActivated 直後
+  # - POST_ON_DEACTIVATED:   onDeactivated 直後
+  # - POST_ON_ABORTED:       onAborted 直後
+  # - POST_ON_ERROR:         onError 直後
+  # - POST_ON_RESET:         onReset 直後
+  # - POST_ON_EXECUTE:       onExecute 直後
+  # - POST_ON_STATE_UPDATE:  onStateUpdate 直後
+  #
+  # リスナは PostFsmActionListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # PostFsmActionListener::operator()(const char* state, ReturnCode_t ret)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removePostFsmActionListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding PostFsmAction type listener
+  #
+  # This operation adds certain listeners related to FsmActions
+  # post events.
+  # The following listener types are available.
+  #
+  # - POST_ON_INITIALIZE:    after onInitialize
+  # - POST_ON_FINALIZE:      after onFinalize
+  # - POST_ON_STARTUP:       after onStartup
+  # - POST_ON_SHUTDOWN:      after onShutdown
+  # - POST_ON_ACTIVATED:     after onActivated
+  # - POST_ON_DEACTIVATED:   after onDeactivated
+  # - POST_ON_ABORTED:       after onAborted
+  # - POST_ON_ERROR:         after onError
+  # - POST_ON_RESET:         after onReset
+  # - POST_ON_EXECUTE:       after onExecute
+  # - POST_ON_STATE_UPDATE:  after onStateUpdate
+  #
+  # Listeners should have the following function operator().
+  #
+  # PostFsmActionListener::operator()(const char* state, ReturnCode_t ret)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removePostFsmActionListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  def addPostFsmActionListener(self, listener_type,
+                             memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.PostFsmActionListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, state, ret):
+        self._memfunc(state, ret)
+        return
+
+    listener = Noname(memfunc)
+    self._fsmActionListeners.postaction_[listener_type].addListener(listener, autoclean)
+    return listener
+
+
+
+  ##
+  # @if jp
+  # @brief PostFsmActionListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing PostFsmActionListener type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  #
+  def removePostFsmActionListener(self, listener_type, listener):
+    self._fsmActionListeners.postaction_[listener_type].removeListener(listener)
+    return
+
+
+
+  ##
+  # @if jp
+  # @brief FsmProfileListener リスナを追加する
+  #
+  # FSMへのプロファイルの設定、取得時、またFSM自体への状態や遷移、イ
+  # ベントの追加削除時にコールバックされる各種リスナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - SET_FSM_PROFILE       : FSM Profile設定時
+  # - GET_FSM_PROFILE       : FSM Profile取得時
+  # - ADD_FSM_STATE         : FSMにStateが追加された
+  # - REMOVE_FSM_STATE      : FSMからStateが削除された
+  # - ADD_FSM_TRANSITION    : FSMに遷移が追加された
+  # - REMOVE_FSM_TRANSITION : FSMから遷移が削除された
+  # - BIND_FSM_EVENT        : FSMにイベントがバインドされた
+  # - UNBIND_FSM_EVENT      : FSMにイベントがアンバインドされた
+  #
+  # リスナは FsmProfileListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # FsmProfileListener::operator()(RTC::FsmProfile& pprof)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removeFsmProfileListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding FsmProfile type listener
+  #
+  # This operation adds certain listeners that is called when
+  # setting/getting FsmProfile and stae/transition/event add/remove
+  # to/from the FSM itself.
+  #
+  # The following listener types are available.
+  #
+  # - SET_FSM_PROFILE       : Setting FSM Profile
+  # - GET_FSM_PROFILE       : Getting FSM Profile
+  # - ADD_FSM_STATE         : A State added to the FSM
+  # - REMOVE_FSM_STATE      : A State removed from FSM
+  # - ADD_FSM_TRANSITION    : A transition added to the FSM
+  # - REMOVE_FSM_TRANSITION : A transition removed from FSM
+  # - BIND_FSM_EVENT        : An event bounded to the FSM
+  # - UNBIND_FSM_EVENT      : An event unbounded to the FSM
+  #
+  # Listeners should have the following function operator().
+  #
+  # FsmProfileListener::operator()(RTC::PortProfile pprof)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removeFsmProfileListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  def addFsmProfileListener(self, listener_type,
+                             memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.FsmProfileListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, pprofile):
+        self._memfunc(pprofile)
+        return
+
+    listener = Noname(memfunc)
+    self._fsmActionListeners.profile_[listener_type].addListener(listener, autoclean)
+    return listener
+
+
+
+  ##
+  # @if jp
+  # @brief FsmProfileListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing FsmProfileListener type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  #
+  def removeFsmProfileListener(self, listener_type, listener):
+    self._fsmActionListeners.profile_[listener_type].removeListener(listener)
+    return
+
+  ##
+  # @if jp
+  # @brief FsmStructureListener リスナを追加する
+  #
+  # ExtendedFsmService に関連する FSM structure の設定・取得時にコー
+  # ルバックされる各種リスナを設定する。
+  #
+  # 設定できるリスナのタイプとコールバックイベントは以下の通り
+  #
+  # - SET_FSM_STRUCTURE: FSM構造の設定
+  # - GET_FSM_STRUCTURE: FSM構造の取得
+  #
+  # リスナは FsmStructureListener を継承し、以下のシグニチャを持つ
+  # operator() を実装している必要がある。
+  #
+  # FsmStructureListener::operator()(FsmStructure& structure)
+  #
+  # デフォルトでは、この関数に与えたリスナオブジェクトの所有権は
+  # RTObjectに移り、RTObject解体時もしくは、
+  # removeFsmStructureListener() により削除時に自動的に解体される。
+  # リスナオブジェクトの所有権を呼び出し側で維持したい場合は、第3引
+  # 数に false を指定し、自動的な解体を抑制することができる。
+  #
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  # @param autoclean リスナオブジェクトの自動的解体を行うかどうかのフラグ
+  #
+  # @else
+  # @brief Adding FsmStructure type listener
+  #
+  # This operation adds certain listeners related to FSM structure
+  # data which are handled by ExtendedFsmService.
+  #
+  # The following listener types are available.
+  #
+  # - SET_FSM_STRUCTURE: Setting FSM structure
+  # - GET_FSM_STRUCTURE: Getting FSM structure
+  #
+  # Listeners should have the following function operator().
+  #
+  # FsmStructureListener::operator()(RTC::FsmStructure structure)
+  #
+  # The ownership of the given listener object is transferred to
+  # this RTObject object in default.  The given listener object will
+  # be destroied automatically in the RTObject's dtor or if the
+  # listener is deleted by removeFsmStructureListener() function.
+  # If you want to keep ownership of the listener object, give
+  # "false" value to 3rd argument to inhibit automatic destruction.
+  #
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  # @param autoclean A flag for automatic listener destruction
+  #
+  # @endif
+  #
+  def addFsmStructureListener(self, listener_type,
+                             memfunc, autoclean = True):
+    class Noname(OpenRTM_aist.FsmStructureListener):
+      def __init__(self, memfunc):
+        self._memfunc = memfunc
+        return
+
+      def __call__(self, pprofile):
+        self._memfunc(pprofile)
+        return
+
+    listener = Noname(memfunc)
+    self._fsmActionListeners.structure_[listener_type].addListener(listener, autoclean)
+    return listener
+
+
+  ##
+  # @if jp
+  # @brief FsmStructureListener リスナを削除する
+  #
+  # 設定した各種リスナを削除する。
+  # 
+  # @param listener_type リスナタイプ
+  # @param listener リスナオブジェクトへのポインタ
+  #
+  # @else
+  # @brief Removing FsmStructureListener type listener
+  #
+  # This operation removes a specified listener.
+  #     
+  # @param listener_type A listener type
+  # @param listener A pointer to a listener object
+  #
+  # @endif
+  #
+  def removeFsmStructureListener(self, listener_type, listener):
+    self._fsmActionListeners.structure_[listener_type].removeListener(listener)
+    return
 
   ##
   # @if jp
@@ -4665,6 +4957,39 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   # inline void onDetachExecutionContext(UniqueId ec_id)
   def onDetachExecutionContext(self, ec_id):
     self._actionListeners.ecaction_[OpenRTM_aist.ExecutionContextActionListenerType.EC_DETACHED].notify(ec_id)
+    return
+
+
+  
+  def preOnFsmInit(self, state):
+    self._fsmActionListeners.preaction_[OpenRTM_aist.PreFsmActionListenerType.PRE_ON_INIT].notify(state)
+    return
+  def preOnFsmEntry(self, state):
+    self._fsmActionListeners.preaction_[OpenRTM_aist.PreFsmActionListenerType.PRE_ON_ENTRY].notify(state)
+    return
+  def preOnFsmDo(self, state):
+    self._fsmActionListeners.preaction_[OpenRTM_aist.PreFsmActionListenerType.PRE_ON_DO].notify(state)
+    return
+  def preOnFsmExit(self, state):
+    self._fsmActionListeners.preaction_[OpenRTM_aist.PreFsmActionListenerType.PRE_ON_EXIT].notify(state)
+    return
+  def preOnFsmStateChange(self, state):
+    self._fsmActionListeners.preaction_[OpenRTM_aist.PreFsmActionListenerType.PRE_ON_STATE_CHANGE].notify(state)
+    return
+  def postOnFsmInit(self, state, ret):
+    self._fsmActionListeners.postaction_[OpenRTM_aist.PostFsmActionListenerType.POST_ON_INIT].notify(state, ret)
+    return
+  def postOnFsmEntry(self, state, ret):
+    self._fsmActionListeners.postaction_[OpenRTM_aist.PostFsmActionListenerType.POST_ON_ENTRY].notify(state, ret)
+    return
+  def postOnFsmDo(self, state, ret):
+    self._fsmActionListeners.postaction_[OpenRTM_aist.PostFsmActionListenerType.POST_ON_DO].notify(state, ret)
+    return
+  def postOnFsmExit(self, state, ret):
+    self._fsmActionListeners.postaction_[OpenRTM_aist.PostFsmActionListenerType.POST_ON_EXIT].notify(state, ret)
+    return
+  def postOnFsmStateChange(self, state, ret):
+    self._fsmActionListeners.postaction_[OpenRTM_aist.PostFsmActionListenerType.POST_ON_STATE_CHANGE].notify(state, ret)
     return
 
 
@@ -5061,4 +5386,6 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     # ret must be RTC_OK
     return ret
 """
+
+
 

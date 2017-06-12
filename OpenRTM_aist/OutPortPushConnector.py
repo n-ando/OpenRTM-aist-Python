@@ -393,8 +393,17 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
   #
   # virtual PublisherBase* createPublisher(ConnectorInfo& info);
   def createPublisher(self, info):
-    pub_type = info.properties.getProperty("subscription_type","flush")
-    pub_type = OpenRTM_aist.normalize([pub_type])
+    pub_type = info.properties.getProperty("io_mode")
+    if not pub_type:
+      pub_type = info.properties.getProperty("subscription_type","flush")
+      if pub_type == "flush":
+        info.properties.setProperty("io_mode","block")
+      elif pub_type == "new":
+        info.properties.setProperty("io_mode","nonblock")
+      else:
+        info.properties.setProperty("io_mode","pub_type")
+        
+      pub_type = OpenRTM_aist.normalize([pub_type])
     return OpenRTM_aist.PublisherFactory.instance().createObject(pub_type)
 
 

@@ -1055,3 +1055,6 @@ def PublisherNewInit():
   OpenRTM_aist.PublisherFactory.instance().addFactory("new",
                                                       OpenRTM_aist.PublisherNew,
                                                       OpenRTM_aist.Delete)
+  OpenRTM_aist.PublisherFactory.instance().addFactory("nonblock",
+                                                      OpenRTM_aist.PublisherNew,
+                                                      OpenRTM_aist.Delete)

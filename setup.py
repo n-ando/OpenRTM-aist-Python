@@ -211,7 +211,9 @@ baseidl_files = [
   "RTC.idl",
   "SDOPackage.idl",
   "SharedMemory.idl",
-  "IORProfile.idl"
+  "IORProfile.idl",
+  "ExtendedFsmService.idl",
+  "DataPort_OpenRTM.idl"
   ]
 baseidl_mods  = ["RTM", "RTC", "SDOPackage", "OpenRTM"]
 baseidl_path  = os.path.normpath(current_dir + "/" + baseidl_dir)

@@ -19,6 +19,7 @@ from omniORB import CORBA
 
 import threading
 
+
 ##
 # @if jp
 # @class OutPortSHMConsumer

@@ -22,6 +22,7 @@ from omniORB import CORBA
 import OpenRTM_aist
 import OpenRTM
 
+
 ##
 # @if jp
 #
@@ -448,7 +449,6 @@ class InPortCorbaCdrConsumer(OpenRTM_aist.InPortConsumer,OpenRTM_aist.CorbaConsu
 
     else:
       return self.UNKNOWN_ERROR
-
 
 def InPortCorbaCdrConsumerInit():
   factory = OpenRTM_aist.InPortConsumerFactory.instance()

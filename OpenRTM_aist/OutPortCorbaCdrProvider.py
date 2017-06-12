@@ -21,6 +21,7 @@
 import OpenRTM_aist
 import OpenRTM__POA,OpenRTM
 
+
 ##
 # @if jp
 # @class OutPortCorbaCdrProvider
@@ -304,7 +305,9 @@ class OutPortCorbaCdrProvider(OpenRTM_aist.OutPortProvider,
       self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
       return (OpenRTM.UNKNOWN_ERROR, "")
 
-    return self.convertReturn(ret, cdr[0])
+    
+    data = self.convertReturn(ret, cdr[0])
+    return data
     
   ##
   # @if jp

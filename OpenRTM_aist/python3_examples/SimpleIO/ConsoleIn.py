@@ -35,6 +35,7 @@ class DataListener(OpenRTM_aist.ConnectorDataListenerT):
     print("Profile::id:    ", info.id)
     print("Data:           ", data.data)
     print("------------------------------")
+    return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
     
 class ConnListener(OpenRTM_aist.ConnectorListener):
   def __init__(self, name):
@@ -49,6 +50,7 @@ class ConnListener(OpenRTM_aist.ConnectorListener):
     print("Profile::name:  ", info.name)
     print("Profile::id:    ", info.id)
     print("------------------------------")
+    return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
 
 class ConsoleIn(OpenRTM_aist.DataFlowComponentBase):

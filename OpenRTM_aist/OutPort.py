@@ -101,6 +101,8 @@ class OutPort(OpenRTM_aist.OutPortBase):
     #self._OnUnderflow    = None
     #self._OnConnect      = None
     #self._OnDisconnect   = None
+    self.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE, OpenRTM_aist.Timestamp("on_write"))
+    self.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_SEND, OpenRTM_aist.Timestamp("on_send"))
     
 
   def __del__(self, OutPortBase=OpenRTM_aist.OutPortBase):

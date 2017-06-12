@@ -111,6 +111,10 @@ class InPort(OpenRTM_aist.InPortBase):
     self._valueMutex = threading.RLock()
     self._outPortConnectorList = []
 
+    self.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED, OpenRTM_aist.Timestamp("on_received"))
+    self.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ, OpenRTM_aist.Timestamp("on_read"))
+
+
 
   def __del__(self, InPortBase=OpenRTM_aist.InPortBase):
     InPortBase.__del__(self)
@@ -152,7 +156,7 @@ class InPort(OpenRTM_aist.InPortBase):
   # @endif
   #
   # bool isNew()
-  def isNew(self):
+  def isNew(self, names=None):
     self._rtcout.RTC_TRACE("isNew()")
 
 
@@ -166,12 +170,39 @@ class InPort(OpenRTM_aist.InPortBase):
       self._rtcout.RTC_DEBUG("no connectors")
       return False
 
-    r = self._connectors[0].getBuffer().readable()
-    if r > 0:
-      self._rtcout.RTC_DEBUG("isNew() = True, readable data: %d",r)
-      return True
+    if names is None:
+      r = self._connectors[0].getBuffer().readable()
+      if r > 0:
+        self._rtcout.RTC_DEBUG("isNew() = True, readable data: %d",r)
+        return True
+      else:
+        self._rtcout.RTC_DEBUG("isNew() = False, no readable data")
+        return False
+    elif isinstance(names, str):
+      for con in self._connectors:
+        if  con.name() == names:
+          r = con.getBuffer().readable()
+          if r > 0:
+            self._rtcout.RTC_DEBUG("isNew() = True, connector name: %s, readable data: %d",(names, r))
+            return True
+          else:
+            self._rtcout.RTC_DEBUG("isNew() = False, connector name: %s, no readable data",names)
+            return False
+    elif isinstance(names, list):
+      del names[:]
+      for con in self._connectors:
+          r = con.getBuffer().readable()
+          if r > 0:
+            self._rtcout.RTC_DEBUG("isNew() = True, connector name: %s, readable data: %d",(names, r))
+            names.append(con.name())
+      if len(names) > 0:
+        return True
+      else:
+        self._rtcout.RTC_DEBUG("isNew() = False, no readable data")
+        return False
+      
 
-    self._rtcout.RTC_DEBUG("isNew() = False, no readable data")
+    self._rtcout.RTC_ERROR("isNew() = False, Unknown Errow")
     return False
 
 
@@ -288,7 +319,7 @@ class InPort(OpenRTM_aist.InPortBase):
   # @endif
   #
   #  DataType read()
-  def read(self):
+  def read(self, name=None):
     self._rtcout.RTC_TRACE("DataType read()")
 
     if self._OnRead is not None:
@@ -323,7 +354,19 @@ class InPort(OpenRTM_aist.InPortBase):
 
     _val = copy.deepcopy(self._value)
     cdr = [_val]
-    ret = self._connectors[0].read(cdr)
+
+    if name is None:
+      ret = self._connectors[0].read(cdr)
+    else:
+      ret = OpenRTM_aist.DataPortStatus.PRECONDITION_NOT_MET
+      for con in self._connectors:
+        if  con.name() == name:
+          ret = con.read(cdr)
+      if ret == OpenRTM_aist.DataPortStatus.PRECONDITION_NOT_MET:
+        self._rtcout.RTC_DEBUG("not found %s",name)
+        return self._value
+          
+      
 
 
     if ret == OpenRTM_aist.DataPortStatus.PORT_OK:

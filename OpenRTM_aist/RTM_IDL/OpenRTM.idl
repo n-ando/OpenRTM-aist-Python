@@ -28,10 +28,10 @@ module OpenRTM
   {
   };
 
-//  interface FiniteStateMachineComponent
-//    : RTC::RTObject, RTC::FsmParticipant
-//  {
-//  };
+  interface FiniteStateMachineComponent
+    : RTC::RTObject, RTC::FsmParticipant
+  {
+  };
 //
 //  interface DataFlowFiniteStateMachineComponent
 //    : RTC::RTObject, RTC::DataFlowComponent, RTC::FsmParticipant

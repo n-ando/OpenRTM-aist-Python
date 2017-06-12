@@ -21,6 +21,7 @@
 import OpenRTM_aist
 import OpenRTM__POA,OpenRTM
 
+
 ##
 # @if jp
 # @class InPortCorbaCdrProvider
@@ -183,6 +184,7 @@ class InPortCorbaCdrProvider(OpenRTM_aist.InPortProvider,
         return OpenRTM.PORT_ERROR
 
       ret = self._connector.write(data)
+      
 
       return self.convertReturn(ret, data)
 

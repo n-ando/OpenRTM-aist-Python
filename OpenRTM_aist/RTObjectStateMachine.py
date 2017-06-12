@@ -66,6 +66,8 @@ class RTObjectStateMachine:
                              self.onError)
     self._sm.setExitAction  (RTC.ERROR_STATE,
                              self.onReset)
+    #self._sm.setDoAction  (RTC.ACTIVE_STATE,
+    #                         self.onAction)
     # Setting inital state
     st = OpenRTM_aist.StateHolder()
     st.prev = RTC.INACTIVE_STATE
