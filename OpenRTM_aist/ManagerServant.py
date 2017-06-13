@@ -226,7 +226,7 @@ class ManagerServant(RTM__POA.Manager):
 
     for i in range(len(prof)):
       OpenRTM_aist.NVUtil.copyFromProperties(cprof[i].properties, prof[i])
-
+    
     return cprof
 
 
@@ -1208,7 +1208,7 @@ class ManagerServant(RTM__POA.Manager):
       #rtcd_cmd = "rtcd_python.bat"
 
       load_path = config.getProperty("manager.modules.load_path")
-      load_path_language = config.getProperty("manager.modules."+language+".load_path")
+      load_path_language = config.getProperty("manager.modules."+language+".load_paths")
       load_path = load_path + "," + load_path_language
       
       if platform.system() == "Windows":
