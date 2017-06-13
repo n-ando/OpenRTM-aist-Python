@@ -1170,6 +1170,7 @@ class ManagerServant(RTM__POA.Manager):
   # @endif
   # RTC::RTObject_ptr create_component_by_mgrname(string module_name)
   def create_component_by_mgrname(self, module_name):
+    
     arg = module_name
     
 
@@ -1220,7 +1221,9 @@ class ManagerServant(RTM__POA.Manager):
       cmd += " -o " + "manager.name:" + config.getProperty("manager.name")
       cmd += " -o " + "manager.instance_name:" + mgrstr
       cmd += " -o " + "\"manager.modules.load_path:" + load_path + "\""
-      #cmd += " -o " + "manager.supported_languages:" + language
+      cmd += " -o " + "manager.supported_languages:" + language
+      cmd += " -o " + "manager.shutdown_auto:NO"
+      
       
       
       

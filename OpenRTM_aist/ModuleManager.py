@@ -580,7 +580,7 @@ class ModuleManager:
   def addNewFile(self, fpath, modules):
     exists = False
     for modprof in self._modprofs:
-      if modprof == fpath:
+      if modprof.getProperty("module_file_path") == fpath:
         exists = True
         self._rtcout.RTC_DEBUG("Module %s already exists in cache.",fpath)
         break
@@ -627,9 +627,11 @@ class ModuleManager:
         
         try:
           ret = OpenRTM_aist.popen(cmd).split("\r\n")
+          count = 0
           for r in ret:
             pos = r.find(":")
             if r.find(":") != -1:
+              count += 1
               key = r[0:pos]
               tmp = [key]
               OpenRTM_aist.eraseHeadBlank(tmp)
@@ -641,10 +643,11 @@ class ModuleManager:
               value = tmp[0]
 
               prop.setProperty(key, value)
-          self._rtcout.RTC_DEBUG("rtcprof cmd sub process done.")
-          prop.setProperty("module_file_name",os.path.basename(mod_))
-          prop.setProperty("module_file_path", mod_)
-          modprops.append(prop)
+          if count > 0:
+            self._rtcout.RTC_DEBUG("rtcprof cmd sub process done.")
+            prop.setProperty("module_file_name",os.path.basename(mod_))
+            prop.setProperty("module_file_path", mod_)
+            modprops.append(prop)
               
           
         except:
@@ -722,6 +725,7 @@ class ModuleManager:
       modules_ = []
       self.getModuleList(lang, modules_)
       self._rtcout.RTC_DEBUG("%s: %s", (lang, OpenRTM_aist.flatten(modules_)))
+      
 
       tmpprops = []
       self.getModuleProfiles(lang, modules_, tmpprops)
