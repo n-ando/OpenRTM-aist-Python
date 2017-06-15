@@ -205,8 +205,10 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
     else:
       self._rtcout.RTC_ERROR("write(): endian %s is not support.",self._endian)
       return self.UNKNOWN_ERROR
-    
-    self._buffer.write(cdr_data)
+    if self._buffer:
+      self._buffer.write(cdr_data)
+    else:
+      return self.UNKNOWN_ERROR
     return self.PORT_OK
 
 
