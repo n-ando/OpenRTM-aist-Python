@@ -637,7 +637,7 @@ class ModuleManager:
               OpenRTM_aist.eraseHeadBlank(tmp)
               key = tmp[0]
               
-              value = r[pos:]
+              value = r[pos+1:]
               tmp = [value]
               OpenRTM_aist.eraseHeadBlank(tmp)
               value = tmp[0]
