@@ -352,7 +352,7 @@ class ManagerServant(RTM__POA.Manager):
     #module_name = module_name.split("&")[0]
     module_name = [module_name]
     self.get_parameter_by_modulename("manager_address",module_name)
-    self.get_parameter_by_modulename("manager_name",module_name)
+    manager_name = self.get_parameter_by_modulename("manager_name",module_name)
     module_name = module_name[0]
     
     
@@ -368,11 +368,11 @@ class ManagerServant(RTM__POA.Manager):
           self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
           self._slaves.remove(slave)
       del guard
-
-      module_name = module_name + "&manager_name=manager_%p"
-      
-      rtc = self.create_component_by_mgrname(module_name)
-      return rtc
+      if not manager_name:
+        module_name = module_name + "&manager_name=manager_%p"
+        
+        rtc = self.create_component_by_mgrname(module_name)
+        return rtc
 
     else:
       # create on this manager
