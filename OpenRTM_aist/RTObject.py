@@ -2793,7 +2793,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       self._rtcout.RTC_ERROR("addInPort() failed.")
       return ret
       
-    inport.init(self._properties.getNode(propkey))
+    inport.init(prop_)
     self._inports.append(inport)
     return ret
 
@@ -2837,7 +2837,7 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       self._rtcout.RTC_ERROR("addOutPort() failed.")
       return ret
 
-    outport.init(self._properties.getNode(propkey))
+    outport.init(prop_)
     self._outports.append(outport)
     return ret
 
