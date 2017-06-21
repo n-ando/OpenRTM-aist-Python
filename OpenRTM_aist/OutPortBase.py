@@ -408,6 +408,48 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
 
   ##
   # @if jp
+  #
+  # @brief
+  #
+  # @param self
+  # @param connector_profile
+  # @return
+  #
+  # @else
+  #
+  # @brief
+  #
+  # @param self
+  # @param connector_profile
+  # @return
+  #
+  # @endif
+  #
+  def notify_connect(self, connector_profile):
+    prop = OpenRTM_aist.Properties()
+    OpenRTM_aist.NVUtil.copyToProperties(prop, connector_profile.properties)
+
+    _str = self._properties.getProperty("dataport.fan_out")
+    _type = [int(100)]
+    
+    OpenRTM_aist.stringTo(_type, _str)
+    
+    
+
+    _str = prop.getProperty("dataport.fan_out")
+    OpenRTM_aist.stringTo(_type, _str)
+    
+    value =  _type[0]
+
+    if value <= len(self._connectors):
+      return (RTC.PRECONDITION_NOT_MET, connector_profile)
+
+
+    return OpenRTM_aist.PortBase.notify_connect(self, connector_profile)
+
+
+  ##
+  # @if jp
   # @brief プロパティを取得する
   #
   # OutPortのプロパティを取得する。

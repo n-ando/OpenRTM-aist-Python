@@ -688,6 +688,21 @@ class PortBase(RTC__POA.PortService):
   def notify_connect(self, connector_profile):
     self._rtcout.RTC_TRACE("notify_connect()")
 
+
+    prop = OpenRTM_aist.Properties()
+    OpenRTM_aist.NVUtil.copyToProperties(prop, connector_profile.properties)
+    
+    default_value = OpenRTM_aist.toBool(self._properties.getProperty("dataport.allow_dup_connection"), "YES","NO",False)
+    
+    if not OpenRTM_aist.toBool(prop.getProperty("dataport.allow_dup_connection"), "YES","NO",default_value):
+      for port in connector_profile.ports:
+        if not port._is_equivalent(self._objref):
+          ret = OpenRTM_aist.CORBA_RTCUtil.already_connected(port, self._objref)
+          if ret:
+            return (RTC.PRECONDITION_NOT_MET, connector_profile)
+
+
+
     guard_connection = OpenRTM_aist.ScopedLock(self._connection_mutex)
 
     # publish owned interface information to the ConnectorProfile

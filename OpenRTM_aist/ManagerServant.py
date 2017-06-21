@@ -352,27 +352,34 @@ class ManagerServant(RTM__POA.Manager):
     #module_name = module_name.split("&")[0]
     module_name = [module_name]
     self.get_parameter_by_modulename("manager_address",module_name)
-    self.get_parameter_by_modulename("manager_name",module_name)
+    manager_name = self.get_parameter_by_modulename("manager_name",module_name)
     module_name = module_name[0]
+    tmp = [module_name]
+    language = self.get_parameter_by_modulename("language",tmp)
     
     
     if self._isMaster:
       guard = OpenRTM_aist.ScopedLock(self._slaveMutex)
       for slave in self._slaves[:]:
         try:
-          rtc = slave.create_component(module_name)
-          if not CORBA.is_nil(rtc):
-            return rtc
+          prof = slave.get_configuration()
+          prop = OpenRTM_aist.Properties()
+          OpenRTM_aist.NVUtil.copyToProperties(prop, prof)
+          slave_lang = prop.getProperty("manager.language")
+          if slave_lang == language:
+            rtc = slave.create_component(module_name)
+            if not CORBA.is_nil(rtc):
+              return rtc
         except:
           self._rtcout.RTC_ERROR("Unknown exception cought.")
           self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
           self._slaves.remove(slave)
       del guard
-
-      module_name = module_name + "&manager_name=manager_%p"
-      
-      rtc = self.create_component_by_mgrname(module_name)
-      return rtc
+      if not manager_name:
+        module_name = module_name + "&manager_name=manager_%p"
+        
+        rtc = self.create_component_by_mgrname(module_name)
+        return rtc
 
     else:
       # create on this manager
