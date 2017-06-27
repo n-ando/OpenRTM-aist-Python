@@ -78,8 +78,7 @@ class Inputbutton(OpenRTM_aist.DataFlowComponentBase):
     print("  tick         : Proceed time.")
     print("  -> others are interpreted as tick commnad.")
     print(">> ")
-    #print("Please input number: ",end="")
-    print "Please input number: ",
+    
     cmds = sys.stdin.readline()
     cmds = cmds.split(" ")
     OpenRTM_aist.StringUtil.eraseBlank(cmds)
