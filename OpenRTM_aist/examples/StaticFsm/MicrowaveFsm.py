@@ -48,7 +48,7 @@ class TOP(OpenRTM_aist.Link):
     def __init__(self):
       self.myCookingTime = 0
     def printTimer(self):
-      print(" Timer set to ", self.myCookingTime, " minutes")
+      print " Timer set to ", self.myCookingTime, " minutes"
     def incrementTimer(self):
       self.myCookingTime+=1
     def decrementTimer(self):

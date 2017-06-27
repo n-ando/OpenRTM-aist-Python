@@ -84,7 +84,7 @@ class Inputbutton(OpenRTM_aist.DataFlowComponentBase):
     OpenRTM_aist.StringUtil.eraseBlank(cmds)
     cmds[0] = cmds[0].replace("\n","")
     cmds[0] = cmds[0].replace("\r","")
-    print("[command]: ",cmds[0])
+    print "[command]: ",cmds[0]
     #print("  [args]: ",end="")
     print "  [args]: ",
     for n in range(len(cmds)):

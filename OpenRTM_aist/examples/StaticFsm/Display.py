@@ -127,9 +127,9 @@ class Display(OpenRTM_aist.DataFlowComponentBase):
   def onExecute(self, ec_id):
     if self._inIn.isNew():
       data = self._inIn.read()
-      print("Received: ", data.data)
-      print("TimeStamp: ", data.tm.sec,"[s]")
-      print("TimeStamp: ", data.tm.nsec,"[ns]")
+      print "Received: ", data.data
+      print "TimeStamp: ", data.tm.sec,"[s]"
+      print "TimeStamp: ", data.tm.nsec,"[ns]"
 
     
     return RTC.RTC_OK
