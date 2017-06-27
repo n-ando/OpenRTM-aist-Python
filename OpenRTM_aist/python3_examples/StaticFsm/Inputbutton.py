@@ -77,7 +77,8 @@ class Inputbutton(OpenRTM_aist.DataFlowComponentBase):
     print("  stop         : Stop the microwave.")
     print("  tick         : Proceed time.")
     print("  -> others are interpreted as tick commnad.")
-    print(">> ")
+    #print ">> ",
+    print(">> ",end="")
     cmds = sys.stdin.readline()
     cmds = cmds.split(" ")
     OpenRTM_aist.StringUtil.eraseBlank(cmds)
