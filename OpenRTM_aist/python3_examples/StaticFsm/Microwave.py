@@ -49,7 +49,7 @@ class Microwave(OpenRTM_aist.DataFlowComponentBase):
 
   def onInitialize(self):
     self._fsm = OpenRTM_aist.Machine(MicrowaveFsm.TOP, self)
-    self._fsm.init()
+    #self._fsm.init()
     self._eventIn = OpenRTM_aist.EventInPort("event", self._fsm)
     
     self.addInPort("event", self._eventIn)

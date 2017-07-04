@@ -19,17 +19,11 @@ import RTC
 import OpenRTM_aist
 import OpenRTM_aist.Macho
 
+@OpenRTM_aist.fsm_topstate
 class TOP(OpenRTM_aist.Link):
-  def __init__(self, instance):
-    super(TOP,self).__init__(instance)
-  def entry(self):
-    OpenRTM_aist.Link.entry(self)
-  def exit(self):
-    OpenRTM_aist.Link.exit(self)
-  def init(self):
-    OpenRTM_aist.Link.init(self)
-    self.setState(Operational)
-    
+  def on_init(self):
+    self.set_state(OpenRTM_aist.Macho.State(Operational))
+
 
   def open(self):
     pass
@@ -44,11 +38,11 @@ class TOP(OpenRTM_aist.Link):
   def tick(self):
     pass
 
-  class Box:
+  class Data:
     def __init__(self):
       self.myCookingTime = 0
     def printTimer(self):
-      print(" Timer set to ", self.myCookingTime, " minutes")
+      print " Timer set to ", self.myCookingTime, " minutes"
     def incrementTimer(self):
       self.myCookingTime+=1
     def decrementTimer(self):
@@ -59,94 +53,68 @@ class TOP(OpenRTM_aist.Link):
       return self.myCookingTime
   
     
-OpenRTM_aist.FSM_TOPSTATE(TOP)
-    
 
-class Disabled(TOP):
-  def __init__(self, instance):
-    super(Disabled,self).__init__(instance)
-  def entry(self):
-    OpenRTM_aist.Link.entry(self)
+    
+@OpenRTM_aist.fsm_substate(TOP)
+class Disabled(OpenRTM_aist.Link):
+  def on_entry(self):
     print("  Microwave opened")
-  def exit(self):
-    OpenRTM_aist.Link.exit(self)
+  def on_exit(self):
     print("  Microwave closed")
   def close(self):
-    self.setStateHistory(Operational)
-  def init(self):
-    OpenRTM_aist.Link.init(self)
+    self.setStateHistory(OpenRTM_aist.Macho.State(Operational))
 
-OpenRTM_aist.FSM_SUBSTATE(Disabled,TOP)
 
-class Operational(TOP):
-  def __init__(self, instance):
-    super(Operational,self).__init__(instance)
+@OpenRTM_aist.Macho.deephistory
+@OpenRTM_aist.fsm_substate(TOP)
+class Operational(OpenRTM_aist.Link):
   def open(self):
-    self.setState(Disabled)
+    self.set_state(OpenRTM_aist.Macho.State(Disabled))
   def stop(self):
-    self.setState(Idle)
-  def init(self):
-    OpenRTM_aist.Link.init(self)
-    self.setState(Idle)
-  def entry(self):
-    OpenRTM_aist.Link.entry(self)
-  def exit(self):
-    OpenRTM_aist.Link.exit(self)
+    self.set_state(OpenRTM_aist.Macho.State(Idle))
+  def on_init(self):
+    self.set_state(OpenRTM_aist.Macho.State(Idle))
+
+
   
 
 
 
-OpenRTM_aist.FSM_SUBSTATE(Operational,TOP)
-OpenRTM_aist.Macho.DEEPHISTORY(Operational)
 
 
-class Idle(Operational):
-  def __init__(self, instance):
-    super(Idle,self).__init__(instance)
+
+@OpenRTM_aist.fsm_substate(Operational)
+class Idle(OpenRTM_aist.Link):
   def minute(self, time_):
-    self.setState(Programmed)
-    self["TopBase_"].dispatch(OpenRTM_aist.Macho.Event1("minute",time_))
+    self.set_state(OpenRTM_aist.Macho.State(Programmed))
+    self.dispatch(OpenRTM_aist.Macho.Event("minute",time_))
     
-  def entry(self):
-    OpenRTM_aist.Link.entry(self)
-    self[TOP].box().resetTimer()
+  def on_entry(self):
+    self.data(TOP).resetTimer()
     print("  Microwave ready")
-  def init(self):
-    OpenRTM_aist.Link.init(self)
-  def exit(self):
-    OpenRTM_aist.Link.exit(self)
 
 
-OpenRTM_aist.FSM_SUBSTATE(Idle,Operational)
 
 
-class Programmed(Operational):
-  def __init__(self, instance):
-    super(Programmed,self).__init__(instance)
+
+@OpenRTM_aist.fsm_substate(Operational)
+class Programmed(OpenRTM_aist.Link):
   def minute(self, time_):
     for t in range(time_.data):
-      self[TOP].box().incrementTimer()
-    self[TOP].box().printTimer()
+      self.data(TOP).incrementTimer()
+    self.data(TOP).printTimer()
   def start(self):
     self.setState(Cooking)
-  def entry(self):
-    OpenRTM_aist.Link.entry(self)
-  def exit(self):
-    OpenRTM_aist.Link.exit(self)
-  def init(self):
-    OpenRTM_aist.Link.init(self)
 
 
 
-OpenRTM_aist.FSM_SUBSTATE(Programmed,Operational)
 
 
-class Cooking(Programmed):
-  def __init__(self, instance):
-    super(Cooking,self).__init__(instance)
+@OpenRTM_aist.fsm_substate(Programmed)
+class Cooking(OpenRTM_aist.Link):
   def tick(self):
     print("  Clock tick")
-    tb = self[TOP].box()
+    tb = self.data(TOP)
     tb.decrementTimer()
     if tb.getRemainingTime() == 0:
       print("  Finished")
@@ -154,14 +122,9 @@ class Cooking(Programmed):
     else:
       tb.printTimer()
     
-  def entry(self):
-    OpenRTM_aist.Link.entry(self)
+  def on_entry(self):
     print("  Heating on")
-  def exit(self):
-    OpenRTM_aist.Link.exit(self)
+  def on_exit(self):
     print("  Heating off")
-  def init(self):
-    OpenRTM_aist.Link.init(self)
 
 
-OpenRTM_aist.FSM_SUBSTATE(Cooking,Programmed)

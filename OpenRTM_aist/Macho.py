@@ -15,7 +15,7 @@
 
 
 
-
+import types
 
 class _EmptyBox:
   def __init__(self):
@@ -41,11 +41,25 @@ class _StateSpecification(object):
     return False
   isChild = staticmethod(isChild)
 
-  def setState(self, S):
+
+  def set_state(self, S, *args):
+    return self.setState(S, *args)
+
+
+  def setState(self, S, *args):
+    global _theDefaultInitializer
+    m = self._myStateInstance.machine()
+    instance = S._getInstance(m, S.SUPER, S)
+    m.setPendingState(instance, _Initializer(*args))
+
+  def setState0(self, S):
     global _theDefaultInitializer
     m = self._myStateInstance.machine()
     instance = S._getInstance(m, S.SUPER, S)
     m.setPendingState(instance, _theDefaultInitializer)
+
+
+  
     
   def setState1(self,S,p1):
     m = self._myStateInstance.machine()
@@ -100,12 +114,7 @@ class _StateSpecification(object):
     self._myStateInstance.machine().shutdown()
   def _setHistorySuper(self, instance, deep):
     pass
-  def exit(self):
-    pass
-  def entry(self):
-    pass
-  def init(self):
-    pass
+
   def _getInstance(machine, S=None, C=None):
     instance = machine.getInstances()
     if not instance[0]:
@@ -115,6 +124,14 @@ class _StateSpecification(object):
   def _deleteBox(self, instance):
     pass
   def _saveHistory(self, instance, shallow, deep):
+    pass
+
+
+  def on_entry(self):
+    pass
+  def on_init(self):
+    pass
+  def on_exit(self):
     pass
 
 
@@ -175,11 +192,12 @@ class Link(_StateSpecification):
     else:
       return Link.key(self)
   history = staticmethod(history)
-  def entry(self):
+
+  def on_entry(self):
     pass
-  def init(self):
+  def on_init(self):
     pass
-  def exit(self):
+  def on_exit(self):
     pass
   def _box(self):
     
@@ -208,8 +226,15 @@ class Link(_StateSpecification):
         return obj
       
     return None
+  def data(self, class_=None):
+    if class_:
+      return self[class_]._box()
+    else:
+      return self._box()
     
 
+  def dispatch(self, event):
+    self["TopBase_"].dispatch(event)
 
 class StateID:
   def __init__(self):
@@ -231,14 +256,14 @@ class _StateInstance(object):
     if first or not previous.isChild(self):
       self.myParent.entry(previous,False)
       self.createBox()
-      self.mySpecification.entry()
+      self.mySpecification.on_entry()
   def exit(self,next):
     
     if not self.myParent:
       return
     
     if self is next or not next.isChild(self):
-      self.mySpecification.exit()
+      self.mySpecification.on_exit()
       if self.myBox is not _EmptyBox.theEmptyBox:
         self.mySpecification._deleteBox(self)
       self.myParent.exit(next)
@@ -249,7 +274,7 @@ class _StateInstance(object):
     if history and self.myHistory:
       self.myMachine.setPendingState(self.myHistory, _theDefaultInitializer)
     else:
-      self.mySpecification.init()
+      self.mySpecification.on_init()
     self.myHistory = None
     
       
@@ -319,6 +344,8 @@ class _RootInstance(_StateInstance):
     return 0
   def key(self):
     return 0
+  def name(self):
+    return ""
   def createBox(self):
     pass
   def deleteBox(self):
@@ -343,6 +370,8 @@ class _SubstateInstance(_StateInstance):
     return self.SUPER.StateID
   def key(self):
     return self.SUPER.key(self)
+  def name(self):
+    return self.SUPER._state_name()
   def create(self, machine, parent):
     _SubstateInstance(machine, parent, self.SUPER)
   def createBox(self):
@@ -450,6 +479,16 @@ class _Event0(IEvent):
     getattr(behaviour,self.myHandler)()
 
 
+class _Event(IEvent):
+  def __init__(self, handler, *args):
+    self.myHandler = handler
+    self.myParams = args
+  def dispatch(self, instance):
+    behaviour = instance.specification()
+    
+    getattr(behaviour,self.myHandler)(*self.myParams)
+
+
 
 def Event6(R,p1,p2,p3,p4,p5,p6):
   return _Event6(R,p1,p2,p3,p4,p5,p6)
@@ -474,29 +513,37 @@ def Event0(R):
   return _Event0(R)
 
 
+
+def Event(R, *args):
+  return _Event(R, *args)
+
+def execute(instance, *args):
+  behaviour = instance.specification()
+  behaviour.on_init(*args)
+
 def execute1(instance, p1):
   behaviour = instance.specification()
-  behaviour.init(p1)
+  behaviour.on_init(p1)
 
 def execute2(instance, p1, p2):
   behaviour = instance.specification()
-  behaviour.init(p1, p2)
+  behaviour.on_init(p1, p2)
 
 def execute3(instance, p1, p2, p3):
   behaviour = instance.specification()
-  behaviour.init(p1, p2, p3)
+  behaviour.on_init(p1, p2, p3)
 
 def execute4(instance, p1, p2, p3, p4):
   behaviour = instance.specification()
-  behaviour.init(p1, p2, p3, p4)
+  behaviour.on_init(p1, p2, p3, p4)
 
 def execute5(instance, p1, p2, p3, p4, p5):
   behaviour = instance.specification()
-  behaviour.init(p1, p2, p3, p4, p5)
+  behaviour.on_init(p1, p2, p3, p4, p5)
 
 def execute6(instance, p1, p2, p3, p4, p5, p6):
   behaviour = instance.specification()
-  behaviour.init(p1, p2, p3, p4, p5, p6)
+  behaviour.on_init(p1, p2, p3, p4, p5, p6)
   
 
 class _Initializer:
@@ -554,6 +601,14 @@ class _AdaptingInitializer(_Initializer):
     else:
       return key
 
+
+class _Initializer(_Initializer):
+  def __init__(self, *args):
+    self.myParams = args
+  def clone(self):
+    return _Initializer(*self.myParams)
+  def execute(self, instance):
+    execute(instance, *self.myParams)
 
 class _Initializer1(_Initializer):
   def __init__(self, p1):
@@ -652,6 +707,7 @@ class _MachineBase(object):
   def setState(self, instance, init):
     self.setPendingState(instance, init)
     self.rattleOn()
+    
   def setStateAlias(self, state):
     state.setState(self)
     self.rattleOn()
@@ -685,10 +741,10 @@ class _MachineBase(object):
     self.myPendingInit = None
   def getInstances(self):
     return self.myInstances
-  def start(self, instance):
+  def start(self, instance, *args):
     global _theDefaultInitializer
     self.myCurrentState = _StateSpecification._getInstance(self)
-    self.setState(instance, _theDefaultInitializer)
+    self.setState(instance, _Initializer(*args))
   def startAlias(self, state):
     self.myCurrentState = _StateSpecification._getInstance(self)
     self.setStateAlias(state)
@@ -757,15 +813,15 @@ class Alias:
   def isParent(self, k):
     return self.key().childPredicate(k)
   def name(self):
-    return self.key().name()
+    return self.key().name
   def id(self):
     return self.key().id
   def key(self):
     return self.myInitializer.adapt(self.myStateKey)
   def setState(self, machine):
     machine.setPendingState(self.key().instanceGenerator(machine), self.myInitializer.clone())
-
-
+  
+"""
 def State(S):
   return Alias(S.key())
 
@@ -794,6 +850,7 @@ def State6(S,p1,p2,p3,p4,p5,p6):
 
 def StateHistory(S, machine):
   return Alias(S.key(), _AdaptingInitializer(machine))
+"""
 
 
 class Snapshot(_MachineBase):
@@ -819,25 +876,33 @@ class AfterAdvice:
     return ret
     
     #return self.myMachine.myCurrentState.specification()
+
+
     
 class Machine(_MachineBase):
   theStateCount = 1
-  def __init__(self, TOP, TopBase):
+  #def __init__(self, TOP, TopBase):
+  def __init__(self, TOP, initial_state=None, args=()):
     super(Machine,self).__init__()
     self.TOP = TOP
-    self.TopBase = TopBase
+    self.TopBase = TOP.SUPER(TOP._state_name)
+    self.init(box=None, initial_state=initial_state, args=args)
   def __del__(self):
     pass
   def exit(self):
     self.myCurrentState.shutdown()
     self.free(Machine.theStateCount)
     Machine.theStateCount = 1
-  def init(self, box=None):
+  def init(self, box=None,initial_state=None, args=()):
     self.allocate(Machine.theStateCount)
     top = self.TOP._getInstance(self, self.TopBase, self.TOP)
     if box:
       top.setBox(box)
-    self.start(top)
+    if initial_state:
+      instance = initial_state._getInstance(self, initial_state.SUPER, initial_state)
+      self.start(instance, *args)
+    else:
+      self.start(top, *args)
     
   def init_Alias(self, state, box=None):
     self.allocate(Machine.theStateCount)
@@ -867,9 +932,41 @@ class Machine(_MachineBase):
 
   def box(self):
     self.myCurrentState.specification().box()
+  def data(self):
+    self.myCurrentState.specification().box()
+
+  def _current_state(self):
+    return self.myCurrentState
 
   
-
+  def getCurrent(self):
+    spec = self.myCurrentState.specification()
+    class EventDelegator(object):
+      def __init__(self):
+        pass
+    ed = EventDelegator()
+    for name in dir(spec):
+      if name.startswith('__'):
+        continue
+      if hasattr(StateDef, name):
+        continue
+      if not isinstance(getattr(spec, name), types.MethodType):
+        continue
+      class Spec_Func(object):
+        def __init__(self, spec, name, machine):
+          self._spec = spec
+          self._name = name
+          self._machine = machine
+        def __call__(self, *args):
+          ret = getattr(self._spec,self._name)(*args)
+          self._machine.rattleOn()
+          return ret
+        
+      setattr(ed, name, Spec_Func(spec, name, self))
+    return ed
+  def setCurrent(self, state):
+    self.myCurrentState = state
+  current = property(getCurrent, setCurrent)
 
   
     
@@ -899,7 +996,71 @@ def TopBase(TOP):
     def machine(self):
       return self._myStateInstance.machine()
 
+  
+    
+
   return TopBase_
+
+def topstate(cls):
+  class TOP(cls):
+    def __init__(self, instance):
+      super(cls,self).__init__(instance)
+    def on_init(self, *args):
+        return cls.on_init(self, *args)
+    def on_entry(self, *args):
+        return cls.on_entry(self, *args)
+    def on_exit(self, *args):
+        return cls.on_exit(self, *args)
+
+      
+  TOP.SUPER = TopBase(TOP)
+  TOP.StateID = Machine.theStateCount
+  Machine.theStateCount += 1
+  TOP._state_name = staticmethod(lambda  : TOP.__name__)
+  
+  TOP.box = lambda self: self._box()
+
+  if hasattr(TOP, 'Data'):
+    TOP.Box = TOP.Data
+    
+  
+  return TOP
+
+def substate(superstate):
+  def _substate(cls):
+    class STATE(cls, superstate):
+      def __init__(self, instance):
+        cls.__init__(self, instance)
+      def on_init(self, *args):
+        return cls.on_init(self, *args)
+      def on_entry(self, *args):
+        return cls.on_entry(self, *args)
+      def on_exit(self, *args):
+        return cls.on_exit(self, *args)
+
+    STATE.SUPER = superstate
+    STATE.StateID = Machine.theStateCount
+    Machine.theStateCount += 1
+    STATE._state_name = staticmethod(lambda : cls.__name__)
+    STATE.box = lambda self: self._box()
+    #STATE.data = lambda self: self._box()
+
+    if hasattr(STATE, 'Data'):
+      STATE.Box = STATE.Data
+
+    return STATE
+  return _substate
+    
+
+def deephistory(cls):
+  def _saveHistory(self,instance,shallow,deep):
+    instance.setHistory(deep)
+    self[self.SUPER]._setHistorySuper(instance,deep)
+    
+  cls._saveHistory = _saveHistory
+
+  cls._setHistorySuper = lambda self,instance,deep: instance.setHistorySuper(deep)
+  return cls
 
   
 def TOPSTATE(TOP):
@@ -936,4 +1097,9 @@ def HISTORY(STATE):
 
   STATE._setHistorySuper = lambda self,instance,deep: instance.setHistorySuper(deep)
 
-    
+
+StateDef = Link
+
+
+def State(S):
+  return S

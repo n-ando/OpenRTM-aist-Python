@@ -14,7 +14,45 @@
 #     All rights reserved.
 
 import OpenRTM_aist
+import OpenRTM_aist.Macho
 import RTC
+
+
+def fsm_topstate(TOP):
+  ret = OpenRTM_aist.Macho.topstate(TOP)
+  class STATE(ret):
+    def __init__(self, instance):
+      ret.__init__(self, instance)
+    def on_entry(self, *argv):
+      OpenRTM_aist.Link.call_entry(self)
+      ret.on_entry(self, *argv)
+    def on_exit(self, *argv):
+      OpenRTM_aist.Link.call_exit(self)
+      ret.on_exit(self, *argv)
+    def on_init(self, *argv):
+      OpenRTM_aist.Link.call_init(self)
+      ret.on_init(self, *argv)
+  return ret
+
+
+def fsm_substate(superstate):
+  def _fsm_substate(cls):
+    ret = OpenRTM_aist.Macho.substate(superstate)(cls)
+    class STATE(ret):
+      def __init__(self, instance):
+        ret.__init__(self, instance)
+      def on_entry(self, *argv):
+        OpenRTM_aist.Link.call_entry(self)
+        ret.on_entry(self, *argv)
+      def on_exit(self, *argv):
+        OpenRTM_aist.Link.call_exit(self)
+        ret.on_exit(self, *argv)
+      def on_init(self, *argv):
+        OpenRTM_aist.Link.call_init(self)
+        ret.on_init(self, *argv)
+
+    return ret
+  return _fsm_substate
 
 
 def FSM_TOPSTATE(TOP):
@@ -25,10 +63,13 @@ def FSM_SUBSTATE(STATE, SUPERSTATE):
   OpenRTM_aist.Macho.SUBSTATE(STATE, SUPERSTATE)
 
 
+
 class Machine(OpenRTM_aist.Macho.Machine):
   def __init__(self, TOP, comp):
-    super(Machine,self).__init__(TOP, OpenRTM_aist.Macho.TopBase(TOP))
+    #super(Machine,self).__init__(TOP, OpenRTM_aist.Macho.TopBase(TOP))
     self._rtComponent = comp
+    super(Machine,self).__init__(TOP)
+    
     
     
   def __del__(self):
@@ -55,7 +96,7 @@ class Link(OpenRTM_aist.Macho.Link):
     if machine:
       self._rtComponent = machine.getComp()
 
-  def entry(self):
+  def call_entry(self):
     self.setrtc()
     if not self._rtComponent:
       self.onEntry()
@@ -64,7 +105,7 @@ class Link(OpenRTM_aist.Macho.Link):
       self._rtComponent.preOnFsmEntry(self._state_name())
       self._rtComponent.postOnFsmEntry(self._state_name(), self.onEntry())
 
-  def init(self):
+  def call_init(self):
     self.setrtc()
     if not self._rtComponent:
       self.onInit()
@@ -73,7 +114,7 @@ class Link(OpenRTM_aist.Macho.Link):
       self._rtComponent.postOnFsmInit(self._state_name(), self.onInit())
 
 
-  def exit(self):
+  def call_exit(self):
     self.setrtc()
     if not self._rtComponent:
       self.onExit()

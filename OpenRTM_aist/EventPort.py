@@ -14,6 +14,7 @@
 #     All rights reserved.
 
 import OpenRTM_aist
+import OpenRTM_aist.Macho
 
 
 class EventBinder0(OpenRTM_aist.ConnectorDataListener):
