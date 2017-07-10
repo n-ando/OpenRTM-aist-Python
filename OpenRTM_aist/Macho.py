@@ -49,7 +49,9 @@ class _StateSpecification(object):
     #global _theDefaultInitializer
     m = self._myStateInstance.machine()
     instance = S._getInstance(m, S.SUPER, S)
-    m.setPendingState(instance, _Direct_Initializer(*args))
+    
+    instance.setHistory(0)
+    m.setPendingState(instance, _Initializer(*args))
 
 
   def set_state(self, S, *args):
@@ -109,12 +111,12 @@ class _StateSpecification(object):
     instance = S._getInstance(m, SUPERSTATE, S)
     m.myPendingBox = box
     m.setPendingState(instance, _Initializer())
-  def setStateDirect(self, S, box=None):
-    #global _theDefaultInitializer
-    m = self._myStateInstance.machine()
-    instance = S._getInstance(m, S.SUPER, S)
-    m.myPendingBox = box
-    m.setPendingState(instance, _Initializer())
+  #def setStateDirect(self, S, box=None):
+  #  #global _theDefaultInitializer
+  #  m = self._myStateInstance.machine()
+  #  instance = S._getInstance(m, S.SUPER, S)
+  #  m.myPendingBox = box
+  #  m.setPendingState(instance, _Initializer())
   def _restore(self, current):
     self._myStateInstance.machine().myCurrentState = current
   def setStateCurrent(self, current):
@@ -171,27 +173,29 @@ class Link(_StateSpecification):
     return Alias(Link.key(self))
   alias = staticmethod(alias)
   def isChild(other, SUPER):
-    return Link.key(self) == other or SUPER.isChild(other)
+    if other.StateID == 0:
+      return False
+    return other.StateID == SUPER.StateID or Link.isChild(other.SUPER, SUPER)
   isChild = staticmethod(isChild)
-  def isParent(other):
+  def isParent(self, other):
     return other.childPredicate(Link.key(self))
-  isParent = staticmethod(isParent)
-  def isCurrent(machine):
+  #isParent = staticmethod(isParent)
+  def isCurrent(self, machine):
     return machine.currentState().isChild(Link.key(self))
-  isCurrent = staticmethod(isCurrent)
-  def isCurrentDirect(machine):
+  #isCurrent = staticmethod(isCurrent)
+  def isCurrentDirect(self, machine):
     return Link.key(self) == machine.currentState()
-  isCurrentDirect = staticmethod(isCurrentDirect)
-  def clearHistory(machine, StateID):
+  #isCurrentDirect = staticmethod(isCurrentDirect)
+  def clearHistory(self, machine, StateID):
     instance = machine.getInstance(StateID)
     if instance:
       instance.setHistory(0)
-  clearHistory = staticmethod(clearHistory)
-  def clearHistoryDeep(machine, StateID):
+  #clearHistory = staticmethod(clearHistory)
+  def clearHistoryDeep(self, machine, StateID):
     instance = machine.getInstance(StateID)
     if instance:
       instance.clearHistoryDeep(Machine.theStateCount,instance)
-  clearHistoryDeep = staticmethod(clearHistoryDeep)
+  #clearHistoryDeep = staticmethod(clearHistoryDeep)
   def clear_history(self, machine):
     self._myStateInstance.setHistory(0)
   def clear_history_deep(self, machine):
@@ -291,7 +295,7 @@ class _StateInstance(object):
   def init(self, history, *args):
     #global _theDefaultInitializer
     if history and self.myHistory:
-      self.myMachine.setPendingState(self.myHistory, _Initializer())
+      self.myMachine.setPendingState(self.myHistory, _Initializer(*args))
     else:
       self.mySpecification.on_init(*args)
     self.myHistory = None
@@ -304,7 +308,6 @@ class _StateInstance(object):
   def saveHistory(self,shallow,deep):
     self.mySpecification._saveHistory(self, shallow, deep)
   def setHistorySuper(self, deep):
-    
     if self.myParent:
       self.myParent.saveHistory(self, deep)
   def copy(self, original):
@@ -355,7 +358,7 @@ class _StateInstance(object):
   def setHistory(self,history):
     self.myHistory = history
   def getHistory(self):
-    return self.self.myHistory
+    return self.myHistory
   
 
 class _RootInstance(_StateInstance):
@@ -635,13 +638,6 @@ class _Initializer(__Initializer):
     execute(instance, history_, *self.myParams)
 
 
-class _Direct_Initializer(__Initializer):
-  def __init__(self, *args):
-    self.myParams = args
-  def clone(self):
-    return _Initializer(*self.myParams)
-  def execute(self, instance, history_):
-    execute(instance, False, *self.myParams)
 
 class _Initializer1(__Initializer):
   def __init__(self, p1):
@@ -767,7 +763,9 @@ class _MachineBase(object):
         self.myCurrentState.entry(previous)
         self.myPendingState = None
         behaviour = self.myCurrentState.specification()
+        
         self.myPendingInit.execute(self.myCurrentState, behaviour.HISTORY)
+
         
         for event in self.myDeferEvents:
           event.dispatch(self.myCurrentState)
@@ -1014,7 +1012,18 @@ class Machine(_MachineBase):
 
   def addDeferEvent(self, event):
     self.myDeferEvents.append(event)
+    
   def is_current(self, info):
+    if info.StateID == self.myCurrentState.id():
+      return True
+    #elif Link.isChild(info, self.myCurrentState.specification().__class__):
+    #  return True
+    elif Link.isChild(self.myCurrentState.specification().__class__, info):
+      return True
+    else:
+      return False
+
+  def is_current_direct(self, info):
     if info.StateID == self.myCurrentState.id():
       return True
     else:
@@ -1110,8 +1119,9 @@ def substate(superstate):
 
 def history(cls):
   def _saveHistory(self,instance,shallow,deep):
-    #instance.setHistory(deep)
-    self[self.SUPER]._setHistorySuper(instance,shallow)
+    if not instance.getHistory():
+      instance.setHistory(shallow)
+    #self[self.SUPER]._setHistorySuper(instance,shallow)
     
   cls._saveHistory = _saveHistory
 
