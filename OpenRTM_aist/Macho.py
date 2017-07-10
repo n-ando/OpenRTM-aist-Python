@@ -192,6 +192,13 @@ class Link(_StateSpecification):
     if instance:
       instance.clearHistoryDeep(Machine.theStateCount,instance)
   clearHistoryDeep = staticmethod(clearHistoryDeep)
+  def clear_history(self, machine):
+    self._myStateInstance.setHistory(0)
+  def clear_history_deep(self, machine):
+    self._myStateInstance.setHistory(0)
+    self._myStateInstance.setHistorySuper(0)
+    
+    
   def history(machine, StateID):
     instance = machine.getInstance(StateID)
     history = 0
