@@ -35,6 +35,7 @@ class _KeyData:
 
 
 class _StateSpecification(object):
+  HISTORY = False
   def __init__(self, instance):
     self._myStateInstance = instance
   def isChild(key):
@@ -47,7 +48,7 @@ class _StateSpecification(object):
 
 
   def setState(self, S, *args):
-    global _theDefaultInitializer
+    #global _theDefaultInitializer
     m = self._myStateInstance.machine()
     instance = S._getInstance(m, S.SUPER, S)
     m.setPendingState(instance, _Initializer(*args))
@@ -94,22 +95,22 @@ class _StateSpecification(object):
   def setStateAlias(self,state):
     state.setState(self._myStateInstance.machine())
   def setStateBox(self, SUPERSTATE, S, box=None):
-    global _theDefaultInitializer
+    #global _theDefaultInitializer
     m = self._myStateInstance.machine()
     instance = S._getInstance(m, SUPERSTATE, S)
     m.myPendingBox = box
-    m.setPendingState(instance, _theDefaultInitializer)
+    m.setPendingState(instance, _Initializer())
   def setStateDirect(self, S, box=None):
-    global _theDefaultInitializer
+    #global _theDefaultInitializer
     m = self._myStateInstance.machine()
     instance = S._getInstance(m, S.SUPER, S)
     m.myPendingBox = box
-    m.setPendingState(instance, _theDefaultInitializer)
+    m.setPendingState(instance, _Initializer())
   def _restore(self, current):
     self._myStateInstance.machine().myCurrentState = current
   def setStateCurrent(self, current):
-    global _theDefaultInitializer
-    self._myStateInstance.machine().setPendingState(current, _theDefaultInitializer)
+    #global _theDefaultInitializer
+    self._myStateInstance.machine().setPendingState(current, _Initializer())
   def _shutdown(self):
     self._myStateInstance.machine().shutdown()
   def _setHistorySuper(self, instance, deep):
@@ -235,6 +236,8 @@ class Link(_StateSpecification):
 
   def dispatch(self, event):
     self["TopBase_"].dispatch(event)
+  def defer(self, event):
+    self["TopBase_"].defer(event)
 
 class StateID:
   def __init__(self):
@@ -269,12 +272,12 @@ class _StateInstance(object):
       self.myParent.exit(next)
       
 
-  def init(self, history):
-    global _theDefaultInitializer
+  def init(self, history, *args):
+    #global _theDefaultInitializer
     if history and self.myHistory:
-      self.myMachine.setPendingState(self.myHistory, _theDefaultInitializer)
+      self.myMachine.setPendingState(self.myHistory, _Initializer())
     else:
-      self.mySpecification.on_init()
+      self.mySpecification.on_init(*args)
     self.myHistory = None
     
       
@@ -285,6 +288,7 @@ class _StateInstance(object):
   def saveHistory(self,shallow,deep):
     self.mySpecification._saveHistory(self, shallow, deep)
   def setHistorySuper(self, deep):
+    
     if self.myParent:
       self.myParent.saveHistory(self, deep)
   def copy(self, original):
@@ -328,6 +332,8 @@ class _StateInstance(object):
     return self.mySpecification
   def box(self):
     return self.myBox
+  def data(self):
+    return self.myBox
   def machine(self):
     return self.myMachine
   def setHistory(self,history):
@@ -358,6 +364,7 @@ class _RootInstance(_StateInstance):
     return _RootInstance(machine,parent)
 
 class _SubstateInstance(_StateInstance):
+  HISTORY = False
   def __init__(self, machine, parent, super_class):
     super(_SubstateInstance, self).__init__(machine, parent)
     self.mySpecification = super_class(self)
@@ -406,7 +413,7 @@ class _Event6(IEvent):
     self.myParam6 = p6
   def dispatch(self, instance):
     behaviour = instance.specification()
-    getattr(behaviour,self.myHandler)(self.myParam1,self.myParam2,self.myParam3,self.myParam4,self.myParam5,self.myParam6)
+    getattr(behaviour,self.myHandler.__name__)(self.myParam1,self.myParam2,self.myParam3,self.myParam4,self.myParam5,self.myParam6)
 
 class _Event5(IEvent):
   def __init__(self, handler, p1, p2, p3, p4, p5):
@@ -418,7 +425,7 @@ class _Event5(IEvent):
     self.myParam5 = p5
   def dispatch(self, instance):
     behaviour = instance.specification()
-    getattr(behaviour,self.myHandler)(self.myParam1,self.myParam2,self.myParam3,self.myParam4,self.myParam5)
+    getattr(behaviour,self.myHandler.__name__)(self.myParam1,self.myParam2,self.myParam3,self.myParam4,self.myParam5)
 
 
 
@@ -432,7 +439,7 @@ class _Event4(IEvent):
     self.myParam4 = p4
   def dispatch(self, instance):
     behaviour = instance.specification()
-    getattr(behaviour,self.myHandler)(self.myParam1,self.myParam2,self.myParam3,self.myParam4)
+    getattr(behaviour,self.myHandler.__name__)(self.myParam1,self.myParam2,self.myParam3,self.myParam4)
 
 
 
@@ -444,7 +451,7 @@ class _Event3(IEvent):
     self.myParam3 = p3
   def dispatch(self, instance):
     behaviour = instance.specification()
-    getattr(behaviour,self.myHandler)(self.myParam1,self.myParam2,self.myParam3)
+    getattr(behaviour,self.myHandler.__name__)(self.myParam1,self.myParam2,self.myParam3)
 
 
 
@@ -455,7 +462,7 @@ class _Event2(IEvent):
     self.myParam2 = p2
   def dispatch(self, instance):
     behaviour = instance.specification()
-    getattr(behaviour,self.myHandler)(self.myParam1,self.myParam2)
+    getattr(behaviour,self.myHandler.__name__)(self.myParam1,self.myParam2)
 
 
 
@@ -466,7 +473,7 @@ class _Event1(IEvent):
     self.myParam1 = p1
   def dispatch(self, instance):
     behaviour = instance.specification()
-    getattr(behaviour,self.myHandler)(self.myParam1)
+    getattr(behaviour,self.myHandler.__name__)(self.myParam1)
 
 
 
@@ -476,7 +483,7 @@ class _Event0(IEvent):
   def dispatch(self, instance):
     behaviour = instance.specification()
     
-    getattr(behaviour,self.myHandler)()
+    getattr(behaviour,self.myHandler.__name__)()
 
 
 class _Event(IEvent):
@@ -485,8 +492,7 @@ class _Event(IEvent):
     self.myParams = args
   def dispatch(self, instance):
     behaviour = instance.specification()
-    
-    getattr(behaviour,self.myHandler)(*self.myParams)
+    getattr(behaviour,self.myHandler.__name__)(*self.myParams)
 
 
 
@@ -517,9 +523,11 @@ def Event0(R):
 def Event(R, *args):
   return _Event(R, *args)
 
-def execute(instance, *args):
-  behaviour = instance.specification()
-  behaviour.on_init(*args)
+def execute(instance, history, *args):
+  #behaviour = instance.specification()
+  #behaviour.on_init(*args)
+  
+  instance.init(history,  *args)
 
 def execute1(instance, p1):
   behaviour = instance.specification()
@@ -546,7 +554,7 @@ def execute6(instance, p1, p2, p3, p4, p5, p6):
   behaviour.on_init(p1, p2, p3, p4, p5, p6)
   
 
-class _Initializer:
+class __Initializer:
   def __init__(self):
     pass
   def clone(self):
@@ -556,9 +564,9 @@ class _Initializer:
   def adapt(self, key):
     return key
   def execute(self, instance):
-    pass
+    instance.init(False)
 
-class _StaticInitializer(_Initializer):
+class _StaticInitializer(__Initializer):
   def __init__(self):
     pass
   def clone(self):
@@ -583,7 +591,7 @@ class _HistoryInitializer(_StaticInitializer):
     instance.init(True)
 
 
-class _AdaptingInitializer(_Initializer):
+class _AdaptingInitializer(__Initializer):
   def __init__(self, machine):
     self.myMachine = machine
   def execute(self, instance):
@@ -602,15 +610,15 @@ class _AdaptingInitializer(_Initializer):
       return key
 
 
-class _Initializer(_Initializer):
+class _Initializer(__Initializer):
   def __init__(self, *args):
     self.myParams = args
   def clone(self):
     return _Initializer(*self.myParams)
-  def execute(self, instance):
-    execute(instance, *self.myParams)
+  def execute(self, instance, history_):
+    execute(instance, history_, *self.myParams)
 
-class _Initializer1(_Initializer):
+class _Initializer1(__Initializer):
   def __init__(self, p1):
     self.myParam1 = p1
   def clone(self):
@@ -619,7 +627,7 @@ class _Initializer1(_Initializer):
     execute1(instance, self.myParam1)
 
 
-class _Initializer2(_Initializer):
+class _Initializer2(__Initializer):
   def __init__(self, p1, p2):
     self.myParam1 = p1
     self.myParam2 = p2
@@ -630,7 +638,7 @@ class _Initializer2(_Initializer):
 
 
 
-class _Initializer3(_Initializer):
+class _Initializer3(__Initializer):
   def __init__(self, p1, p2, p3):
     self.myParam1 = p1
     self.myParam2 = p2
@@ -643,7 +651,7 @@ class _Initializer3(_Initializer):
 
 
 
-class _Initializer4(_Initializer):
+class _Initializer4(__Initializer):
   def __init__(self, p1, p2, p3, p4):
     self.myParam1 = p1
     self.myParam2 = p2
@@ -657,7 +665,7 @@ class _Initializer4(_Initializer):
 
 
 
-class _Initializer5(_Initializer):
+class _Initializer5(__Initializer):
   def __init__(self, p1, p2, p3, p4, p5):
     self.myParam1 = p1
     self.myParam2 = p2
@@ -674,7 +682,7 @@ class _Initializer5(_Initializer):
 
 
 
-class _Initializer6(_Initializer):
+class _Initializer6(__Initializer):
   def __init__(self, p1, p2, p3, p4, p5, p6):
     self.myParam1 = p1
     self.myParam2 = p2
@@ -702,6 +710,7 @@ class _MachineBase(object):
     self.myPendingBox = None
     self.myPendingEvent = None
     self.myInstances = None
+    self.myDeferEvents = []
   def currentState(self):
     return self.myCurrentState.key()
   def setState(self, instance, init):
@@ -732,7 +741,12 @@ class _MachineBase(object):
         
         self.myCurrentState.entry(previous)
         self.myPendingState = None
-        self.myPendingInit.execute(self.myCurrentState)
+        behaviour = self.myCurrentState.specification()
+        self.myPendingInit.execute(self.myCurrentState, behaviour.HISTORY)
+        
+        for event in self.myDeferEvents:
+          event.dispatch(self.myCurrentState)
+        self.myDeferEvents = []
         
       if self.myPendingEvent:
         event = self.myPendingEvent
@@ -742,15 +756,15 @@ class _MachineBase(object):
   def getInstances(self):
     return self.myInstances
   def start(self, instance, *args):
-    global _theDefaultInitializer
+    #global _theDefaultInitializer
     self.myCurrentState = _StateSpecification._getInstance(self)
     self.setState(instance, _Initializer(*args))
   def startAlias(self, state):
     self.myCurrentState = _StateSpecification._getInstance(self)
     self.setStateAlias(state)
   def shutdown(self):
-    global _theDefaultInitializer
-    self.setState(_StateSpecification._getInstance(self), _theDefaultInitializer)
+    #global _theDefaultInitializer
+    self.setState(_StateSpecification._getInstance(self), _Initializer())
     self.myCurrentState = None
   def allocate(self, count):
     
@@ -935,8 +949,13 @@ class Machine(_MachineBase):
   def data(self):
     self.myCurrentState.specification().box()
 
+  def getCurrentState(self):
+    return self.myCurrentState
+  def setCurrentState(self, S):
+    self.myCurrentState = S
   def _current_state(self):
     return self.myCurrentState
+  _current_state = property(getCurrentState, setCurrentState)
 
   
   def getCurrent(self):
@@ -968,7 +987,14 @@ class Machine(_MachineBase):
     self.myCurrentState = state
   current = property(getCurrent, setCurrent)
 
-  
+  def addDeferEvent(self, event):
+    self.myDeferEvents.append(event)
+  def is_current(self, info):
+    if info.StateID == self.myCurrentState.id():
+      return True
+    else:
+      return False
+      
     
 def _createBox(place, B=None):
   if B:
@@ -995,6 +1021,8 @@ def TopBase(TOP):
       self._myStateInstance.machine().setPendingEvent(event)
     def machine(self):
       return self._myStateInstance.machine()
+    def defer(self, event):
+      self._myStateInstance.machine().addDeferEvent(event)
 
   
     
@@ -1019,6 +1047,7 @@ def topstate(cls):
   TOP._state_name = staticmethod(lambda  : TOP.__name__)
   
   TOP.box = lambda self: self._box()
+  TOP.HISTORY = False
 
   if hasattr(TOP, 'Data'):
     TOP.Box = TOP.Data
@@ -1043,6 +1072,7 @@ def substate(superstate):
     Machine.theStateCount += 1
     STATE._state_name = staticmethod(lambda : cls.__name__)
     STATE.box = lambda self: self._box()
+    STATE.HISTORY = False
     #STATE.data = lambda self: self._box()
 
     if hasattr(STATE, 'Data'):
@@ -1050,7 +1080,19 @@ def substate(superstate):
 
     return STATE
   return _substate
+
+
+
+def history(cls):
+  def _saveHistory(self,instance,shallow,deep):
+    #instance.setHistory(deep)
+    self[self.SUPER]._setHistorySuper(instance,shallow)
     
+  cls._saveHistory = _saveHistory
+
+  cls._setHistorySuper = lambda self,instance,deep: instance.setHistorySuper(deep)
+  cls.HISTORY = True
+  return cls
 
 def deephistory(cls):
   def _saveHistory(self,instance,shallow,deep):
@@ -1060,6 +1102,7 @@ def deephistory(cls):
   cls._saveHistory = _saveHistory
 
   cls._setHistorySuper = lambda self,instance,deep: instance.setHistorySuper(deep)
+  cls.HISTORY = True
   return cls
 
   

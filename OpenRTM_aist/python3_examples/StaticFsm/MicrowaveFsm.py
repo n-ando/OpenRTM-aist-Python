@@ -62,7 +62,9 @@ class Disabled(OpenRTM_aist.Link):
   def on_exit(self):
     print("  Microwave closed")
   def close(self):
-    self.setStateHistory(OpenRTM_aist.Macho.State(Operational))
+    #self.setStateHistory(OpenRTM_aist.Macho.State(Operational))
+    self.set_state(OpenRTM_aist.Macho.State(Operational))
+    
 
 
 @OpenRTM_aist.Macho.deephistory
@@ -87,7 +89,7 @@ class Operational(OpenRTM_aist.Link):
 class Idle(OpenRTM_aist.Link):
   def minute(self, time_):
     self.set_state(OpenRTM_aist.Macho.State(Programmed))
-    self.dispatch(OpenRTM_aist.Macho.Event("minute",time_))
+    self.dispatch(OpenRTM_aist.Macho.Event(TOP.minute,time_))
     
   def on_entry(self):
     self.data(TOP).resetTimer()

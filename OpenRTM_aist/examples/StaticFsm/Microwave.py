@@ -53,12 +53,12 @@ class Microwave(OpenRTM_aist.DataFlowComponentBase):
     self._eventIn = OpenRTM_aist.EventInPort("event", self._fsm)
     
     self.addInPort("event", self._eventIn)
-    self._eventIn.bindEvent0("open", "open")
-    self._eventIn.bindEvent0("close", "close")
-    self._eventIn.bindEvent1("minute", "minute", RTC.TimedLong(RTC.Time(0,0),0))
-    self._eventIn.bindEvent0("start", "start")
-    self._eventIn.bindEvent0("stop", "stop")
-    self._eventIn.bindEvent0("tick", "tick")
+    self._eventIn.bindEvent0("open", MicrowaveFsm.TOP.open)
+    self._eventIn.bindEvent0("close", MicrowaveFsm.TOP.close)
+    self._eventIn.bindEvent1("minute", MicrowaveFsm.TOP.minute, RTC.TimedLong(RTC.Time(0,0),0))
+    self._eventIn.bindEvent0("start", MicrowaveFsm.TOP.start)
+    self._eventIn.bindEvent0("stop", MicrowaveFsm.TOP.stop)
+    self._eventIn.bindEvent0("tick", MicrowaveFsm.TOP.tick)
     
 
 
