@@ -42,10 +42,19 @@ class _StateSpecification(object):
     return False
   isChild = staticmethod(isChild)
 
+  def set_state_direct(self, S, *args):
+    return self.setStateDirect(S, *args)
+  
+  def setStateDirect(self, S, *args):
+    #global _theDefaultInitializer
+    m = self._myStateInstance.machine()
+    instance = S._getInstance(m, S.SUPER, S)
+    m.setPendingState(instance, _Direct_Initializer(*args))
+
 
   def set_state(self, S, *args):
     return self.setState(S, *args)
-
+  
 
   def setState(self, S, *args):
     #global _theDefaultInitializer
@@ -617,6 +626,15 @@ class _Initializer(__Initializer):
     return _Initializer(*self.myParams)
   def execute(self, instance, history_):
     execute(instance, history_, *self.myParams)
+
+
+class _Direct_Initializer(__Initializer):
+  def __init__(self, *args):
+    self.myParams = args
+  def clone(self):
+    return _Initializer(*self.myParams)
+  def execute(self, instance, history_):
+    execute(instance, False, *self.myParams)
 
 class _Initializer1(__Initializer):
   def __init__(self, p1):
