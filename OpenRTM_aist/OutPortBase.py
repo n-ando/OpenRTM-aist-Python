@@ -273,6 +273,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
 
     self._rtcout.RTC_DEBUG("available subscription_type: %s",  pubs)
     self.addProperty("dataport.subscription_type", pubs)
+    self.addProperty("dataport.io_mode", pubs)
 
     self._properties    = OpenRTM_aist.Properties()
     self._name          = name
@@ -397,6 +398,10 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
   #
   def connect(self, connector_profile):
     self._rtcout.RTC_TRACE("OutPortBase.connect()")
+
+
+    
+      
         
     if OpenRTM_aist.NVUtil.find_index(connector_profile.properties,
                                       "dataport.serializer.cdr.endian") is -1:
@@ -404,7 +409,8 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
       connector_profile.properties.append(OpenRTM_aist.NVUtil.newNV("dataport.serializer.cdr.endian","little,big"))
 
     return OpenRTM_aist.PortBase.connect(self, connector_profile)
-        
+
+
 
   ##
   # @if jp
@@ -429,7 +435,15 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
     prop = OpenRTM_aist.Properties()
     OpenRTM_aist.NVUtil.copyToProperties(prop, connector_profile.properties)
 
-    _str = self._properties.getProperty("dataport.fan_out")
+
+    node = prop.getNode("dataport.outport")
+    portprop = copy.deepcopy(self._properties)
+    portprop.mergeProperties(node)
+    node.mergeProperties(portprop)
+    OpenRTM_aist.NVUtil.copyFromProperties(connector_profile.properties, prop)
+    
+
+    _str = node.getProperty("fan_out")
     _type = [int(100)]
     
     OpenRTM_aist.stringTo(_type, _str)
@@ -446,7 +460,6 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
 
 
     return OpenRTM_aist.PortBase.notify_connect(self, connector_profile)
-
 
   ##
   # @if jp
