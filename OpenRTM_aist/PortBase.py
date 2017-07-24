@@ -19,6 +19,7 @@ import threading
 import copy
 
 import OpenRTM_aist
+import OpenRTM_aist.CORBA_RTCUtil
 import RTC, RTC__POA
 
 
@@ -545,7 +546,7 @@ class PortBase(RTC__POA.PortService):
     if self.isEmptyId(connector_profile):
       guard = OpenRTM_aist.ScopedLock(self._profile_mutex)
       self.setUUID(connector_profile)
-      assert(not self.isExistingConnId(connector_profile.connector_id))
+      #assert(not self.isExistingConnId(connector_profile.connector_id))
       del guard
     else:
       guard = OpenRTM_aist.ScopedLock(self._profile_mutex)
@@ -553,6 +554,7 @@ class PortBase(RTC__POA.PortService):
         self._rtcout.RTC_ERROR("Connection already exists.")
         return (RTC.PRECONDITION_NOT_MET,connector_profile)
       del guard
+
 
     try:
       retval,connector_profile = connector_profile.ports[0].notify_connect(connector_profile)
@@ -688,11 +690,10 @@ class PortBase(RTC__POA.PortService):
   def notify_connect(self, connector_profile):
     self._rtcout.RTC_TRACE("notify_connect()")
 
-
     prop = OpenRTM_aist.Properties()
     OpenRTM_aist.NVUtil.copyToProperties(prop, connector_profile.properties)
     
-    default_value = OpenRTM_aist.toBool(self._properties.getProperty("dataport.allow_dup_connection"), "YES","NO",False)
+    default_value = OpenRTM_aist.toBool(self._properties.getProperty("allow_dup_connection"), "YES","NO",False)
     
     if not OpenRTM_aist.toBool(prop.getProperty("dataport.allow_dup_connection"), "YES","NO",default_value):
       for port in connector_profile.ports:
@@ -700,8 +701,7 @@ class PortBase(RTC__POA.PortService):
           ret = OpenRTM_aist.CORBA_RTCUtil.already_connected(port, self._objref)
           if ret:
             return (RTC.PRECONDITION_NOT_MET, connector_profile)
-
-
+          
 
     guard_connection = OpenRTM_aist.ScopedLock(self._connection_mutex)
 
