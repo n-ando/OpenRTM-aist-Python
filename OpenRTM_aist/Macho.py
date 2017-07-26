@@ -123,7 +123,7 @@ class _StateSpecification(object):
     #global _theDefaultInitializer
     self._myStateInstance.machine().setPendingState(current, _Initializer())
   def _shutdown(self):
-    self._myStateInstance.machine().shutdown()
+    self._myStateInstance.machine()._shutdown()
   def _setHistorySuper(self, instance, deep):
     pass
 
@@ -785,7 +785,7 @@ class _MachineBase(object):
   def startAlias(self, state):
     self.myCurrentState = _StateSpecification._getInstance(self)
     self.setStateAlias(state)
-  def shutdown(self):
+  def _shutdown(self):
     #global _theDefaultInitializer
     self.setState(_StateSpecification._getInstance(self), _Initializer())
     self.myCurrentState = None
@@ -926,10 +926,11 @@ class Machine(_MachineBase):
     self.init(box=None, initial_state=initial_state, args=args)
   def __del__(self):
     pass
-  def exit(self):
+  def shutdown(self):
     self.myCurrentState.shutdown()
     self.free(Machine.theStateCount)
     Machine.theStateCount = 1
+  
   def init(self, box=None,initial_state=None, args=()):
     self.allocate(Machine.theStateCount)
     top = self.TOP._getInstance(self, self.TopBase, self.TOP)

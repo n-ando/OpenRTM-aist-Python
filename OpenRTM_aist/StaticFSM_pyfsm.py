@@ -2,8 +2,8 @@
 # -*- coding: euc-jp -*-
 
 ##
-# @file StaticFSM.py
-# @brief Static FSM framework based on Macho
+# @file StaticFSM_pyfsm.py
+# @brief Static FSM framework based on pyfsm
 # @date $Date: $
 # @author Nobuhiko Miyamoto <n-miyamoto@aist.go.jp>
 #
@@ -14,12 +14,12 @@
 #     All rights reserved.
 
 import OpenRTM_aist
-import OpenRTM_aist.Macho
+import pyfsm
 import RTC
 
 
 def fsm_topstate(TOP):
-  ret = OpenRTM_aist.Macho.topstate(TOP)
+  ret = pyfsm.topstate(TOP)
   class STATE(ret):
     def __init__(self, instance):
       ret.__init__(self, instance)
@@ -37,7 +37,7 @@ def fsm_topstate(TOP):
 
 def fsm_substate(superstate):
   def _fsm_substate(cls):
-    ret = OpenRTM_aist.Macho.substate(superstate)(cls)
+    ret = pyfsm.substate(superstate)(cls)
     class STATE(ret):
       def __init__(self, instance):
         ret.__init__(self, instance)
@@ -55,18 +55,12 @@ def fsm_substate(superstate):
   return _fsm_substate
 
 
-def FSM_TOPSTATE(TOP):
-  OpenRTM_aist.Macho.TOPSTATE(TOP)
-
-
-def FSM_SUBSTATE(STATE, SUPERSTATE):
-  OpenRTM_aist.Macho.SUBSTATE(STATE, SUPERSTATE)
 
 
 
-class Machine(OpenRTM_aist.Macho.Machine):
+
+class Machine(pyfsm.Machine):
   def __init__(self, TOP, comp):
-    #super(Machine,self).__init__(TOP, OpenRTM_aist.Macho.TopBase(TOP))
     self._rtComponent = comp
     super(Machine,self).__init__(TOP)
     
@@ -83,9 +77,9 @@ class Machine(OpenRTM_aist.Macho.Machine):
 
 
 
-class Link(OpenRTM_aist.Macho.StateDef):
-  def __init__(self, instance):
-    super(Link,self).__init__(instance)
+class Link(pyfsm.StateDef):
+  def __init__(self):
+    super(Link,self).__init__()
     self._rtComponent = None
   def __del__(self):
     pass
@@ -131,6 +125,6 @@ class Link(OpenRTM_aist.Macho.StateDef):
     return RTC.RTC_OK
 
 
-State = OpenRTM_aist.Macho.State
-deephistory = OpenRTM_aist.Macho.deephistory
-Event = OpenRTM_aist.Macho.Event
+State = pyfsm.State
+deephistory = pyfsm.deephistory
+Event = pyfsm.Event

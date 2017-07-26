@@ -2,7 +2,7 @@
 # -*- coding: euc-jp -*-
 
 ##
-# @file EventPort.py
+# @file EventPort_pyfsm.py
 # @brief EventInPort template class
 # @date $Date: $
 # @author Nobuhiko Miyamoto <n-miyamoto@aist.go.jp>
@@ -14,7 +14,8 @@
 #     All rights reserved.
 
 import OpenRTM_aist
-import OpenRTM_aist.Macho
+import OpenRTM_aist.StaticFSM_pyfsm
+import pyfsm
 
 
 class EventBinder0(OpenRTM_aist.ConnectorDataListener):
@@ -26,7 +27,7 @@ class EventBinder0(OpenRTM_aist.ConnectorDataListener):
     pass
   def __call__(self, info, data):
     if info.properties.getProperty("fsm_event_name") == self._eventName or info.name == self._eventName:
-      self._fsm.dispatch(OpenRTM_aist.Macho.Event(self._handler))
+      self._fsm.dispatch(pyfsm.Event(self._handler))
       return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
     return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
@@ -44,7 +45,7 @@ class EventBinder1(OpenRTM_aist.ConnectorDataListenerT):
     data_ = OpenRTM_aist.ConnectorDataListenerT.__call__(self, info, data, self._data_type)
     
     if info.properties.getProperty("fsm_event_name") == self._eventName or info.name == self._eventName:
-      self._fsm.dispatch(OpenRTM_aist.Macho.Event(self._handler, data_))
+      self._fsm.dispatch(pyfsm.Event(self._handler, data_))
       return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
     return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 

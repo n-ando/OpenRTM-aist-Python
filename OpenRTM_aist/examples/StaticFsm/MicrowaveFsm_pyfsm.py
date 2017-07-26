@@ -17,8 +17,8 @@ import sys
 
 import RTC
 import OpenRTM_aist
-import OpenRTM_aist.StaticFSM as StaticFSM
-import OpenRTM_aist.EventPort as EventPort
+import OpenRTM_aist.StaticFSM_pyfsm as StaticFSM
+import OpenRTM_aist.EventPort_pyfsm as EventPort
 
 @StaticFSM.fsm_topstate
 class TOP(StaticFSM.Link):
