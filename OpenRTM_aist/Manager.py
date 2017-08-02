@@ -882,9 +882,10 @@ class Manager:
     if not self.procComponentArgs(comp_args, comp_id, comp_prop):
       return None
     
-    comp = self.getComponent(comp_prop)
-    if comp:
-      return comp
+    if comp_prop.getProperty("instance_name"):
+      comp = self.getComponent(comp_prop.getProperty("instance_name"))
+      if comp:
+        return comp
     
     self._listeners.rtclifecycle_.preCreate(comp_args)
 
