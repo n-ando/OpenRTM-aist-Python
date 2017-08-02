@@ -2486,7 +2486,7 @@ class Manager:
 
     
     if id_and_conf[0].find(":") == -1:
-      id_and_conf[0] = prof[0] + ":::" + id_and_conf[0] + ":"
+      id_and_conf[0] = prof[0] + ":::" + id_and_conf[0] + "::"
 
     id = [s.strip() for s in id_and_conf[0].split(":")]
     
