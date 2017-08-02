@@ -875,12 +875,18 @@ class Manager:
   #
   def createComponent(self, comp_args):
     self._rtcout.RTC_TRACE("Manager.createComponent(%s)", comp_args)
-    self._listeners.rtclifecycle_.preCreate(comp_args)
+    
     comp_prop = OpenRTM_aist.Properties()
     comp_id   = OpenRTM_aist.Properties()
 
     if not self.procComponentArgs(comp_args, comp_id, comp_prop):
       return None
+    
+    comp = self.getComponent(comp_prop)
+    if comp:
+      return comp
+    
+    self._listeners.rtclifecycle_.preCreate(comp_args)
 
     if comp_prop.findNode("exported_ports"):
       exported_ports = OpenRTM_aist.split(comp_prop.getProperty("exported_ports"),
@@ -2469,29 +2475,36 @@ class Manager:
   #                        coil::Properties& comp_conf)
   def procComponentArgs(self, comp_arg, comp_id, comp_conf):
     id_and_conf = [s.strip() for s in comp_arg.split("?")]
+    
     if len(id_and_conf) != 1 and len(id_and_conf) != 2:
       self._rtcout.RTC_ERROR("Invalid arguments. Two or more '?'")
       return False
 
+    prof = OpenRTM_aist.CompParam.prof_list
+    param_num = len(prof)
+
+    
     if id_and_conf[0].find(":") == -1:
-      id_and_conf[0] = "RTC:::" + id_and_conf[0] + ":"
+      id_and_conf[0] = prof[0] + ":::" + id_and_conf[0] + ":"
 
     id = [s.strip() for s in id_and_conf[0].split(":")]
+    
 
-    if len(id) != 5:
+    if len(id) != param_num:
       self._rtcout.RTC_ERROR("Invalid RTC id format.")
       return False
 
-    prof = ["RTC", "vendor", "category", "implementation_id", "version"]
+    #prof = ["RTC", "vendor", "category", "implementation_id", "language", "version"]
 
     if id[0] != prof[0]:
       self._rtcout.RTC_ERROR("Invalid id type.")
       return False
 
-    for i in [1,2,3,4]:
+    for i in range(1,param_num):
       comp_id.setProperty(prof[i], id[i])
       self._rtcout.RTC_TRACE("RTC basic profile %s: %s", (prof[i], id[i]))
-
+    
+    
     if len(id_and_conf) == 2:
       conf = [s.strip() for s in id_and_conf[1].split("&")]
       for i in range(len(conf)):
@@ -2604,7 +2617,7 @@ class Manager:
         self._rtcout.RTC_DEBUG(type_prop)
         if self._config.findNode("config_file"):
           config_fname.append(self._config.getProperty("config_file"))
-
+    
     comp.setProperties(prop)
     type_prop.mergeProperties(name_prop)
     type_prop.setProperty("config_file",OpenRTM_aist.flatten(OpenRTM_aist.unique_sv(config_fname)))

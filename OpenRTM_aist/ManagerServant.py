@@ -25,8 +25,151 @@ import platform
 import re
 
 
-
-
+##
+# @if jp
+# @class CompParam
+# @brief CompParam クラス
+#
+# RTCのベンダ名、カテゴリ名、ID、言語、バージョンを格納する構造体
+#
+# @since 1.2.0
+#
+# @else
+# @class CompParam
+# @brief CompParam class
+# @endif
+class CompParam:
+  prof_list = ["RTC", "vendor", "category", "implementation_id", "language", "version"]
+  ##
+  # @if jp
+  # @brief コンストラクタ
+  #
+  # コンストラクタ
+  #
+  # @param self
+  # @param module_name モジュール名
+  #
+  # @else
+  # @brief Constructor
+  #
+  # @param self
+  # @param module_name 
+  #
+  # @endif
+  def __init__(self, module_name):
+    module_name = module_name.split("?")[0]
+    param_list = module_name.split(":")
+    if len(param_list) < len(CompParam.prof_list):
+      self._type = "RTC"
+      self._vendor = ""
+      self._category = ""
+      self._impl_id = module_name
+      self._language = "Python"
+      self._version = ""
+    else:
+      self._type = param_list[0]
+      self._vendor = param_list[1]
+      self._category = param_list[2]
+      self._impl_id = param_list[3]
+      if param_list[4]:
+        self._language = param_list[4]
+      else:
+        self._language = "Python"
+      self._version = param_list[5]
+    
+    
+  ##
+  # @if jp
+  # @brief ベンダ名取得
+  #
+  # 
+  #
+  # @param self
+  # @return ベンダ名
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @return 
+  #
+  # @endif
+  def vendor(self):
+    return self._vendor
+  ##
+  # @if jp
+  # @brief カテゴリ名取得
+  #
+  # 
+  #
+  # @param self
+  # @return カテゴリ名
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @return 
+  #
+  # @endif
+  def category(self):
+    return self._category
+  ##
+  # @if jp
+  # @brief ID取得
+  #
+  # 
+  #
+  # @param self
+  # @return ID
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @return 
+  #
+  # @endif
+  def impl_id(self):
+    return self._impl_id
+  ##
+  # @if jp
+  # @brief 言語取得
+  #
+  # 
+  #
+  # @param self
+  # @return 言語
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @return 
+  #
+  # @endif
+  def language(self):
+    return self._language
+  ##
+  # @if jp
+  # @brief バージョン取得
+  #
+  # 
+  #
+  # @param self
+  # @return バージョン
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @return 
+  #
+  # @endif
+  def version(self):
+    return self._version
+  
+  
 
 class ManagerServant(RTM__POA.Manager):
   """
@@ -354,8 +497,9 @@ class ManagerServant(RTM__POA.Manager):
     self.get_parameter_by_modulename("manager_address",module_name)
     manager_name = self.get_parameter_by_modulename("manager_name",module_name)
     module_name = module_name[0]
-    tmp = [module_name]
-    language = self.get_parameter_by_modulename("language",tmp)
+
+    comp_param = CompParam(module_name)
+    
     
     
     if self._isMaster:
@@ -366,7 +510,7 @@ class ManagerServant(RTM__POA.Manager):
           prop = OpenRTM_aist.Properties()
           OpenRTM_aist.NVUtil.copyToProperties(prop, prof)
           slave_lang = prop.getProperty("manager.language")
-          if slave_lang == language:
+          if slave_lang == comp_param.language():
             rtc = slave.create_component(module_name)
             if not CORBA.is_nil(rtc):
               return rtc
@@ -1090,9 +1234,6 @@ class ManagerServant(RTM__POA.Manager):
 
     return RTM.Manager._nil
 
-
-
-
   ##
   # @if jp
   # @brief モジュール名からパラメータを取り出す
@@ -1111,7 +1252,7 @@ class ManagerServant(RTM__POA.Manager):
   # @param module_name
   # @return 
   # @endif
-  # RTC::RTObject_ptr get_parameter_by_modulename(string param_name, string &module_name)
+  # std::string get_parameter_by_modulename(string param_name, string &module_name)
   def get_parameter_by_modulename(self, param_name, module_name):
     arg = module_name[0]
     pos0 = arg.find("&"+param_name+"=")
@@ -1195,11 +1336,8 @@ class ManagerServant(RTM__POA.Manager):
       mgrobj = self.findManager_by_name(mgrstr)
     
 
-    tmp = [arg]
-    language = self.get_parameter_by_modulename("language",tmp)
-    arg = tmp[0]
-    if not language:
-      language = "Python"
+
+    comp_param = CompParam(arg)
     
     
     
@@ -1208,14 +1346,14 @@ class ManagerServant(RTM__POA.Manager):
     if CORBA.is_nil(mgrobj):
       self._rtcout.RTC_WARN("%s cannot be found.", mgrstr)
       config = copy.deepcopy(self._mgr.getConfig())
-      rtcd_cmd = config.getProperty("manager.modules."+language+".manager_cmd")
+      rtcd_cmd = config.getProperty("manager.modules."+comp_param.language()+".manager_cmd")
       
       if not rtcd_cmd:
         rtcd_cmd = "rtcd_python"
       #rtcd_cmd = "rtcd_python.bat"
 
       load_path = config.getProperty("manager.modules.load_path")
-      load_path_language = config.getProperty("manager.modules."+language+".load_paths")
+      load_path_language = config.getProperty("manager.modules."+comp_param.language()+".load_paths")
       load_path = load_path + "," + load_path_language
       
       if platform.system() == "Windows":
@@ -1228,7 +1366,7 @@ class ManagerServant(RTM__POA.Manager):
       cmd += " -o " + "manager.name:" + config.getProperty("manager.name")
       cmd += " -o " + "manager.instance_name:" + mgrstr
       cmd += " -o " + "\"manager.modules.load_path:" + load_path + "\""
-      cmd += " -o " + "manager.supported_languages:" + language
+      cmd += " -o " + "manager.supported_languages:" + comp_param.language()
       cmd += " -o " + "manager.shutdown_auto:NO"
       
       
@@ -1364,21 +1502,19 @@ class ManagerServant(RTM__POA.Manager):
     # find manager
     mgrobj = self.findManager(mgrstr)
 
-    tmp = [arg]
-    language = self.get_parameter_by_modulename("language",tmp)
-    arg = tmp[0]
-    if not language:
-      language = "Python"
+
+    comp_param = CompParam(arg)
+    
 
 
     if CORBA.is_nil(mgrobj):
       config = copy.deepcopy(self._mgr.getConfig())
-      rtcd_cmd = config.getProperty("manager.modules."+language+".manager_cmd")
+      rtcd_cmd = config.getProperty("manager.modules."+comp_param.language()+".manager_cmd")
       if not rtcd_cmd:
         rtcd_cmd = "rtcd_python"
 
       load_path = config.getProperty("manager.modules.load_path")
-      load_path_language = config.getProperty("manager.modules."+language+".load_path")
+      load_path_language = config.getProperty("manager.modules."+comp_param.language()+".load_path")
       load_path = load_path + "," + load_path_language
 
       if platform.system() == "Windows":
