@@ -16,6 +16,7 @@
 
 
 import types
+import OpenRTM_aist
 
 class _EmptyBox:
   def __init__(self):
@@ -1182,3 +1183,25 @@ StateDef = Link
 
 def State(S):
   return S
+
+
+
+
+
+class logger(object):
+  rtcout = None
+  def __init__(self):
+    pass
+  
+  def debug(mes):
+    logger.setLoggerFile()
+    logger.rtcout.RTC_DEBUG(mes)
+    
+  debug = staticmethod(debug)
+  
+  def setLoggerFile():
+    if logger.rtcout is None:
+      logger.rtcout = OpenRTM_aist.Manager.instance().getLogbuf('Macho')
+  setLoggerFile = staticmethod(setLoggerFile)
+
+
