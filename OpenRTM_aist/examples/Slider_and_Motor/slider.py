@@ -16,7 +16,7 @@ class SliderMulti(Frame):
 
 	def init(self, channels):
 		self._channels = channels
-		self.var = [] * len(self._channels)
+		self.var = []
 		self.scales = []
 		
 		i = 0
@@ -33,19 +33,18 @@ class SliderMulti(Frame):
 
 	def get(self):
 		val = []
-		for s in self.scales:
-			val.append(s.get())
+		for v in self.var:
+			val.append(v.get())
 
 		return val
 
 	def set(self, value):
 		i = 0
 		for v in value:
-			self.scales[i].set(v)
+			self.var[i].set(v)
+
 			i = i + 1
 		return
-
-
 
 
 def test ():
