@@ -39,7 +39,6 @@ class SliderComp(OpenRTM_aist.DataFlowComponentBase):
   def __init__(self, manager):
     OpenRTM_aist.DataFlowComponentBase.__init__(self, manager)
     return
-        
 
   def onInitialize(self):
     self._sl_data = RTC.TimedFloatSeq(RTC.Time(0,0), [])
@@ -49,10 +48,7 @@ class SliderComp(OpenRTM_aist.DataFlowComponentBase):
     return RTC.RTC_OK
 
   def onActivated(self, ec_id):
-    print(sl.get())
-    time.sleep(1)
     return RTC.RTC_OK
-
 
   def onExecute(self, ec_id):
     self._sl_data.data = sl.get()
@@ -60,11 +56,9 @@ class SliderComp(OpenRTM_aist.DataFlowComponentBase):
     time.sleep(0.01)
     return RTC.RTC_OK
 
-
   def onShutdown(self, ec_id):
     sl.quit()
     return RTC.RTC_OK
-
 
 
 def SliderCompInit(manager):
