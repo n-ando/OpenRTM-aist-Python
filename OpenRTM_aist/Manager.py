@@ -563,6 +563,8 @@ class Manager:
   def load(self, fname, initfunc):
     self._rtcout.RTC_TRACE("Manager.load(fname = %s, initfunc = %s)",
                            (fname, initfunc))
+    fname = fname.replace("/", os.sep)
+    fname = fname.replace("\\", os.sep)
     self._listeners.module_.preLoad(fname, initfunc)
     try:
       fname_ = fname.split(os.sep)
