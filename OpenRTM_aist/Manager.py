@@ -471,8 +471,9 @@ class Manager:
       self._initProc(self)
 
     self.initPreCreation()
-    self.initPreActivation()
+    
     self.initPreConnection()
+    self.initPreActivation()
 
     return True
 
