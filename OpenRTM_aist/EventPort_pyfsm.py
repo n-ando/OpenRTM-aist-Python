@@ -19,33 +19,43 @@ import pyfsm
 
 
 class EventBinder0(OpenRTM_aist.ConnectorDataListener):
-  def __init__(self, fsm, event_name, handler):
+  def __init__(self, fsm, event_name, handler, ptask=False):
     self._fsm = fsm
     self._eventName = event_name
     self._handler = handler
+    self._ptask = ptask
   def __del__(self):
     pass
   def __call__(self, info, data):
     if info.properties.getProperty("fsm_event_name") == self._eventName or info.name == self._eventName:
-      self._fsm.dispatch(pyfsm.Event(self._handler))
+      if not self._ptask:
+        self._fsm.dispatch(pyfsm.Event(self._handler))
+      else:
+        task = OpenRTM_aist.Async_tInvoker(self._fsm, pyfsm.Machine.dispatch, pyfsm.Event(self._handler))
+        task.invoke()
       return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
     return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
     
 
 class EventBinder1(OpenRTM_aist.ConnectorDataListenerT):
-  def __init__(self, fsm, event_name, handler, data_type):
+  def __init__(self, fsm, event_name, handler, data_type, ptask=False):
     self._fsm = fsm
     self._eventName = event_name
     self._handler = handler
     self._data_type = data_type
+    self._ptask = ptask
   def __del__(self):
     pass
   def __call__(self, info, data):
     data_ = OpenRTM_aist.ConnectorDataListenerT.__call__(self, info, data, self._data_type)
     
     if info.properties.getProperty("fsm_event_name") == self._eventName or info.name == self._eventName:
-      self._fsm.dispatch(pyfsm.Event(self._handler, data_))
+      if not self._ptask:
+        self._fsm.dispatch(pyfsm.Event(self._handler, data_))
+      else:
+        task = OpenRTM_aist.Async_tInvoker(self._fsm, pyfsm.Machine.dispatch, pyfsm.Event(self._handler, data_))
+        task.invoke()
       return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
     return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
@@ -197,13 +207,13 @@ class EventInPort(OpenRTM_aist.InPortBase):
   def name(self):
     return self._name
 
-  def bindEvent0(self, name, handler):
+  def bindEvent0(self, name, handler, ptask=False):
     self.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
-                                  EventBinder0(self._fsm, name, handler))
+                                  EventBinder0(self._fsm, name, handler, ptask))
     
-  def bindEvent1(self, name, handler, data_type):
+  def bindEvent1(self, name, handler, data_type, ptask=False):
     self.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
-                                  EventBinder1(self._fsm, name, handler, data_type))
+                                  EventBinder1(self._fsm, name, handler, data_type, ptask))
   
 
 

@@ -18,6 +18,8 @@
 import types
 import OpenRTM_aist
 
+import threading
+
 class _EmptyBox:
   def __init__(self):
     pass
@@ -237,6 +239,11 @@ class Link(_StateSpecification):
   def _saveHistory(self,instance,shallow,deep):
     self._setHistorySuper(instance,deep)
   def __getitem__(self, class_):
+    if isinstance(class_, str):
+      if self.__class__.__name__ == class_:
+        return self
+    elif type(self) == class_:
+      return self
     obj = self
     while hasattr(obj, "super_obj"):
       obj = obj.super_obj
@@ -925,9 +932,11 @@ class Machine(_MachineBase):
     self.TOP = TOP
     self.TopBase = TOP.SUPER(TOP._state_name)
     self.init(box=None, initial_state=initial_state, args=args)
+    self._mutex = threading.RLock()
   def __del__(self):
     pass
   def shutdown(self):
+    guard = OpenRTM_aist.ScopedLock(self._mutex)
     self.myCurrentState.shutdown()
     self.free(Machine.theStateCount)
     Machine.theStateCount = 1
@@ -964,6 +973,7 @@ class Machine(_MachineBase):
   def __call__(self):
     return AfterAdvice(self)
   def dispatch(self, event, destroy=True):
+    guard = OpenRTM_aist.ScopedLock(self._mutex)
     event.dispatch(self.myCurrentState)
     if destroy:
       del event
