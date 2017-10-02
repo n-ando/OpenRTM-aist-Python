@@ -714,7 +714,7 @@ class PublisherPeriodic(OpenRTM_aist.PublisherBase):
     preskip  = self._buffer.readable() + self._leftskip
     loopcnt  = preskip / (self._skipn + 1)
     postskip = self._skipn - self._leftskip
-    for i in range(loopcnt):
+    for i in range(int(loopcnt)):
       self._buffer.advanceRptr(postskip)
       cdr = self._buffer.get()
       self.onBufferRead(cdr)

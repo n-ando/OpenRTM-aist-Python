@@ -126,7 +126,7 @@ class ModuleManager:
   # @else
   #
   # @endif
-  class Error:
+  class Error(Exception):
     def __init__(self, reason_):
       self.reason = reason_
 
@@ -139,7 +139,7 @@ class ModuleManager:
   # @else
   #
   # @endif
-  class NotFound:
+  class NotFound(Exception):
     def __init__(self, name_):
       self.name = name_
 
