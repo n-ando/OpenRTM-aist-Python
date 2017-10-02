@@ -21,6 +21,7 @@ import threading
 import logging
 
 import OpenRTM_aist
+import copy
 
 
 
@@ -181,7 +182,7 @@ class LogStream:
     
 
 
-
+    self._logger_name = ""
     self._mutex = threading.RLock()
     self._loggerObj = []
     self._log_enable = True
@@ -338,7 +339,7 @@ class LogStream:
           print("RTC_LOG : argument error")
           return
       for log in self._loggerObj:
-        log.log(messages, LV)
+        log.log(messages, LV, self._logger_name)
       
 
       self.release()
@@ -376,7 +377,7 @@ class LogStream:
           return
 
       for log in self._loggerObj:
-        log.log(messages, Logger.FATAL)
+        log.log(messages, Logger.FATAL, self._logger_name)
 
       self.release()
 
@@ -414,7 +415,7 @@ class LogStream:
 
       
       for log in self._loggerObj:
-        log.log(messages, Logger.ERROR)
+        log.log(messages, Logger.ERROR, self._logger_name)
 
       self.release()
 
@@ -456,7 +457,7 @@ class LogStream:
 
       
       for log in self._loggerObj:
-        log.log(messages, Logger.WARN)
+        log.log(messages, Logger.WARN, self._logger_name)
 
       self.release()
 
@@ -498,7 +499,7 @@ class LogStream:
 
       
       for log in self._loggerObj:
-        log.log(messages, Logger.INFO)
+        log.log(messages, Logger.INFO, self._logger_name)
     
       self.release()
 
@@ -540,7 +541,7 @@ class LogStream:
         
       
       for log in self._loggerObj:
-        log.log(messages, Logger.DEBUG)
+        log.log(messages, Logger.DEBUG, self._logger_name)
       
       self.release()
 
@@ -583,7 +584,7 @@ class LogStream:
 
       
       for log in self._loggerObj:
-        log.log(messages, Logger.TRACE)
+        log.log(messages, Logger.TRACE, self._logger_name)
     
       self.release()
 
@@ -626,7 +627,7 @@ class LogStream:
 
       
       for log in self._loggerObj:
-        log.log(messages, Logger.VERBOSE)
+        log.log(messages, Logger.VERBOSE, self._logger_name)
     
       self.release()
 
@@ -670,12 +671,16 @@ class LogStream:
 
       
       for log in self._loggerObj:
-        log.log(messages, Logger.PARANOID)
+        log.log(messages, Logger.PARANOID, self._logger_name)
     
       self.release()
 
 
-
+  def getLogger(self, name):
+    syslogger = copy.copy(self)
+    syslogger._logger_name = name
+    return syslogger
+    
 
 
 

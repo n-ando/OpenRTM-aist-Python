@@ -2780,14 +2780,14 @@ class Manager:
   # @endif
   def getLogbuf(self,name="manager"):
     if not OpenRTM_aist.toBool(self._config.getProperty("logger.enable"), "YES", "NO", True):
-      return OpenRTM_aist.LogStream()
+      return OpenRTM_aist.LogStream().getLogger(name)
 
     if self._rtcout is None:
         self._rtcout = OpenRTM_aist.LogStream(name)
         self._rtcout.setLogLevel(self._config.getProperty("logger.log_level"))
-        return self._rtcout
+        return self._rtcout.getLogger(name)
     else:
-        return self._rtcout
+        return self._rtcout.getLogger(name)
 
 
   ##
