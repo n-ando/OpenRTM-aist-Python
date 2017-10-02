@@ -236,6 +236,7 @@ class LogstreamFile(OpenRTM_aist.LogstreamBase):
       log.log(logging.PARANOID,msg)
     else:
       return False
+    return True
     
 
 
@@ -338,7 +339,7 @@ class LogstreamFile(OpenRTM_aist.LogstreamBase):
 
 
       
-    return True
+
 
 def LogstreamFileInit():
   OpenRTM_aist.LogstreamFactory.instance().addFactory("file",
