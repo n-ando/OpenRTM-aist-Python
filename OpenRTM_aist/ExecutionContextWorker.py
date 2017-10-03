@@ -81,18 +81,18 @@ class ExecutionContextWorker:
 
   ##
   # @if jp
-  # @brief デストラクタ
+  # @brief ExecutionContextWorker終了処理
   #
-  # デストラクタ
+  # 
   #
   # @else
-  # @brief Destructor
+  # @brief 
   #
-  # Destructor
+  # 
   #
   # @endif
-  def __del__(self):
-    self._rtcout.RTC_TRACE("~ExecutionContextWorker.__del__")
+  def exit(self):
+    self._rtcout.RTC_TRACE("exit")
     return
 
 

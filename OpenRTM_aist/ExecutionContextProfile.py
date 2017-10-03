@@ -79,9 +79,9 @@ class ExecutionContextProfile:
 
   ##
   # @if jp
-  # @brief デストラクタ
+  # @brief ExecitionContextProfile終了処理
   #
-  # デストラクタ
+  # 
   #
   # @else
   # @brief Destructor
@@ -89,8 +89,8 @@ class ExecutionContextProfile:
   # Destructor
   #
   # @endif
-  def __del__(self):
-    self._rtcout.RTC_TRACE("ExecutionContextProfile.__del__()")
+  def exit(self):
+    self._rtcout.RTC_TRACE("exit")
 
     # cleanup EC's profile
     self._profile.owner = None

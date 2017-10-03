@@ -79,7 +79,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     return
 
 
-  def __del__(self, Task=OpenRTM_aist.Task):
+  def exit(self, Task=OpenRTM_aist.Task):
     import OpenRTM_aist.Guard
     self._rtcout.RTC_TRACE("PeriodicExecutionContext.__del__()")
     guard = OpenRTM_aist.Guard.ScopedLock(self._svcmutex)
@@ -94,6 +94,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     del guard
     self.wait()
     Task.__del__(self)
+    OpenRTM_aist.ExecutionContextBase.exit(self)
     return
 
   def init(self, props):

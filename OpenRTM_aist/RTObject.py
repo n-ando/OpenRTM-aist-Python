@@ -3559,14 +3559,14 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
   def finalizeContexts(self):
     self._rtcout.RTC_TRACE("finalizeContexts()")
     len_ = len(self._eclist)
-    for i in range(len_):
-      idx = (len_ - 1) - i
-      self._eclist[idx].stop()
+    for ec in self._eclist:
+      ec.stop()
       try:
-        self._poa.deactivate_object(self._poa.servant_to_id(self._eclist[idx]))
+        self._poa.deactivate_object(self._poa.servant_to_id(ec))
       except:
         self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
-      del self._eclist[idx]
+      ec.exit()
+    self._eclist = []
 
 
     return
