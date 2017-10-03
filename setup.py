@@ -182,6 +182,8 @@ openrtm_core_packages = [
   "OpenRTM_aist.RTM_IDL.SDOPackage",
   "OpenRTM_aist.RTM_IDL.SDOPackage__POA",
   "OpenRTM_aist.RTM_IDL.device_interfaces",
+  "OpenRTM_aist.RTM_IDL._GlobalIDL",
+  "OpenRTM_aist.RTM_IDL._GlobalIDL__POA",
   ]
 openrtm_ext_packages = [
   "OpenRTM_aist.ext",
@@ -222,10 +224,16 @@ baseidl_path  = os.path.normpath(current_dir + "/" + baseidl_dir)
 pkg_scripts_unix  = ['OpenRTM_aist/utils/rtcd/rtcd_python',
                      'OpenRTM_aist/utils/rtcprof/rtcprof_python']
 pkg_scripts_win32 = ['OpenRTM_aist/utils/rtcd/rtcd.py',
-                     'OpenRTM_aist/utils/rtcd/rtcd_python.exe',
+#                     'OpenRTM_aist/utils/rtcd/rtcd_python.exe',
                      'OpenRTM_aist/utils/rtcd/rtcd_python.bat',
                      'OpenRTM_aist/utils/rtcprof/rtcprof_python.py',
                      'OpenRTM_aist/utils/rtcprof/rtcprof_python.bat']
+
+
+pkg_data_files_unix  = []
+pkg_data_files_win32 = [("Scripts", ['OpenRTM_aist/utils/rtcd/rtcd_python.exe'])]
+
+
 #
 # ext modules
 #
@@ -985,8 +993,13 @@ pkg_package_data_files = {
 #
 if os_is() == "win32":
   pkg_scripts = pkg_scripts_win32
+  pkg_data_files = pkg_data_files_win32
 else:
   pkg_scripts = pkg_scripts_unix
+  pkg_data_files = pkg_data_files_unix
+
+
+
 
 #
 # example file list -> MyDistribution.example_files
@@ -1047,6 +1060,7 @@ core.setup(name             = pkg_name,
            package_dir      = {module_dir: module_dir},
            package_data     = pkg_package_data_files,
            scripts          = pkg_scripts,
+           data_files       = pkg_data_files,
            example_files    = pkg_example_files,
            document_files   = pkg_document_files,
            )
