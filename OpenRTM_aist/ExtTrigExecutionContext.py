@@ -75,8 +75,8 @@ class ExtTrigExecutionContext(OpenRTM_aist.ExecutionContextBase,
     return
 
 
-  def __del__(self, Task=OpenRTM_aist.Task):
-    self._rtcout.RTC_TRACE("ExtTrigExecutionContext.__del__()")
+  def exit(self, Task=OpenRTM_aist.Task):
+    self._rtcout.RTC_TRACE("exit")
     guard = OpenRTM_aist.ScopedLock(self._svcmutex)
     self._svc = False
     del guard
@@ -89,6 +89,7 @@ class ExtTrigExecutionContext(OpenRTM_aist.ExecutionContextBase,
     del guard
     self.wait()
     Task.__del__(self)
+    OpenRTM_aist.ExecutionContextBase.exit(self)
     return
 
 

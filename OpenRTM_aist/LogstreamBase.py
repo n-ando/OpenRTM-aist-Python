@@ -123,7 +123,7 @@ class LogstreamBase:
   #
   # @endif
   #
-  def log(self, msg, level):
+  def log(self, msg, level, name):
     return False
 
 

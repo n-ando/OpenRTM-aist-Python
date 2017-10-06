@@ -272,6 +272,7 @@ class FluentBit(OpenRTM_aist.LogstreamBase):
 	# @param self
 	# @param msg　ログ出力する文字列
 	# @param level ログレベル
+	# @param name ログの出力名
 	# @return
 	#
 	# @else
@@ -281,27 +282,29 @@ class FluentBit(OpenRTM_aist.LogstreamBase):
 	# @param self
 	# @param msg
 	# @param level
+	# @param name
 	# @return
 	#
 	# @endif
 	#
-	def log(self, msg, level):
+	def log(self, msg, level, name):
+		log = self.getLogger(name)
 		if level == OpenRTM_aist.Logger.FATAL:
-			self.logger.log(logging.FATAL,msg)
+			log.log(logging.FATAL,msg)
 		elif level == OpenRTM_aist.Logger.ERROR:
-			self.logger.error(msg)
+			log.error(msg)
 		elif level == OpenRTM_aist.Logger.WARN:
-			self.logger.warning(msg)
+			log.warning(msg)
 		elif level == OpenRTM_aist.Logger.INFO:
-			self.logger.info(msg)
+			log.info(msg)
 		elif level == OpenRTM_aist.Logger.DEBUG:
-			self.logger.debug(msg)
+			log.debug(msg)
 		elif level == OpenRTM_aist.Logger.TRACE:
-			self.logger.log(logging.TRACE,msg)
+			log.log(logging.TRACE,msg)
 		elif level == OpenRTM_aist.Logger.VERBOSE:
-			self.logger.log(logging.VERBOSE,msg)
+			log.log(logging.VERBOSE,msg)
 		elif level == OpenRTM_aist.Logger.PARANOID:
-			self.logger.log(logging.PARANOID,msg)
+			log.log(logging.PARANOID,msg)
 		else:
 			return False
 			
@@ -378,6 +381,31 @@ class FluentBit(OpenRTM_aist.LogstreamBase):
 		
 		FluentBit.s_logger = None
 		return True
+
+	##
+	# @if jp
+	# @brief ロガーの取得
+	#
+	#
+	# @param self
+	# @param name ログの出力名
+	# @return　ロガー
+	#
+	# @else
+	# @brief 
+	#
+	#
+	# @param self
+	# @param name 
+	# @return
+	#
+	# @endif
+	#
+	def getLogger(self, name):
+		if name:
+			return logging.getLogger("fluent."+name)
+		else:
+			return self.logger
 
 
 def FluentBitInit(mgr):

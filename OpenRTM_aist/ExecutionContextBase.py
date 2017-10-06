@@ -421,6 +421,19 @@ class ExecutionContextBase:
     self.setProperties(props)
     return
 
+  ##
+  # @if jp
+  # @brief ExecutionContextの終了処理
+  #
+  # @else
+  # @brief 
+  #
+  # @endif
+  # virtual void exit();
+  def exit(self):
+    self._rtcout.RTC_TRACE("exit()")
+    self._profile.exit()
+    self._worker.exit()
 
   ##
   # @if jp
