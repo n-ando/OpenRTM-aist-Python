@@ -21,9 +21,6 @@ import sys,os
 import OpenRTM_aist
 
 def main():
-  conf_file=os.path.join(os.path.dirname(__file__),"rtcd.conf")
-  sys.argv.append('-f')
-  sys.argv.append(conf_file)
   manager = OpenRTM_aist.Manager.init(sys.argv)
 
   manager.activateManager()
