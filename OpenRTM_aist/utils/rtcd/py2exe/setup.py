@@ -12,5 +12,5 @@ setup(
   console = [
    {"script"	:	"rtcd_python.py" }
   ],
-  zipfile = "lib/rtcd.zip"
+  zipfile = "rtcd-lib/rtcd.zip"
 )
