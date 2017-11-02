@@ -20,7 +20,7 @@ import threading
 
 
 import OpenRTM_aist
-import CORBA
+from omniORB import CORBA
 import RTM
 import RTC
 import CosNaming
