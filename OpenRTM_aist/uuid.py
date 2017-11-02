@@ -79,7 +79,10 @@ class UUID(object):
             if len(bytes) != 16:
                 raise ValueError('bytes is not a 16-char string')
             def ord_func(v):
-                return ord(chr(v))
+                if sys.version_info[0] == 3:
+                    return ord(chr(v))
+                else:
+                    return ord(v)
             int_value = long(('%02x'*16) % tuple(map(ord_func, bytes)), 16)
         if fields:
             if len(fields) != 6:
