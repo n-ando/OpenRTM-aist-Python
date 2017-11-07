@@ -303,7 +303,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   #
   # @endif
   #
-  # void write(cdrMemoryStream& data);
+  # void write(const cdrMemoryStream& data);
   def write(self, data):
     self._rtcout.RTC_TRACE("write()")
     
@@ -347,7 +347,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   #
   # @endif
   #
-  # void read(::OpenRTM::CdrData_out data);
+  # cdrMemoryStream read(data);
   def read(self):
     self._rtcout.RTC_TRACE("read()")
     if self._shmem:
@@ -382,7 +382,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   #
   # @endif
   #
-  # void close(int memory_size, string shm_address);
+  # void setInterface(::OpenRTM::PortSharedMemory_var sm);
   def setInterface(self, sm):
     self._smInterface = sm
 
@@ -404,7 +404,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
   #
   # @endif
   #
-  # PortStatus setEndian();
+  # void setEndian(bool endian);
   def setEndian(self, endian):
     self._endian = endian
     if not CORBA.is_nil(self._smInterface):

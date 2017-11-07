@@ -151,7 +151,7 @@ class InPortSHMProvider(OpenRTM_aist.InPortProvider, OpenRTM_aist.SharedMemory):
   #
   # @endif
   #
-  # ::OpenRTM::PortStatus put(const ::OpenRTM::CdrData& data)
+  # ::OpenRTM::PortStatus put()
   #  throw (CORBA::SystemException);
   def put(self):
     
