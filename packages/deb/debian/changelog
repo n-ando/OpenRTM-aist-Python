@@ -1,3 +1,9 @@
+openrtm-aist-python (1.1.2-1) experimental; urgency=low
+
+  * 1.1.2-1 (1.1.2-RELEASE). OpenRTM-aist-1.1.2-RELEASE
+
+ -- Noriaki Ando <n-ando@aist.go.jp>  Mon, 20 Nov 2017 14:16:58 +0900
+
 openrtm-aist-python (1.1.2-0) experimental; urgency=low
 
   * 1.1.2-0 (1.1.2-RELEASE). OpenRTM-aist-1.1.2-RELEASE
