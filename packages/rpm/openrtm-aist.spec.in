@@ -11,7 +11,7 @@
 %define short_version __SHORT_VERSION__
 %define distname       __DISTNAME__
 %define builddir       %{_topdir}/BUILD/%{distname}
-%define pkgver         RELEASE0
+%define pkgver         0
 %define _unpackaged_files_terminate_build   0
 %global debug_package %{nil}
 
@@ -109,7 +109,7 @@ rm -rf %{buildroot}
 #------------------------------------------------------------
 # changelog section
 %changelog
-* Wed Nov 16 2016  <n-ando@aist.go.jp> 1.2.0
+* Wed Nov 16 2016  <n-ando@aist.go.jp> 1.2.0-0._distname
 - 1.2.0-RELEASE
 
 * Tue Feb 23 2016  <n-ando@aist.go.jp> 1.1.2
