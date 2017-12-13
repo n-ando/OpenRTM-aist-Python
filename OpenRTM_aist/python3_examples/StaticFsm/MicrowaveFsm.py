@@ -15,14 +15,16 @@
 
 import sys
 
-import RTC
-import OpenRTM_aist
-import OpenRTM_aist.Macho
 
-@OpenRTM_aist.fsm_topstate
-class TOP(OpenRTM_aist.Link):
-  def on_init(self):
-    self.set_state(OpenRTM_aist.Macho.State(Operational))
+import RTC
+import OpenRTM_aist.StaticFSM as StaticFSM
+
+
+@StaticFSM.FSM_TOPSTATE
+class TOP(StaticFSM.Link):
+  def onInit(self):
+    self.set_state(StaticFSM.State(Operational))
+    return RTC.RTC_OK
 
 
   def open(self):
@@ -55,27 +57,29 @@ class TOP(OpenRTM_aist.Link):
     
 
     
-@OpenRTM_aist.fsm_substate(TOP)
-class Disabled(OpenRTM_aist.Link):
-  def on_entry(self):
+@StaticFSM.FSM_SUBSTATE(TOP)
+class Disabled(StaticFSM.Link):
+  def onEntry(self):
     print("  Microwave opened")
-  def on_exit(self):
+    return RTC.RTC_OK
+  def onExit(self):
     print("  Microwave closed")
+    return RTC.RTC_OK
   def close(self):
     #self.setStateHistory(OpenRTM_aist.Macho.State(Operational))
-    self.set_state(OpenRTM_aist.Macho.State(Operational))
-    
+    self.set_state(StaticFSM.State(Operational))
 
 
-@OpenRTM_aist.Macho.deephistory
-@OpenRTM_aist.fsm_substate(TOP)
-class Operational(OpenRTM_aist.Link):
+@StaticFSM.deephistory
+@StaticFSM.FSM_SUBSTATE(TOP)
+class Operational(StaticFSM.Link):
   def open(self):
-    self.set_state(OpenRTM_aist.Macho.State(Disabled))
+    self.set_state(StaticFSM.State(Disabled))
   def stop(self):
-    self.set_state(OpenRTM_aist.Macho.State(Idle))
-  def on_init(self):
-    self.set_state(OpenRTM_aist.Macho.State(Idle))
+    self.set_state(StaticFSM.State(Idle))
+  def onInit(self):
+    self.set_state(StaticFSM.State(Idle))
+    return RTC.RTC_OK
 
 
   
@@ -85,48 +89,51 @@ class Operational(OpenRTM_aist.Link):
 
 
 
-@OpenRTM_aist.fsm_substate(Operational)
-class Idle(OpenRTM_aist.Link):
+@StaticFSM.FSM_SUBSTATE(Operational)
+class Idle(StaticFSM.Link):
   def minute(self, time_):
-    self.set_state(OpenRTM_aist.Macho.State(Programmed))
-    self.dispatch(OpenRTM_aist.Macho.Event(TOP.minute,time_))
+    self.set_state(StaticFSM.State(Programmed))
+    self.dispatch(StaticFSM.Event(TOP.minute,time_))
     
-  def on_entry(self):
+  def onEntry(self):
     self.data(TOP).resetTimer()
     print("  Microwave ready")
+    return RTC.RTC_OK
 
 
 
 
 
-@OpenRTM_aist.fsm_substate(Operational)
-class Programmed(OpenRTM_aist.Link):
+@StaticFSM.FSM_SUBSTATE(Operational)
+class Programmed(StaticFSM.Link):
   def minute(self, time_):
     for t in range(time_.data):
       self.data(TOP).incrementTimer()
     self.data(TOP).printTimer()
   def start(self):
-    self.setState(Cooking)
+    self.set_state(StaticFSM.State(Cooking))
 
 
 
 
 
-@OpenRTM_aist.fsm_substate(Programmed)
-class Cooking(OpenRTM_aist.Link):
+@StaticFSM.FSM_SUBSTATE(Programmed)
+class Cooking(StaticFSM.Link):
   def tick(self):
     print("  Clock tick")
     tb = self.data(TOP)
     tb.decrementTimer()
     if tb.getRemainingTime() == 0:
       print("  Finished")
-      self.setState(Idle)
+      self.set_state(StaticFSM.State(Idle))
     else:
       tb.printTimer()
     
-  def on_entry(self):
+  def onEntry(self):
     print("  Heating on")
-  def on_exit(self):
+    return RTC.RTC_OK
+  def onExit(self):
     print("  Heating off")
+    return RTC.RTC_OK
 
 

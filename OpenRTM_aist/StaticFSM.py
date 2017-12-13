@@ -24,15 +24,12 @@ def fsm_topstate(TOP):
     def __init__(self, instance):
       ret.__init__(self, instance)
     def on_entry(self, *argv):
-      OpenRTM_aist.Link.call_entry(self)
-      ret.on_entry(self, *argv)
+      ret.call_entry(self, ret, *argv)
     def on_exit(self, *argv):
-      OpenRTM_aist.Link.call_exit(self)
-      ret.on_exit(self, *argv)
+      ret.call_exit(self, ret, *argv)
     def on_init(self, *argv):
-      OpenRTM_aist.Link.call_init(self)
-      ret.on_init(self, *argv)
-  return ret
+      ret.call_init(self, ret, *argv)
+  return STATE
 
 
 def fsm_substate(superstate):
@@ -42,25 +39,22 @@ def fsm_substate(superstate):
       def __init__(self, instance):
         ret.__init__(self, instance)
       def on_entry(self, *argv):
-        OpenRTM_aist.Link.call_entry(self)
-        ret.on_entry(self, *argv)
+        ret.call_entry(self, cls, *argv)
       def on_exit(self, *argv):
-        OpenRTM_aist.Link.call_exit(self)
-        ret.on_exit(self, *argv)
+        ret.call_exit(self, cls, *argv)
       def on_init(self, *argv):
-        OpenRTM_aist.Link.call_init(self)
-        ret.on_init(self, *argv)
+        ret.call_init(self, cls, *argv)
 
-    return ret
+    return STATE
   return _fsm_substate
 
 
 def FSM_TOPSTATE(TOP):
-  OpenRTM_aist.Macho.TOPSTATE(TOP)
+  return fsm_topstate(TOP)
 
 
-def FSM_SUBSTATE(STATE, SUPERSTATE):
-  OpenRTM_aist.Macho.SUBSTATE(STATE, SUPERSTATE)
+def FSM_SUBSTATE(SUPERSTATE):
+  return fsm_substate(SUPERSTATE)
 
 
 
@@ -96,31 +90,31 @@ class Link(OpenRTM_aist.Macho.StateDef):
     if machine:
       self._rtComponent = machine.getComp()
 
-  def call_entry(self):
+  def call_entry(self, cls, *argv):
     self.setrtc()
     if not self._rtComponent:
-      self.onEntry()
+      cls.onEntry(self, *argv)
     else:
       self._rtComponent.postOnFsmStateChange(self._state_name(), RTC.RTC_OK)
       self._rtComponent.preOnFsmEntry(self._state_name())
-      self._rtComponent.postOnFsmEntry(self._state_name(), self.onEntry())
+      self._rtComponent.postOnFsmEntry(self._state_name(),cls.onEntry(self, *argv))
 
-  def call_init(self):
+  def call_init(self, cls, *argv):
     self.setrtc()
     if not self._rtComponent:
-      self.onInit()
+      cls.onInit(self, *argv)
     else:
       self._rtComponent.preOnFsmInit(self._state_name())
-      self._rtComponent.postOnFsmInit(self._state_name(), self.onInit())
+      self._rtComponent.postOnFsmInit(self._state_name(), cls.onInit(self, *argv))
 
 
-  def call_exit(self):
+  def call_exit(self, cls, *argv):
     self.setrtc()
     if not self._rtComponent:
-      self.onExit()
+      cls.onExit(self, *argv)
     else:
       self._rtComponent.preOnFsmExit(self._state_name())
-      self._rtComponent.postOnFsmExit(self._state_name(), self.onExit())
+      self._rtComponent.postOnFsmExit(self._state_name(), cls.onExit(self, *argv))
       self._rtComponent.preOnFsmStateChange(self._state_name())
 
   def onEntry(self):

@@ -17,11 +17,11 @@ import sys
 
 import RTC
 import OpenRTM_aist
-import OpenRTM_aist.StaticFSM as StaticFSM
-import OpenRTM_aist.EventPort as EventPort
+import OpenRTM_aist.StaticFSM_pyfsm as StaticFSM
+import OpenRTM_aist.EventPort_pyfsm as EventPort
 
 
-import MicrowaveFsm
+import MicrowaveFsm_pyfsm
 
 microwave_spec = ["implementation_id", "Microwave",
                   "type_name",         "Microwave",
@@ -45,7 +45,9 @@ class Microwave(OpenRTM_aist.DataFlowComponentBase):
     
     return
 
-
+  def onFinalize(self):
+    self._fsm.exit()
+    return RTC.RTC_OK
 
   def onInitialize(self):
     self._fsm = StaticFSM.Machine(MicrowaveFsm.TOP, self)
@@ -62,11 +64,6 @@ class Microwave(OpenRTM_aist.DataFlowComponentBase):
     
 
 
-    return RTC.RTC_OK
-
-
-  def onFinalize(self):
-    self._fsm.shutdown()
     return RTC.RTC_OK
 
         

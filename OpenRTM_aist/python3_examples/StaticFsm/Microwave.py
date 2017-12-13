@@ -17,6 +17,8 @@ import sys
 
 import RTC
 import OpenRTM_aist
+import OpenRTM_aist.StaticFSM as StaticFSM
+import OpenRTM_aist.EventPort as EventPort
 
 
 import MicrowaveFsm
@@ -43,14 +45,12 @@ class Microwave(OpenRTM_aist.DataFlowComponentBase):
     
     return
 
-  def onFinalize(self):
-    self._fsm.exit()
-    return RTC.RTC_OK
+
 
   def onInitialize(self):
-    self._fsm = OpenRTM_aist.Machine(MicrowaveFsm.TOP, self)
+    self._fsm = StaticFSM.Machine(MicrowaveFsm.TOP, self)
     #self._fsm.init()
-    self._eventIn = OpenRTM_aist.EventInPort("event", self._fsm)
+    self._eventIn = EventPort.EventInPort("event", self._fsm)
     
     self.addInPort("event", self._eventIn)
     self._eventIn.bindEvent0("open", MicrowaveFsm.TOP.open)
@@ -62,6 +62,11 @@ class Microwave(OpenRTM_aist.DataFlowComponentBase):
     
 
 
+    return RTC.RTC_OK
+
+
+  def onFinalize(self):
+    self._fsm.shutdown()
     return RTC.RTC_OK
 
         

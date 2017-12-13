@@ -15,15 +15,16 @@
 
 import sys
 
-import RTC
-import OpenRTM_aist
-import OpenRTM_aist.StaticFSM as StaticFSM
-import OpenRTM_aist.EventPort as EventPort
 
-@StaticFSM.fsm_topstate
+import RTC
+import OpenRTM_aist.StaticFSM as StaticFSM
+
+
+@StaticFSM.FSM_TOPSTATE
 class TOP(StaticFSM.Link):
-  def on_init(self):
+  def onInit(self):
     self.set_state(StaticFSM.State(Operational))
+    return RTC.RTC_OK
 
 
   def open(self):
@@ -56,26 +57,29 @@ class TOP(StaticFSM.Link):
     
 
     
-@StaticFSM.fsm_substate(TOP)
+@StaticFSM.FSM_SUBSTATE(TOP)
 class Disabled(StaticFSM.Link):
-  def on_entry(self):
+  def onEntry(self):
     print("  Microwave opened")
-  def on_exit(self):
+    return RTC.RTC_OK
+  def onExit(self):
     print("  Microwave closed")
+    return RTC.RTC_OK
   def close(self):
     #self.setStateHistory(OpenRTM_aist.Macho.State(Operational))
     self.set_state(StaticFSM.State(Operational))
 
 
 @StaticFSM.deephistory
-@StaticFSM.fsm_substate(TOP)
+@StaticFSM.FSM_SUBSTATE(TOP)
 class Operational(StaticFSM.Link):
   def open(self):
     self.set_state(StaticFSM.State(Disabled))
   def stop(self):
     self.set_state(StaticFSM.State(Idle))
-  def on_init(self):
+  def onInit(self):
     self.set_state(StaticFSM.State(Idle))
+    return RTC.RTC_OK
 
 
   
@@ -85,21 +89,22 @@ class Operational(StaticFSM.Link):
 
 
 
-@StaticFSM.fsm_substate(Operational)
+@StaticFSM.FSM_SUBSTATE(Operational)
 class Idle(StaticFSM.Link):
   def minute(self, time_):
     self.set_state(StaticFSM.State(Programmed))
     self.dispatch(StaticFSM.Event(TOP.minute,time_))
     
-  def on_entry(self):
+  def onEntry(self):
     self.data(TOP).resetTimer()
     print("  Microwave ready")
+    return RTC.RTC_OK
 
 
 
 
 
-@StaticFSM.fsm_substate(Operational)
+@StaticFSM.FSM_SUBSTATE(Operational)
 class Programmed(StaticFSM.Link):
   def minute(self, time_):
     for t in range(time_.data):
@@ -112,7 +117,7 @@ class Programmed(StaticFSM.Link):
 
 
 
-@StaticFSM.fsm_substate(Programmed)
+@StaticFSM.FSM_SUBSTATE(Programmed)
 class Cooking(StaticFSM.Link):
   def tick(self):
     print("  Clock tick")
@@ -124,9 +129,11 @@ class Cooking(StaticFSM.Link):
     else:
       tb.printTimer()
     
-  def on_entry(self):
+  def onEntry(self):
     print("  Heating on")
-  def on_exit(self):
+    return RTC.RTC_OK
+  def onExit(self):
     print("  Heating off")
+    return RTC.RTC_OK
 
 

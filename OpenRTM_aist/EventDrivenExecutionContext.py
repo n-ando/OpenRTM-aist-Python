@@ -25,9 +25,9 @@ import RTC
 # @class PeriodicExecutionContext
 # @brief PeriodicExecutionContext クラス
 #
-# Periodic Sampled Data Processing(周期実行用)ExecutionContextクラス。
+# Periodic EventDrivenExecutionContextクラス。
 #
-# @since 0.4.0
+# @since 2.0.0
 #
 # @else
 # @class EventDrivenExecutionContext
@@ -67,7 +67,7 @@ class EventDrivenExecutionContext(OpenRTM_aist.PeriodicExecutionContext):
 # @else
 #
 # @endif
-def PeriodicExecutionContextInit(manager):
+def EventDrivenExecutionContextInit(manager):
   OpenRTM_aist.ExecutionContextFactory.instance().addFactory("EventDrivenExecutionContext",
                                                              OpenRTM_aist.EventDrivenExecutionContext,
                                                              OpenRTM_aist.ECDelete)
