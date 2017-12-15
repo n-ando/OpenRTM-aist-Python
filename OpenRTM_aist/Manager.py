@@ -3052,7 +3052,7 @@ class Manager:
   # @if jp
   # @brief 起動時にrtc.confで指定したポートを接続する
   # 例:
-  # manager.components.preconnect: RTC0.port0^RTC0.port1(interface_type=corba_cdr&dataflow_type=pull&~),~
+  # manager.components.preconnect: RTC0.port0:RTC0.port1(interface_type=corba_cdr&dataflow_type=pull&~),~
   # @param self
   # @else
   #
@@ -3076,10 +3076,10 @@ class Manager:
         self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
         continue
       conn_prop[1] = conn_prop[1].replace(")","")
-      comp_ports = conn_prop[0].split("^")
+      comp_ports = conn_prop[0].split(":")
       if len(comp_ports) != 2:
         self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
-        self._rtcout.RTC_ERROR("Format must be Comp0.port0^Comp1.port1()")
+        self._rtcout.RTC_ERROR("Format must be Comp0.port0:Comp1.port1()")
         continue
       
       comp0_name = comp_ports[0].split(".")[0]
@@ -3141,6 +3141,14 @@ class Manager:
       for o in opt_props:
         temp = o.split("=")
         if len(temp) == 2:
+          s = [temp[0]]
+          OpenRTM_aist.eraseHeadBlank(s)
+          OpenRTM_aist.eraseTailBlank(s)
+          temp[0] = s[0]
+          s = [temp[1]]
+          OpenRTM_aist.eraseHeadBlank(s)
+          OpenRTM_aist.eraseTailBlank(s)
+          temp[1] = s[0]
           prop.setProperty("dataport."+temp[0],temp[1])
       
       if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(c, prop, port0_var, port1_var):
