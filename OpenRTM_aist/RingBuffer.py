@@ -15,6 +15,7 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
+import sys
 import threading
 import OpenRTM_aist
 
@@ -370,9 +371,19 @@ class RingBuffer(OpenRTM_aist.BufferBase):
             nsec = self._wtimeout.usec() * 1000
 
           # true: signaled, false: timeout
-          if not self._full_cond.wait(sec + (nsec/1000000000.0)):
-            self._full_cond.release()
-            return OpenRTM_aist.BufferStatus.TIMEOUT
+          if sec != 0 or nsec != 0:
+            wait_time = sec + (nsec/1000000000.0)
+          else:
+            wait_time = None
+          ret = self._full_cond.wait(wait_time)
+          if sys.version_info[0] == 3:
+            if not ret:
+              self._full_cond.release()
+              return OpenRTM_aist.BufferStatus.TIMEOUT
+          else:
+            if self.full():
+              self._full_cond.release()
+              return OpenRTM_aist.BufferStatus.TIMEOUT
 
         else: # unknown condition
           self._full_cond.release()
@@ -617,9 +628,19 @@ class RingBuffer(OpenRTM_aist.BufferBase):
           sec = self._rtimeout.sec()
           nsec = self._rtimeout.usec() * 1000
         #  true: signaled, false: timeout
-        if not self._empty_cond.wait(sec + (nsec/1000000000.0)):
-          self._empty_cond.release()
-          return OpenRTM_aist.BufferStatus.TIMEOUT
+        if sec != 0 or nsec != 0:
+          wait_time = sec + (nsec/1000000000.0)
+        else:
+          wait_time = None
+        ret = self._empty_cond.wait(wait_time)
+        if sys.version_info[0] == 3:
+          if not ret:
+            self._empty_cond.release()
+            return OpenRTM_aist.BufferStatus.TIMEOUT
+        else:
+          if self.empty():
+            self._empty_cond.release()
+            return OpenRTM_aist.BufferStatus.TIMEOUT
 
       else:                              # unknown condition
         self._empty_cond.release()
