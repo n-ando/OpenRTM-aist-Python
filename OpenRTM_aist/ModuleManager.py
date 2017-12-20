@@ -626,7 +626,7 @@ class ModuleManager:
         cmd = cmd + " \""+mod_+"\""
         
         try:
-          ret = OpenRTM_aist.popen(cmd).split("\r\n")
+          ret = OpenRTM_aist.popen(cmd).split(os.linesep)
           count = 0
           for r in ret:
             pos = r.find(":")
