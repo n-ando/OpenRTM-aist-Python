@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 import time
 sys.path.append(".")
@@ -61,11 +62,11 @@ class NXTRTC(OpenRTM_aist.DataFlowComponentBase):
 
     # create NXTBrick object
     try:
-      print "Connecting to NXT brick ...."
+      print("Connecting to NXT brick ....")
       self._nxtbrick = NXTBrick.NXTBrick()
-      print "Connection established."
+      print("Connection established.")
     except:
-      print "NXTBrick connection failed."
+      print("NXTBrick connection failed.")
       return RTC.RTC_ERROR
 
     return RTC.RTC_OK
@@ -97,10 +98,10 @@ class NXTRTC(OpenRTM_aist.DataFlowComponentBase):
         vel_[self._mapping[self._map[0][0]]] = self._d_vel.data[0]
         vel_[self._mapping[self._map[0][1]]] = self._d_vel.data[1]
         # set velocity
-#       print vel_
+#       print(vel_)
         self._nxtbrick.setMotors(vel_)
       else:
-        print "buffer empty"
+        print("buffer empty")
 
       # get sensor data.
       sensor_   = self._nxtbrick.getSensors()
@@ -118,7 +119,7 @@ class NXTRTC(OpenRTM_aist.DataFlowComponentBase):
         # write position data to outport.
         self._posOut.write()
     except:
-      print sys.exc_info()[1]
+      print(sys.exc_info()[1])
 
     return RTC.RTC_OK
 

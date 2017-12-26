@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 import string
 
@@ -31,7 +32,7 @@ class echo_functor:
   def __call__(self, obj):
     try:
       if CORBA.is_nil(obj):
-        print "No service connected."
+        print("No service connected.")
       else:
         self._result[0] = obj.echo(self._msg)
     except:
@@ -64,21 +65,23 @@ class MyServiceConsumer(OpenRTM_aist.DataFlowComponentBase):
 
   # The execution action that is invoked periodically
   def onExecute(self, ec_id):
-    print "\n"
-    print "Command list: "
-    print " echo [msg]       : echo message."
-    print " set_value [value]: set value."
-    print " get_value        : get current value."
-    print " get_echo_history : get input messsage history."
-    print " get_value_history: get input value history."
-    print "> ",
+    print("\n")
+    print("Command list: ")
+    print(" echo [msg]       : echo message.")
+    print(" set_value [value]: set value.")
+    print(" get_value        : get current value.")
+    print(" get_echo_history : get input messsage history.")
+    print(" get_value_history: get input value history.")
+    print("> ",end="")
+    args = str(input())
 
-    args = str(sys.stdin.readline())
-    argv = string.split(args)
+    
+
+    argv = str.split(args)
     argv[-1] = argv[-1].rstrip("\n")
 
     if self._async_echo and self._async_echo.finished():
-      print "echo() finished: ", self._result[0]
+      print("echo() finished: ", self._result[0])
       self._async_echo = None
 
     if argv[0] == "echo" and len(argv) > 1:
@@ -89,19 +92,19 @@ class MyServiceConsumer(OpenRTM_aist.DataFlowComponentBase):
                                                                func)
         self._async_echo.invoke()
       else:
-        print "echo() still invoking"
+        print("echo() still invoking")
 
       return RTC.RTC_OK
 
     if argv[0] == "set_value" and len(argv) > 1:
       val = float(argv[1])
       self._myservice0._ptr().set_value(val)
-      print "Set remote value: ", val
+      print("Set remote value: ", val)
       return RTC.RTC_OK
       
     if argv[0] == "get_value":
       retval = self._myservice0._ptr().get_value()
-      print "Current remote value: ", retval
+      print("Current remote value: ", retval)
       return RTC.RTC_OK;
       
     if argv[0] == "get_echo_history":
@@ -114,7 +117,7 @@ class MyServiceConsumer(OpenRTM_aist.DataFlowComponentBase):
                                           self.seq_print())
       return RTC.RTC_OK
       
-    print "Invalid command or argument(s)."
+    print("Invalid command or argument(s).")
 
     return RTC.RTC_OK
 
@@ -126,7 +129,7 @@ class MyServiceConsumer(OpenRTM_aist.DataFlowComponentBase):
       return
 
     def __call__(self, val):
-      print self._cnt, ": ", val
+      print(self._cnt, ": ", val)
       self._cnt += 1
       return
 

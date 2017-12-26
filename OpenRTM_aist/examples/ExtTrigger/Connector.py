@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 
 from omniORB import CORBA
@@ -75,12 +76,12 @@ def main():
     
   while 1:
     try:
-      print "\n\n"
-      print "0: tick ConsoleIn component"
-      print "1: tick ConsoleOut component"
-      print "2: tick both components"
-      print "q: exit"
-      print "cmd? >",
+      print("\n\n")
+      print("0: tick ConsoleIn component")
+      print("1: tick ConsoleOut component")
+      print("2: tick both components")
+      print("q: exit")
+      print("cmd? >")
       cmd = str(sys.stdin.readline())
       if cmd == "0\n":
         ec0._ptr().tick()
@@ -90,11 +91,11 @@ def main():
         ec0._ptr().tick()
         ec1._ptr().tick()
       elif cmd == "q\n":
-        print "exit"
+        print("exit")
         break
                 
     except:
-      print "Exception."
+      print("Exception.")
       pass
 
 if __name__ == "__main__":

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+
+from __future__ import print_function
 import sys
 import time
 
@@ -26,16 +28,16 @@ class DataListener(OpenRTM_aist.ConnectorDataListenerT):
     self._name = name
 
   def __del__(self):
-    print "dtor of ", self._name
+    print("dtor of ", self._name)
 
   def __call__(self, info, cdrdata):
     data = OpenRTM_aist.ConnectorDataListenerT.__call__(self, info, cdrdata, RTC.TimedLong(RTC.Time(0,0),0))
-    print "------------------------------"
-    print "Listener:       ", self._name
-    print "Profile::name:  ", info.name
-    print "Profile::id:    ", info.id
-    print "Data:           ", data.data
-    print "------------------------------"
+    print("------------------------------")
+    print("Listener:       ", self._name)
+    print("Profile::name:  ", info.name)
+    print("Profile::id:    ", info.id)
+    print("Data:           ", data.data)
+    print("------------------------------")
 
 
 class ConnListener(OpenRTM_aist.ConnectorListener):
@@ -43,14 +45,14 @@ class ConnListener(OpenRTM_aist.ConnectorListener):
     self._name = name
 
   def __del__(self):
-    print "dtor of ", self._name
+    print("dtor of ", self._name)
 
   def __call__(self, info):
-    print "------------------------------"
-    print "Listener:       ", self._name
-    print "Profile::name:  ", info.name
-    print "Profile::id:    ", info.id
-    print "------------------------------"
+    print("------------------------------")
+    print("Listener:       ", self._name)
+    print("Profile::name:  ", info.name)
+    print("Profile::id:    ", info.id)
+    print("------------------------------")
 
 
 
@@ -107,9 +109,9 @@ class ConsoleOut(OpenRTM_aist.DataFlowComponentBase):
 
     if self._inport.isNew():
       data = self._inport.read()
-      print "Received: ", data
-      print "Received: ", data.data
-      print "TimeStamp: ", data.tm.sec, "[s] ", data.tm.nsec, "[ns]"
+      print("Received: ", data)
+      print("Received: ", data.data)
+      print("TimeStamp: ", data.tm.sec, "[s] ", data.tm.nsec, "[ns]")
 
     return RTC.RTC_OK
 

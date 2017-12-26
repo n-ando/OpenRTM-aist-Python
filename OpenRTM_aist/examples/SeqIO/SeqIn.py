@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 import time
 
@@ -100,23 +101,23 @@ class SeqIn(OpenRTM_aist.DataFlowComponentBase):
       octetDisp_ = chr(octet_.data)
     else:
       octetDisp_ = " "
-    print '%3.2s %10.8s %10.8s %10.8s %10.8s %10.8s' \
-        % (' ', 'octet', 'short', 'long', 'float', 'double')
-    print '%3.2s %7s[%s] %10.8s %10.8s %10.8s %10.8s' \
-        % (' ', octet_.data, octetDisp_, short_.data, long_.data, float_.data, double_.data)
-    print "-----------------------------------------------------------"
-    print "                 Sequence Data                     "
-    print "-----------------------------------------------------------"
+    print('%3.2s %10.8s %10.8s %10.8s %10.8s %10.8s' \
+        % (' ', 'octet', 'short', 'long', 'float', 'double'))
+    print('%3.2s %7s[%s] %10.8s %10.8s %10.8s %10.8s' \
+        % (' ', octet_.data, octetDisp_, short_.data, long_.data, float_.data, double_.data))
+    print("-----------------------------------------------------------")
+    print("                 Sequence Data                     ")
+    print("-----------------------------------------------------------")
     for i in range(maxsize):
       if 0x20 <= octetSeqDisp_[i] < 0x7e :
         octetDisp_ = chr(octetSeqDisp_[i])
       else:
         octetDisp_ = " "
-      print '%3.2s %7s[%s] %10.8s %10.8s %10.8s %10.8s' \
-          % (i, octetSeqDisp_[i], octetDisp_, shortSeq_.data[i], longSeq_.data[i], floatSeq_.data[i], doubleSeq_.data[i])
+      print('%3.2s %7s[%s] %10.8s %10.8s %10.8s %10.8s' \
+          % (i, octetSeqDisp_[i], octetDisp_, shortSeq_.data[i], longSeq_.data[i], floatSeq_.data[i], doubleSeq_.data[i]))
 
     # Moving cursor (^[[nA : n lines upward)
-    print "\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r"
+    print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r")
 
     time.sleep(0.5)
     return RTC.RTC_OK

@@ -14,6 +14,7 @@
 #          All rights reserved.
 #
 
+from __future__ import print_function
 import sys,os,platform
 import time
 import commands
@@ -47,7 +48,7 @@ def main():
       term += " -x"
 
     if status != 0:
-      print "No terminal program (kterm/xterm/gnome-terminal) exists."
+      print("No terminal program (kterm/xterm/gnome-terminal) exists.")
       sys.exit(0)
 
     path = None
@@ -56,7 +57,7 @@ def main():
         path = os.path.join(p,"OpenRTM_aist","utils","rtm-naming")
         break
     if path is None:
-      print "rtm-naming directory not exist."
+      print("rtm-naming directory not exist.")
       sys.exit(0)
 
     os.system('python %s/rtm-naming.py &'%path)

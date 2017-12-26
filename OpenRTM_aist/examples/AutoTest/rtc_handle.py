@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 from omniORB import CORBA, URI
 from omniORB import any
@@ -80,10 +81,10 @@ class NameSpace :
         return rslt
 
     def proc_bd(self, bd, name_context, parent) :
-#        print '-------------------------------------------------------------------'
-#        print 'bd= ', bd
-#        print 'name_context= ', name_context
-#        print 'parent= ', parent
+#        print('-------------------------------------------------------------------')
+#        print('bd= ', bd)
+#        print('name_context= ', name_context)
+#        print('parent= ', parent)
         rslt = []
         pre = ""
         if parent :
@@ -92,21 +93,21 @@ class NameSpace :
         if bd.binding_type == CosNaming.nobject :
             tmp = name_context.resolve(bd.binding_name)
             self.obj_list[nam]=tmp
-            print 'objcet '+nam+' was listed.'
+            print('objcet '+nam+' was listed.')
             try :
                 tmp = tmp._narrow(RTC.RTObject)
             except :
-                print nam+' is not RTC.'
+                print(nam+' is not RTC.')
                 tmp = None
             try :
                 if tmp :
                    rslt = [[nam, tmp]]
                    self.rtc_handles[nam]=RtcHandle(nam,self,tmp)
-                   print 'handle for '+nam+' was created.'
+                   print('handle for '+nam+' was created.')
                 else :
                    pass
             except :
-                print nam+' is not alive.'
+                print(nam+' is not alive.')
                 pass
         else :
             tmp = name_context.resolve(bd.binding_name)
@@ -284,7 +285,7 @@ class RtcOutport(Port) :
         if self.ref :
            return self.ref.get().value()
         else :
-           print "not supported"
+           print("not supported")
            return None
 #
 # RtcHandle

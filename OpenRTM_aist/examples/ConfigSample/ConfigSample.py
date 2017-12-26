@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 import time
 
@@ -42,7 +43,7 @@ class MyConfigurationParamListner(OpenRTM_aist.ConfigurationParamListener):
     pass
 
   def __call__(self, config_set_name, config_param_name):
-    print "Changed config_set_name: ", config_set_name, " config_param_name: ", config_param_name
+    print("Changed config_set_name: ", config_set_name, " config_param_name: ", config_param_name)
     return
     
 
@@ -50,7 +51,7 @@ class ConfigSample(OpenRTM_aist.DataFlowComponentBase):
   # class constructor
   def __init__(self, manager):
     OpenRTM_aist.DataFlowComponentBase.__init__(self, manager)
-    print "ConfigSample constructor."
+    print("ConfigSample constructor.")
     self._int_param0 = [0]
     self._int_param1 = [1]
     self._double_param0 = [0.11]
@@ -71,7 +72,7 @@ class ConfigSample(OpenRTM_aist.DataFlowComponentBase):
     self.addConfigurationParamListener(OpenRTM_aist.ConfigurationParamListenerType.ON_UPDATE_CONFIG_PARAM,
                                        MyConfigurationParamListner())
 
-    print "\n Please change configuration values from RtcLink"
+    print("\n Please change configuration values from RtcLink")
     
     return RTC.RTC_OK
 
@@ -81,21 +82,21 @@ class ConfigSample(OpenRTM_aist.DataFlowComponentBase):
     curlen = 0
     c = "                    "
 
-    print "---------------------------------------"
-    print " Active Configuration Set: ", self._configsets.getActiveId(),c
-    print "---------------------------------------"
+    print("---------------------------------------")
+    print(" Active Configuration Set: ", self._configsets.getActiveId(),c)
+    print("---------------------------------------")
     
-    print "int_param0:       ", self._int_param0, c
-    print "int_param1:       ", self._int_param1, c
-    print "double_param0:    ", self._double_param0, c
-    print "double_param1:    ", self._double_param1, c
-    print "str_param0:       ", self._str_param0, c
-    print "str_param1:       ", self._str_param1, c
+    print("int_param0:       ", self._int_param0, c)
+    print("int_param1:       ", self._int_param1, c)
+    print("double_param0:    ", self._double_param0, c)
+    print("double_param1:    ", self._double_param1, c)
+    print("str_param0:       ", self._str_param0, c)
+    print("str_param1:       ", self._str_param1, c)
 
     for idx in range(len(self._vector_param0[0])):
-      print "vector_param0[", idx, "]: ", self._vector_param0[0][idx], c
+      print("vector_param0[", idx, "]: ", self._vector_param0[0][idx], c)
 
-    print "---------------------------------------"
+    print("---------------------------------------")
 
     curlen = len(self._vector_param0[0])
 
@@ -105,14 +106,14 @@ class ConfigSample(OpenRTM_aist.DataFlowComponentBase):
       maxlen = curlen
         
     for idx in range(maxlen - curlen):
-      print c, c
+      print(c, c)
 
-    print "Updating.... ", ticktack(), c
+    print("Updating.... ", ticktack(), c)
 
     str_ = ""
     for idx in range(12 + maxlen):
       str_ += "[A\r"
-    print str_
+    print(str_)
 
 
     if self._int_param0 > 1000 and self._int_param0 < 1000000:

@@ -244,10 +244,7 @@ ext_match_regex_win32 = ".*\.(py|conf|bat|xml|idl)$"
 #
 # examples
 #
-if sys.version_info[0] == 2:
-  example_dir           = "OpenRTM_aist/examples"
-else:
-  example_dir           = "OpenRTM_aist/python3_examples"
+example_dir           = "OpenRTM_aist/examples"
 target_example_dir    = "share/openrtm-" + pkg_shortver + "/components/python"
 example_match_regex   = ".*\.(py|conf|sh|xml|idl)$"
 example_path          = os.path.normpath(current_dir + "/" + example_dir)
