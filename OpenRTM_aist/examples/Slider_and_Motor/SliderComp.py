@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 import time
 sys.path.append(".")
@@ -49,7 +50,7 @@ class SliderComp(OpenRTM_aist.DataFlowComponentBase):
     return RTC.RTC_OK
 
   def onActivated(self, ec_id):
-    print sl.get()
+    print(sl.get())
     time.sleep(1)
     return RTC.RTC_OK
 
@@ -79,7 +80,7 @@ def MyModuleInit(manager):
   # Create a component
   comp = manager.createComponent("SliderComp")
 
-  print "Componet created"
+  print("Componet created")
 
 
 def main():

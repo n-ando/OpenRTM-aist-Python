@@ -15,6 +15,7 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
+from __future__ import print_function
 import omniORB.CORBA as CORBA
 import CosNaming
 import string
@@ -90,11 +91,11 @@ class CorbaNaming:
         obj = orb.string_to_object(self._nameServer)
         self._rootContext = obj._narrow(CosNaming.NamingContext)
         if CORBA.is_nil(self._rootContext):
-          print "CorbaNaming: Failed to narrow the root naming context."
+          print("CorbaNaming: Failed to narrow the root naming context.")
 
       except CORBA.ORB.InvalidName:
         self.__print_exception()
-        print "Service required is invalid [does not exist]."
+        print("Service required is invalid [does not exist].")
 
     return
   
@@ -875,7 +876,7 @@ class CorbaNaming:
     name_list = [CosNaming.NameComponent("","") for i in range(nc_length)]
 
     for i in range(nc_length):
-      pos = string.rfind(name_comps[i][0:],".")
+      pos = str.rfind(name_comps[i][0:],".")
       if pos == -1:
         name_list[i].id   = name_comps[i]
         name_list[i].kind = ""
@@ -1207,7 +1208,7 @@ class CorbaNaming:
       pre_pos = delim_size
 
     while 1:
-      found_pos = string.find(input[begin_pos:],delimiter)
+      found_pos = str.find(input[begin_pos:],delimiter)
       if found_pos == -1:
         results.append(input[pre_pos:])
         break
@@ -1237,10 +1238,10 @@ class CorbaNaming:
   # @endif
   def __print_exception(self):
     if sys.version_info[0:3] >= (2, 4, 0):
-      print traceback.format_exc()
+      print(traceback.format_exc())
     else:
       _exc_list = traceback.format_exception(*sys.exc_info())
       _exc_str = "".join(_exc_list)
-      print _exc_str
+      print(_exc_str)
 
     return

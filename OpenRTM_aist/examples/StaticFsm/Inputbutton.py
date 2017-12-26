@@ -13,6 +13,7 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
+from __future__ import print_function
 import sys
 
 import RTC
@@ -77,21 +78,21 @@ class Inputbutton(OpenRTM_aist.DataFlowComponentBase):
     print("  stop         : Stop the microwave.")
     print("  tick         : Proceed time.")
     print("  -> others are interpreted as tick commnad.")
-    print ">> ",
+    print(">> ", end="")
     #print(">> ",end="")
     cmds = sys.stdin.readline()
     cmds = cmds.split(" ")
     OpenRTM_aist.StringUtil.eraseBlank(cmds)
     cmds[0] = cmds[0].replace("\n","")
     cmds[0] = cmds[0].replace("\r","")
-    print "[command]: ",cmds[0]
+    print("[command]: ",cmds[0])
     #print("  [args]: ",end="")
-    print "  [args]: ",
+    print("  [args]: ", end="")
     for n in range(len(cmds)):
       if n == 0:
         continue
       #print(cmds[n],end="")
-      print cmds[n],
+      print(cmds[n], end="")
     print("")
     if cmds[0] == "open":
       self._open.data = 0

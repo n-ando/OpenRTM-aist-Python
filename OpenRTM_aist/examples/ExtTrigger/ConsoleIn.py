@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 
 import RTC
@@ -33,9 +34,9 @@ class ConsoleIn(OpenRTM_aist.DataFlowComponentBase):
     return RTC.RTC_OK
 
   def onExecute(self, ec_id):
-    print "Please input number: ",
-    self._data.data = long(sys.stdin.readline())
-    print "Sending to subscriber: ", self._data.data
+    print("> ",end="")
+    self._data.data = int(input())
+    print("Sending to subscriber: ", self._data.data)
     self._outport.write()
     return RTC.RTC_OK
 

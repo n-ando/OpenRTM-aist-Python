@@ -13,6 +13,7 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
+from __future__ import print_function
 import sys
 
 
@@ -44,7 +45,7 @@ class TOP(StaticFSM.Link):
     def __init__(self):
       self.myCookingTime = 0
     def printTimer(self):
-      print " Timer set to ", self.myCookingTime, " minutes"
+      print(" Timer set to ", self.myCookingTime, " minutes")
     def incrementTimer(self):
       self.myCookingTime+=1
     def decrementTimer(self):

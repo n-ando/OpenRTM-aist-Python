@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 from Tkinter import *
 #import thread
 import dummy_threading
@@ -56,7 +57,7 @@ def test ():
 #	thread.start_new_thread(slider.mainloop, ())
 
 	while (1):
-		print slider.get()
+		print(slider.get())
 		time.sleep(0.5)
 #		slider.update()
 
