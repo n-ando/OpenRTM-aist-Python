@@ -4767,4 +4767,4 @@ for i in range(loop_count):
 
     time.sleep(sleep_for_time)
 
-print "Test Complete."
+print("Test Complete.")
