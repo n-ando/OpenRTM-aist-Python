@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 import time
 sys.path.append(".")
@@ -73,7 +74,7 @@ def MyModuleInit(manager):
   # Create a component
   comp = manager.createComponent("SliderComp")
 
-  print "Componet created"
+  print("Componet created")
 
 
 def main():

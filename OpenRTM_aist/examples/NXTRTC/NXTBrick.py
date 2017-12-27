@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import nxt.locator
 from nxt.sensor import *
 from nxt.motor import *
@@ -73,8 +74,8 @@ class NXTBrick:
 
       if stat == None:
         import sys
-        print "Unknown motor encoder error"
-        print sys.exc_info()[1]
+        print("Unknown motor encoder error")
+        print(sys.exc_info()[1])
       state.append(stat)
 
     return state
@@ -96,8 +97,8 @@ class NXTBrick:
           continue
       if stat == None:
         import sys
-        print "Unknown sensor error"
-        print sys.exc_info()[1]
+        print("Unknown sensor error")
+        print(sys.exc_info()[1])
       state.append(stat)
 
     return state
@@ -111,15 +112,15 @@ obtained and shown.  Sensor data are also obtained and shown.
 if __name__ == "__main__":
   import time
   nxt = NXTBrick()
-  print "connected"
+  print("connected")
     
   # Testing motors
   for i in range(0):
     nxt.setMotors([80,-80,80])
-    print "Motor: "
+    print("Motor: ")
     mstat = nxt.getMotors()
     for i, m in enumerate(mstat):
-      print "(" , i, "): ", m
+      print("(" , i, "): ", m)
     time.sleep(0.1)
   nxt.setMotors([0,0,0])
 
@@ -127,5 +128,5 @@ if __name__ == "__main__":
   for i in range(100):
     sensors = ["Touch", "Sound", "Light", "USonic"]
     sval = nxt.getSensors()
-    print sval
+    print(sval)
     time.sleep(0.1)

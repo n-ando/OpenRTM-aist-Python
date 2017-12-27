@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 
 import RTC
@@ -77,28 +78,28 @@ class SeqOut(OpenRTM_aist.DataFlowComponentBase):
 
     self._octet.data = int(random.uniform(0x41, 0x4a))
     self._short.data = int(random.uniform(0, 10))
-    self._long.data = long(random.uniform(0, 10))
+    self._long.data = int(random.uniform(0, 10))
     self._float.data = float(random.uniform(0.0, 10.0))
     self._double.data = float(random.uniform(0.0, 10.0))
 
-    print '%3.2s   %10.8s %10.8s %10.8s %10.8s %10.8s' \
-        % (' ', 'octet', 'short', 'long', 'float', 'double')
-    print '%3.2s   %7s[%s] %10.8s %10.8s %10.8s %10.8s' \
-        % (' ', self._octet.data, chr(self._octet.data), self._short.data, self._long.data, self._float.data, self._double.data)
-    print "-------------------------------------------------------------"
-    print "                 Sequence Data                     "
-    print "-------------------------------------------------------------"
+    print('%3.2s   %10.8s %10.8s %10.8s %10.8s %10.8s' \
+        % (' ', 'octet', 'short', 'long', 'float', 'double'))
+    print('%3.2s   %7s[%s] %10.8s %10.8s %10.8s %10.8s' \
+        % (' ', self._octet.data, chr(self._octet.data), self._short.data, self._long.data, self._float.data, self._double.data))
+    print("-------------------------------------------------------------")
+    print("                 Sequence Data                     ")
+    print("-------------------------------------------------------------")
     for i in range(10):
       octetSeq = octetSeq + chr(int(random.uniform(0x41, 0x4a)))
       shortSeq.append(int(random.uniform(0, 10)))
-      longSeq.append(long(random.uniform(0, 10)))
+      longSeq.append(int(random.uniform(0, 10)))
       floatSeq.append(float(random.uniform(0.0, 10.0)))
       doubleSeq.append(float(random.uniform(0.0, 10.0)))
-      print '%3.2s : %7s[%s] %10.8s %10.8s %10.8s %10.8s' \
-          % (str(i), ord(octetSeq[i]), octetSeq[i], shortSeq[i], longSeq[i], floatSeq[i], doubleSeq[i])
+      print('%3.2s : %7s[%s] %10.8s %10.8s %10.8s %10.8s' \
+          % (str(i), ord(octetSeq[i]), octetSeq[i], shortSeq[i], longSeq[i], floatSeq[i], doubleSeq[i]))
 
     # Moving cursor (^[[nA : n lines upward)
-    print "[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r"
+    print("[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r")
         
     self._octetSeq.data = octetSeq
     self._shortSeq.data = shortSeq
@@ -136,7 +137,7 @@ def MyModuleInit(manager):
   # Create a component
   comp = manager.createComponent("SeqOut")
 
-  print "Component created"
+  print("Component created")
 
 
 def main():

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 import string
 import time
@@ -30,7 +31,7 @@ class seq_print:
     return
 
   def __call__(self, val):
-    print self._cnt, ": ", val
+    print(self._cnt, ": ", val)
     self._cnt += 1
     return
 
@@ -48,32 +49,32 @@ class MyServiceSVC_impl(SimpleService__POA.MyService):
 
   def echo(self, msg):
     OpenRTM_aist.CORBA_SeqUtil.push_back(self._echoList, msg)
-    print "MyService::echo() was called."
+    print("MyService::echo() was called.")
     for i in range(10):
-      print "Message: ", msg
+      print("Message: ", msg)
       time.sleep(1)
-    print "MyService::echo() was finished."
+    print("MyService::echo() was finished.")
     return msg
 
   def get_echo_history(self):
-    print "MyService::get_echo_history() was called."
+    print("MyService::get_echo_history() was called.")
     OpenRTM_aist.CORBA_SeqUtil.for_each(self._echoList, seq_print())
     return self._echoList
 
   def set_value(self, value):
     OpenRTM_aist.CORBA_SeqUtil.push_back(self._valueList, value)
     self._value = value
-    print "MyService::set_value() was called."
-    print "Current value: ", self._value
+    print("MyService::set_value() was called.")
+    print("Current value: ", self._value)
     return
 
   def get_value(self):
-    print "MyService::get_value() was called."
-    print "Current value: ", self._value
+    print("MyService::get_value() was called.")
+    print("Current value: ", self._value)
     return float(self._value)
 
   def get_value_history(self):
-    print "MyService::get_value_history() was called."
+    print("MyService::get_value_history() was called.")
     OpenRTM_aist.CORBA_SeqUtil.for_each(self._valueList, seq_print())
 
     return self._valueList

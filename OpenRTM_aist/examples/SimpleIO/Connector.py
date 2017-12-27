@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 
 from omniORB import CORBA
@@ -11,21 +12,21 @@ import RTC
 import OpenRTM_aist
 
 def usage():
-  print "usage: ConnectorComp [options]"
-  print "  --flush         "
-  print ": Set subscription type Flush"
-  print "  --new           "
-  print ": Set subscription type New"
-  print "  --periodic [Hz] "
-  print ": Set subscription type Periodic \n"
-  print "exsample:"
-  print "  ConnectorComp --flush"
-  print "  ConnectorComp --new"
-  print "  ConnectorComp --new --policy ALL"
-  print "  ConnectorComp --new --policy SKIP --skip 100"
-  print "  ConnectorComp --periodic 10"
-  print "  ConnectorComp --periodic 10 --policy FIFO"
-  print "  ConnectorComp --periodic 10 --policy NEW \n"
+  print("usage: ConnectorComp [options]")
+  print("  --flush         ")
+  print(": Set subscription type Flush")
+  print("  --new           ")
+  print(": Set subscription type New")
+  print("  --periodic [Hz] ")
+  print(": Set subscription type Periodic \n")
+  print("exsample:")
+  print("  ConnectorComp --flush")
+  print("  ConnectorComp --new")
+  print("  ConnectorComp --new --policy ALL")
+  print("  ConnectorComp --new --policy SKIP --skip 100")
+  print("  ConnectorComp --periodic 10")
+  print("  ConnectorComp --periodic 10 --policy FIFO")
+  print("  ConnectorComp --periodic 10 --policy NEW \n")
 
 def main():
 
@@ -91,10 +92,10 @@ def main():
     else:
       usage()
             
-  print "Subscription Type: ", subs_type
-  print "Period: ", period, " [Hz]"
-  print "push policy: ", push_policy
-  print "skip count: ", skip_count
+  print("Subscription Type: ", subs_type)
+  print("Period: ", period, " [Hz]")
+  print("push policy: ", push_policy)
+  print("skip count: ", skip_count)
 
   # connect ports
   conprof = RTC.ConnectorProfile("connector0", "", [pin[0],pout[0]], [])

@@ -21,6 +21,7 @@
 # $Log$
 #
 
+from __future__ import print_function
 from Tkinter import *
 import time
 import math
@@ -535,7 +536,7 @@ def test ():
 
     while 1:
         m.update()
-        print m.get_pos()
+        print(m.get_pos())
 
 
 if  __name__ == '__main__': test()
