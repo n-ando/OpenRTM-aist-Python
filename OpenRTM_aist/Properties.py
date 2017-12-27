@@ -240,7 +240,6 @@ class Properties:
     keys = prop.propertyNames()
 
     for key in keys:
-      node = None
       node = prop.getNode(key)
       if node:
         self.setDefault(key, node.default_value)
@@ -391,7 +390,6 @@ class Properties:
       #keys = str.split(key, ".")
       self.split(key, ".", keys)
 
-      node = None
       node = self._getNode(keys, 0, self)
       if node:
         if node.value:
@@ -427,7 +425,7 @@ class Properties:
     keys = []
     #keys = str.split(key, ".")
     self.split(key, ".", keys)
-    node = None
+
     node = self._getNode(keys, 0, self)
     if node:
       return node.default_value
