@@ -970,7 +970,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
       if not provider:
         return RTC.BAD_PARAMETER
         
-      # create InPortPushConnector
+      # create OutPortPullConnector
       connector = self.createConnector(cprof, prop, provider_ = provider)
       if not connector:
         return RTC.RTC_ERROR

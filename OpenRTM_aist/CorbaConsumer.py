@@ -60,7 +60,7 @@ class CorbaConsumerBase:
     if consumer:
       self._objref = consumer._objref
     else:
-      self._objref = None
+      self._objref = CORBA.Object._nil
 
 
   ##

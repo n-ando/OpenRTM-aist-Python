@@ -171,7 +171,7 @@ def for_each(_str, instance):
 # 
 # @endif
 def escape(_str):
-  return for_each(_str, escape_functor())._str
+  return for_each(_str[0], escape_functor())._str
 
 
 ##
@@ -199,7 +199,7 @@ def escape(_str):
 # "\"" -> "  <br>
 # @endif
 def unescape(_str):
-  return for_each(_str, unescape_functor())._str
+  return for_each(_str[0], unescape_functor())._str
 
 
 ##

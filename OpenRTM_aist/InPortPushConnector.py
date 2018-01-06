@@ -130,7 +130,7 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
       self._deleteBuffer = False
 
     
-    if self._buffer == 0:
+    if self._buffer is None:
       self._buffer = self.createBuffer(info)
 
     
@@ -263,14 +263,14 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
       
       self._provider.exit()
       
-    self._provider = 0
+    self._provider = None
 
     # delete buffer
     if self._buffer and self._deleteBuffer == True:
       bfactory = OpenRTM_aist.CdrBufferFactory.instance()
       bfactory.deleteObject(self._buffer)
     
-    self._buffer = 0
+    self._buffer = None
     
     return self.PORT_OK
 

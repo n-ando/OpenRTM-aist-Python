@@ -2729,7 +2729,7 @@ class Manager:
           if n == '{' or n == '(':
             n = it.next()
             env = ""
-            for i in range(len_):
+            while True:
               if n == '}' or n == ')':
                 break
               env += n
@@ -2783,7 +2783,7 @@ class Manager:
       return OpenRTM_aist.LogStream().getLogger(name)
 
     if self._rtcout is None:
-        self._rtcout = OpenRTM_aist.LogStream(name)
+        self._rtcout = OpenRTM_aist.LogStream()
         self._rtcout.setLogLevel(self._config.getProperty("logger.log_level"))
         return self._rtcout.getLogger(name)
     else:
@@ -3334,8 +3334,8 @@ class Manager:
       elif name:
         self._name = name
 
-    def __call__(self, factory):
-      return self._name == factory.getInstanceName()
+    def __call__(self, comp):
+      return self._name == comp.getInstanceName()
 
 
 
