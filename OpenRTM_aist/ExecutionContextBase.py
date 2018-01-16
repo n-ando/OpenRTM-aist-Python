@@ -793,7 +793,7 @@ class ExecutionContextBase:
     self._rtcout.RTC_TRACE("deactivateComponent()")
     ret_ = self.onDeactivating(comp) # Template
     if ret_ != RTC.RTC_OK:
-      self._rtcout.RTC_ERROR("onDeactivatingComponent() failed.")
+      self._rtcout.RTC_ERROR("onDeactivating() failed.")
       return ret_
 
     # Deactivate all the RTCs

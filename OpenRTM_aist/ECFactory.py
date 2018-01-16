@@ -110,7 +110,7 @@ class ECFactoryBase :
   # @else
   #
   # @endif
-  def destroy(self, comp):
+  def destroy(self, ec):
     pass
 
 

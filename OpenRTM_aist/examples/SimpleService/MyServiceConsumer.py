@@ -73,7 +73,7 @@ class MyServiceConsumer(OpenRTM_aist.DataFlowComponentBase):
     print(" get_echo_history : get input messsage history.")
     print(" get_value_history: get input value history.")
     print("> ",end="")
-    args = str(input())
+    args = str(sys.stdin.readline())
 
     
 

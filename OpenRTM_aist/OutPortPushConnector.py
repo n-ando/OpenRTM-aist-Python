@@ -125,7 +125,7 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
   #                      InPortConsumer* consumer,
   #                      ConnectorListeners& listeners,
   #                      CdrBufferBase* buffer = 0);
-  def __init__(self, info, consumer, listeners, buffer = 0):
+  def __init__(self, info, consumer, listeners, buffer = None):
     OpenRTM_aist.OutPortConnector.__init__(self, info)
 
     self._buffer = buffer
@@ -292,7 +292,7 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
       pfactory = OpenRTM_aist.PublisherFactory.instance()
       pfactory.deleteObject(self._publisher)
 
-    self._publisher = 0
+    self._publisher = None
     
     # delete consumer
     if self._consumer:
@@ -300,7 +300,7 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
       cfactory = OpenRTM_aist.InPortConsumerFactory.instance()
       cfactory.deleteObject(self._consumer)
 
-    self._consumer = 0
+    self._consumer = None
 
     # delete buffer
     if self._buffer:
@@ -308,7 +308,7 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
       bfactory = OpenRTM_aist.CdrBufferFactory.instance()
       bfactory.deleteObject(self._buffer)
 
-    self._buffer = 0
+    self._buffer = None
     self._rtcout.RTC_TRACE("disconnect() done")
 
     return self.PORT_OK

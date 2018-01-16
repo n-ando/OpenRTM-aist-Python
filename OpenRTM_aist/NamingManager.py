@@ -101,7 +101,7 @@ class NamingBase:
   #
   # virtual bool isAlive() = 0;
   def isAlive(self):
-    pass
+    return True
 
   ##
   # @if jp

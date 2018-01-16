@@ -864,7 +864,7 @@ class CorbaNaming:
     string_name = sname
     name_comps = []
 
-    nc_length = 0
+    
     nc_length = self.split(string_name, "/", name_comps)
 
     #if not (nc_length > 0):

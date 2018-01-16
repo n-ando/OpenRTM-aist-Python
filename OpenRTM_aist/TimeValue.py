@@ -133,7 +133,7 @@ class TimeValue:
         res.tv_sec  = -(tm.tv_sec - self.tv_sec - 1)
         res.tv_usec = -(tm.tv_usec + TIMEVALUE_ONE_SECOND_IN_USECS) + self.tv_usec
 
-    self.normalize()
+    res.normalize()
     return res
 
 
@@ -161,7 +161,7 @@ class TimeValue:
       res.tv_sec += 1
       res.tv_usec -= TIMEVALUE_ONE_SECOND_IN_USECS
 
-    self.normalize()
+    res.normalize()
     return res
 
 

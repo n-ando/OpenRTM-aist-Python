@@ -168,6 +168,7 @@ class PortBase(RTC__POA.PortService):
     self._onConnectionLost = None
     self._connectionLimit   = -1
     self._portconnListeners = None
+    self._properties = OpenRTM_aist.Properties()
     return
 
   
@@ -835,7 +836,7 @@ class PortBase(RTC__POA.PortService):
     if index < 0:
       self._rtcout.RTC_ERROR("Invalid connector id: %s", connector_id)
       return RTC.BAD_PARAMETER
-
+    prof = None
     guard = OpenRTM_aist.ScopedLock(self._profile_mutex)
     if index < len(self._profile.connector_profiles):
       prof = self._profile.connector_profiles[index]
