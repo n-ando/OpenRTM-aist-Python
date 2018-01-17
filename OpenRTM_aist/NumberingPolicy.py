@@ -95,7 +95,7 @@ class NumberingPolicy(OpenRTM_aist.NumberingPolicyBase):
 ##
 # @if jp
 #
-# @class DefaultNumberingPolicy
+# @class ProcessUniquePolicy
 # @brief オブジェクト生成時ネーミング・ポリシー(命名規則)管理用クラス
 #
 # オブジェクトを生成する際のネーミング・ポリシー(命名規則)を管理するための
@@ -106,7 +106,7 @@ class NumberingPolicy(OpenRTM_aist.NumberingPolicyBase):
 # @else
 #
 # @endif
-class DefaultNumberingPolicy(NumberingPolicy):
+class ProcessUniquePolicy(NumberingPolicy):
   """
   """
 
@@ -209,8 +209,11 @@ class DefaultNumberingPolicy(NumberingPolicy):
     raise NumberingPolicy.ObjectNotFound()
 
 
-def DefaultNumberingPolicyInit():
+def ProcessUniquePolicyInit():
+  OpenRTM_aist.NumberingPolicyFactory.instance().addFactory("default",
+                                                      OpenRTM_aist.ProcessUniquePolicy,
+                                                      OpenRTM_aist.Delete)
   OpenRTM_aist.NumberingPolicyFactory.instance().addFactory("process_unique",
-                                                      OpenRTM_aist.DefaultNumberingPolicy,
+                                                      OpenRTM_aist.ProcessUniquePolicy,
                                                       OpenRTM_aist.Delete)
 

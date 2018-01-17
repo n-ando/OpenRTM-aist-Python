@@ -450,10 +450,8 @@ class Manager:
     for i in range(len(mods)):
       if mods[i] is None or mods[i] == "":
         continue
-      tmp = [mods[i]]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      mods[i] = tmp[0]
+      mods[i] = mods[i].strip()
+      
 
       basename = os.path.basename(mods[i]).split(".")[0]
       basename += "Init"
@@ -1452,10 +1450,6 @@ class Manager:
 
     lmpm_ = [s.strip() for s in self._config.getProperty("manager.preload.modules").split(",")]
     for mpm_ in lmpm_:
-      tmp = [mpm_]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      mpm_ = tmp[0]
       if len(mpm_) == 0:
         continue
       basename_ = mpm_.split(".")[0]+"Init"
@@ -1730,7 +1724,15 @@ class Manager:
   def initORB(self):
     self._rtcout.RTC_TRACE("Manager.initORB()")
     try:
-      args = OpenRTM_aist.split(self.createORBOptions(), " ")
+      tmp_args = self.createORBOptions().split("\"")
+      args = []
+      for i in range(len(tmp_args)):
+        if i%2 == 0:
+          args.extend(tmp_args[i].split(" "))
+        else:
+          args.append(tmp_args[i])
+        
+      
       args.insert(0,"manager")
       argv = OpenRTM_aist.toArgv(args)
       
@@ -2317,7 +2319,7 @@ class Manager:
           tm.set_time(duration)
         if self._timer:
           self._timer.registerListenerObj(self._mgrservant,
-                                        OpenRTM_aist.ManagerServant.update_master_manager,
+                                        OpenRTM_aist.ManagerServant.updateMasterManager,
                                         tm)
 
     otherref = None
@@ -3083,14 +3085,13 @@ class Manager:
     connectors = str(self._config.getProperty("manager.components.preconnect")).split(",")
     
     for c in connectors:
-      tmp = [c]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      c = tmp[0]
+      c = c.strip()
       if len(c) == 0:
         continue
       conn_prop = c.split("(")
-      if len(conn_prop) < 2:
+      if len(conn_prop) == 1:
+        conn_prop.append("dataflow_type=push&interface_type=corba_cdr")
+      elif len(conn_prop) < 2:
         self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
         continue
       conn_prop[1] = conn_prop[1].replace(")","")
@@ -3159,14 +3160,8 @@ class Manager:
       for o in opt_props:
         temp = o.split("=")
         if len(temp) == 2:
-          s = [temp[0]]
-          OpenRTM_aist.eraseHeadBlank(s)
-          OpenRTM_aist.eraseTailBlank(s)
-          temp[0] = s[0]
-          s = [temp[1]]
-          OpenRTM_aist.eraseHeadBlank(s)
-          OpenRTM_aist.eraseTailBlank(s)
-          temp[1] = s[0]
+          temp[0] = temp[0].strip()
+          temp[1] = temp[1].strip()
           prop.setProperty("dataport."+temp[0],temp[1])
       
       if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(c, prop, port0_var, port1_var):
@@ -3192,11 +3187,9 @@ class Manager:
     self._rtcout.RTC_TRACE("Components pre-activation: %s" % str(self._config.getProperty("manager.components.preactivation")))
     comps = str(self._config.getProperty("manager.components.preactivation")).split(",")
     for c in comps:
-      tmp = [c]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      c = tmp[0]
+      c = c.strip()
       if c:
+        comp_ref = None
         if c.find("://") == -1:
           comp = self.getComponent(c)
           if comp is None:
@@ -3233,10 +3226,7 @@ class Manager:
     for i in range(len(comps)):
       if comps[i] is None or comps[i] == "":
         continue
-      tmp = [comps[i]]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      comps[i] = tmp[0]
+      comps[i] = comps[i].strip()
 
       self.createComponent(comps[i])
     

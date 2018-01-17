@@ -239,7 +239,7 @@ class FactoryPython(FactoryBase):
     FactoryBase.__init__(self, profile)
     
     if policy is None:
-      self._policy = OpenRTM_aist.DefaultNumberingPolicy()
+      self._policy = OpenRTM_aist.ProcessUniquePolicy()
     else:
       self._policy = policy
 

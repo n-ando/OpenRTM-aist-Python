@@ -42,7 +42,7 @@ def FactoryInit():
     OpenRTM_aist.InPortSHMConsumerInit()
     OpenRTM_aist.OutPortSHMProviderInit()
     OpenRTM_aist.OutPortSHMConsumerInit()
-    OpenRTM_aist.DefaultNumberingPolicyInit()
+    OpenRTM_aist.ProcessUniquePolicyInit()
     OpenRTM_aist.NodeNumberingPolicyInit()
     OpenRTM_aist.NamingServiceNumberingPolicyInit()
     OpenRTM_aist.LogstreamFileInit()
