@@ -242,7 +242,7 @@ def deactivate(rtc, ec_id=0):
 # @param rtc 対象のRTコンポーネント
 # @param ec_id 実行コンテキストのID
 # @return RTC、ECのオブジェクトリファレンスがnilの場合はBAD_PARAMETERを返す
-# nilではない場合はdeactivate_component関数の戻り値を返す。RTC_OKの場合はリセットが成功
+# nilではない場合はreset_component関数の戻り値を返す。RTC_OKの場合はリセットが成功
 #
 # @else
 #
@@ -267,29 +267,28 @@ def reset(rtc, ec_id=0):
 # @brief 対象のRTコンポーネントの指定した実行コンテキストでの状態を取得
 #
 #
-# @param state RTCの状態
 # @param rtc 対象のRTコンポーネント
 # @param ec_id 実行コンテキストのID
-# @return rtc、ecがnilの場合はFalseを返す。
-# nilではない場合はstate[0]に状態を代入してTrueを返す。
+# @return 1番目の戻り値としてrtc、ecがnilの場合はFalseを返し、それ以外の場合はTrueを返す。
+# 2番目の戻り値として状態を返す。
+# 
 #
 # @else
 #
 # @brief
-# @param state 
 # @param rtc
 # @param ec_id
 # @return 
 #
 # @endif
-def get_state(state, rtc, ec_id=0):
+def get_state(rtc, ec_id=0):
   if CORBA.is_nil(rtc):
     return False
   ec = get_actual_ec(rtc, ec_id)
   if CORBA.is_nil(ec):
-    return False
-  state[0] = ec.get_component_state(rtc)
-  return True
+    return False, RTC.CREATED_STATE
+  state = ec.get_component_state(rtc)
+  return True, state
 
 ##
 # @if jp
@@ -311,9 +310,9 @@ def get_state(state, rtc, ec_id=0):
 #
 # @endif
 def is_in_inactive(rtc, ec_id=0):
-  state = [None]
-  if get_state(state, rtc, ec_id):
-    if state[0] == RTC.INACTIVE_STATE:
+  ret, state = get_state(rtc, ec_id)
+  if ret:
+    if state == RTC.INACTIVE_STATE:
       return True
   return False
 
@@ -337,8 +336,8 @@ def is_in_inactive(rtc, ec_id=0):
 #
 # @endif
 def is_in_active(rtc, ec_id=0):
-  state = [None]
-  if get_state(state, rtc, ec_id):
+  ret, state = get_state(rtc, ec_id)
+  if ret:
     if state[0] == RTC.ACTIVE_STATE:
       return True
   return False
@@ -363,8 +362,8 @@ def is_in_active(rtc, ec_id=0):
 #
 # @endif
 def is_in_error(rtc, ec_id=0):
-  state = [None]
-  if get_state(state,rtc, ec_id):
+  ret, state = get_state(rtc, ec_id)
+  if ret:
     if state[0] == RTC.ERROR_STATE:
       return True
   return False
@@ -439,11 +438,12 @@ def get_current_rate(rtc, ec_id):
 ##
 # @if jp
 #
-# @brief RTCの指定IDの実行コンテキストの周期を取得
+# @brief RTCの指定IDの実行コンテキストの周期を設定
 #
 # 
 # @param rtc 対象のRTコンポーネント
 # @param ec_id 指定の実行コンテキストのID
+# @param rate 実行周期
 # @return set_rate関数の戻り値を返す。
 # RTC_OKで設定が成功
 #
@@ -493,7 +493,7 @@ def add_rtc_to_default_ec(localcomp, othercomp):
 # @param localcomp 対象のRTコンポーネント
 # @param othercomp 実行コンテキストとの関連付けを解除するRTコンポーネント
 # @return ecの取得に失敗した場合はBAD_PARAMETERを返す
-# そうでない場合はremoveComponent関数の戻り値を返す。RTC_OKで接続成功。
+# そうでない場合はremoveComponent関数の戻り値を返す。RTC_OKで解除成功。
 #
 # @else
 #
@@ -895,7 +895,7 @@ def already_connected(localport, otherport):
 # @param prop 設定
 # @param port0 対象のポート1
 # @param port1 対象のポート2
-# @return RTC、ECのオブジェクトリファレンスがnilの場合はBAD_PARAMETERを返す
+# @return ポートのオブジェクトリファレンスがnilの場合はBAD_PARAMETERを返す
 # nilではない場合はport0.connect関数の戻り値を返す。RTC_OKの場合は接続が成功
 #
 # @else
@@ -929,8 +929,8 @@ def connect(name, prop, port0, port1):
 # 
 # @param name コネクタ名
 # @param prop 設定
-# @param port0 対象のポート
-# @param port1 対象のポートのリスト
+# @param port 対象のポート
+# @param target_ports 対象のポートのリスト
 # @return 全ての接続が成功した場合はRTC_OKを返す。
 # connect関数がRTC_OK以外を返した場合はBAD_PARAMETERを返す。
 #
@@ -970,7 +970,7 @@ def connect_multi(name, prop, port, target_ports):
 #
 # @else
 # @class find_port
-# @brief ポートを名前から検索
+# @brief 
 #
 # @endif
 #
@@ -1135,7 +1135,7 @@ def disconnect_by_portref_connector_name(port_ref, conn_name):
 # @endif
 def disconnect_by_portname_connector_name(port_name, conn_name):
   port_ref = get_port_by_url(port_name)
-  if port_ref == RTC.PortService._nil:
+  if CORBA.is_nil(port_ref):
     return RTC.BAD_PARAMETER
   
   conprof = port_ref.get_connector_profiles()
@@ -1177,7 +1177,7 @@ def disconnect_by_portref_connector_id(port_ref, conn_id):
 # 
 # @param port_name 対象のポート名
 # @param name コネクタID
-# @return portがnilの場合はBAD_PARAMETERを返す
+# @return portが存在しない場合はBAD_PARAMETERを返す
 # nilではない場合はdisconnect関数の戻り値を返す。RTC_OKの場合は切断が成功
 #
 # @else
@@ -1343,7 +1343,7 @@ def get_configuration(rtc, conf_name):
 # @brief 指定したコンフィギュレーションセット名、パラメータ名のコンフィギュレーションパラメータを取得
 #
 # 
-# @param conf コンフィギュレーション
+# @param rtc RTコンポーネント
 # @param confset_name コンフィギュレーションセット名
 # @param value_name パラメータ名
 # @return パラメータ
@@ -1351,7 +1351,7 @@ def get_configuration(rtc, conf_name):
 # @else
 #
 # @brief 
-# @param conf
+# @param rtc
 # @param confset_name
 # @param value_name
 # @param ret
