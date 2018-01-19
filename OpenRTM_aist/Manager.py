@@ -465,9 +465,9 @@ class Manager:
     sdofactory_ = OpenRTM_aist.SdoServiceConsumerFactory.instance()
     self._config.setProperty("sdo.service.consumer.available_services",
                              OpenRTM_aist.flatten(sdofactory_.getIdentifiers()))
-    if self._initProc:
-      self._initProc(self)
 
+
+    self.invokeInitProc()
     self.initPreCreation()
     
     self.initPreConnection()
@@ -3235,6 +3235,20 @@ class Manager:
       comps[i] = comps[i].strip()
 
       self.createComponent(comps[i])
+
+
+  ##
+  # @if jp
+  # @brief 
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @endif
+  # void initPreCreation()
+  def invokeInitProc(self):
+    if self._initProc:
+      self._initProc(self)
     
   ##
   # @if jp
