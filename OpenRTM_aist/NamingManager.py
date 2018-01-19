@@ -347,6 +347,8 @@ class NamingOnCorba(NamingBase):
               obj = cns.resolveStr(rtc_name)
               if CORBA.is_nil(obj):
                 return []
+              if obj._non_existent():
+                return []
               rtc_list.append(obj)
               return rtc_list
           except:

@@ -3072,7 +3072,7 @@ class Manager:
   # @if jp
   # @brief 起動時にrtc.confで指定したポートを接続する
   # 例:
-  # manager.components.preconnect: RTC0.port0:RTC0.port1(interface_type=corba_cdr&dataflow_type=pull&~),~
+  # manager.components.preconnect: RTC0.port0^RTC0.port1(interface_type=corba_cdr&dataflow_type=pull&~),~
   # @param self
   # @else
   #
@@ -3098,15 +3098,12 @@ class Manager:
       comp_ports = conn_prop[0].split("^")
       if len(comp_ports) != 2:
         self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
-        self._rtcout.RTC_ERROR("Format must be Comp0.port0:Comp1.port1()")
+        self._rtcout.RTC_ERROR("Format must be Comp0.port0^Comp1.port1()")
         continue
       
       tmp = comp_ports[0].split(".")
-      comp0_name = ""
-      for i in range(0,len(tmp)-1):
-        comp0_name = comp0_name + tmp[i]
-        if i != len(tmp)-2:
-          comp0_name = comp0_name + "."
+      tmp.pop()
+      comp0_name = OpenRTM_aist.flatten(tmp,".")
       
       
       port0_name = comp_ports[0]
@@ -3135,11 +3132,8 @@ class Manager:
         continue
       
       tmp = comp_ports[1].split(".")
-      comp1_name = ""
-      for i in range(0,len(tmp)-1):
-        comp1_name = comp1_name + tmp[i]
-        if i != len(tmp)-2:
-          comp1_name = comp1_name + "."
+      tmp.pop()
+      comp1_name = OpenRTM_aist.flatten(tmp,".")
       port1_name = comp_ports[1]
       
       
