@@ -2324,19 +2324,7 @@ class Manager:
 
     otherref = None
 
-    try:
-      otherref = open(self._config.getProperty("manager.refstring_path"),'r')
-      #refstring = otherref.readline()
-      otherref.close()
-    except:
-      try:
-        reffile = open(self._config.getProperty("manager.refstring_path"),'w')
-      except:
-        self._rtcout.RTC_WARN(OpenRTM_aist.Logger.print_exception())
-        return False
-      else:
-        reffile.write(self._orb.object_to_string(self._mgrservant.getObjRef()))
-        reffile.close()
+
 
 
     return True
