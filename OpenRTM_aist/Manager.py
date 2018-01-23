@@ -985,9 +985,9 @@ class Manager:
     prop_ = prop.getNode("port")
     prop_.mergeProperties(self._config.getNode("port"))
 
+
     comp = factory.create(self)
-    if self._config.getProperty("corba.endpoints_ipv4") == "":
-      self.setEndpointProperty(comp.getObjRef())
+    
 
     for i in range(len(inherit_prop)):
       if self._config.findNode(inherit_prop[i]):
@@ -997,6 +997,10 @@ class Manager:
       self._rtcout.RTC_ERROR("createComponent: RTC creation failed: %s",
                              comp_id.getProperty("implementation_id"))
       return None
+
+    if self._config.getProperty("corba.endpoints_ipv4") == "":
+      self.setEndpointProperty(comp.getObjRef())
+      
     self._rtcout.RTC_TRACE("RTC Created: %s", comp_id.getProperty("implementation_id"))
     self._listeners.rtclifecycle_.postCreate(comp)
 
@@ -1030,6 +1034,7 @@ class Manager:
       if comp.exit() != RTC.RTC_OK:
         self._rtcout.RTC_DEBUG("%s finalization was failed.",
                                comp_id.getProperty("implementation_id"))
+      comp.exit()
       return None
       
     self._rtcout.RTC_TRACE("RTC initialization succeeded: %s",
