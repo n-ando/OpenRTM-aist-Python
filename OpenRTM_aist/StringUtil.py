@@ -702,7 +702,25 @@ def urlparam2map(_str):
             retmap[v] = ""
     return retmap
 
-
+##
+# @if jp
+# @brief 文字列中の環境変数を置き換える
+#
+# 文字列中に%で囲まれた文字列がある場合に、環境変数と置き換える
+# 例：%RTM_ROOT%\bin -> C:\Program Files (x86)\OpenRTM-aist\1.1.2\
+#
+# @param _str 置き換え前の文字列
+# @return 置き換え後の文字列
+#
+#
+# @else
+# @brief 
+#
+# @param _str
+#
+# @return 
+#
+# @endif
 def replaceEnv(_str):
     tmp = _str.split("\%")
     if len(tmp) < 3:
