@@ -105,6 +105,7 @@ class OutPort(OpenRTM_aist.OutPortBase):
     self._directNewData = False
     self._valueMutex = threading.RLock()
     
+    
 
   def __del__(self, OutPortBase=OpenRTM_aist.OutPortBase):
     OutPortBase.__del__(self)
@@ -182,11 +183,14 @@ class OutPort(OpenRTM_aist.OutPortBase):
 
     guard = OpenRTM_aist.ScopedLock(self._connector_mutex)
     for con in self._connectors:
-      ret = con.write(value)
-      if ret != self.PORT_OK:
-        result = False
-        if ret == self.CONNECTION_LOST:
-          self.disconnect(con.id())
+      if not con.directMode():
+        ret = con.write(value)
+        if ret != self.PORT_OK:
+          result = False
+          if ret == self.CONNECTION_LOST:
+            self.disconnect(con.id())
+      else:
+        self._directNewData = True
     del guard
 
     return result
@@ -316,7 +320,7 @@ class OutPort(OpenRTM_aist.OutPortBase):
       data[0] = self._OnWriteConvert(data[0])
     del guard
   def isEmpty(self):
-    return False
+    return (not self._directNewData)
     
 
 
