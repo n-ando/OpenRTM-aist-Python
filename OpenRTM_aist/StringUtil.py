@@ -722,7 +722,7 @@ def urlparam2map(_str):
 #
 # @endif
 def replaceEnv(_str):
-    tmp = _str.split("\%")
+    tmp = _str.split("%")
     if len(tmp) < 3:
         return _str
     ret = []

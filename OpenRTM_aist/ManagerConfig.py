@@ -90,7 +90,7 @@ class ManagerConfig :
   if sys.platform == 'win32':
 
     config_file_path = ["./rtc.conf",
-                        "\%RTM_ROOT\%/bin/\%RTM_VC_VERSION\%/rtc.conf",
+                        "%RTM_ROOT%/bin/%RTM_VC_VERSION%/rtc.conf",
                         "C:/Python"+str(sys.version_info[0])+str(sys.version_info[1])+"/rtc.conf",
                         None]
   else:
