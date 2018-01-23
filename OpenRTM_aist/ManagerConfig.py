@@ -81,19 +81,25 @@ import OpenRTM_aist
 class ManagerConfig :
   """
   """
-
   ##
   # @if jp
   # @brief Manager コンフィギュレーションのデフォルト・ファイル・パス
   # @else
   # @brief The default configuration file path for manager
   # @endif
-  config_file_path = ["./rtc.conf",
-                      "/etc/rtc.conf",
-                      "/etc/rtc/rtc.conf",
-                      "/usr/local/etc/rtc.conf",
-                      "/usr/local/etc/rtc/rtc.conf",
-                      None]
+  if sys.platform == 'win32':
+
+    config_file_path = ["./rtc.conf",
+                        "\%RTM_ROOT\%/bin/\%RTM_VC_VERSION\%/rtc.conf",
+                        "C:/Python"+str(sys.version_info[0])+str(sys.version_info[1])+"/rtc.conf",
+                        None]
+  else:
+    config_file_path = ["./rtc.conf",
+                        "/etc/rtc.conf",
+                        "/etc/rtc/rtc.conf",
+                        "/usr/local/etc/rtc.conf",
+                        "/usr/local/etc/rtc/rtc.conf",
+                        None]
 
 
   ##
@@ -339,6 +345,7 @@ class ManagerConfig :
 
     i = 0
     while (self.config_file_path[i]):
+      self.config_file_path[i] = OpenRTM_aist.replaceEnv(self.config_file_path[i])
       if self.fileExist(self.config_file_path[i]):
         self._configFile = self.config_file_path[i]
         return True

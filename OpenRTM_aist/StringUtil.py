@@ -14,6 +14,7 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
+import os
 import sys
 if sys.version_info[0] == 3:
     long = int
@@ -651,3 +652,71 @@ def flatten(sv, delimiter=", "):
 # @endif
 def toArgv(args):
   return args
+
+
+
+
+##
+# @if jp
+# @brief URLパラメータをmapstringに分解して返す
+#
+# URLパラメータ表現 something?key0=value0&key1=value1.... のうち
+# '?' 以降の部分を分解して、std::map<std::string, std::string> 形式
+# に変換する。与えられた文字列を左からサーチし、'?' より右側の部分に
+# ついて解析を行う。'&'で分割し、左から '=' を検索し、最初の '=' の
+# 右辺と左辺をそれぞれ、key と value として map に格納する。
+#
+# @param str 分解対象文字列
+# @return mapstring 型の key/valueデータ
+#
+#
+# @else
+# @brief Investigate whether the given string is URL or not
+#
+# URL parameter description such as
+# something?key0=value0&key1=value1.... is analyzed. Right hand
+# side string of '?' character is decomposed and it is converted
+# into std::map<std::string, std::string> type.The following string
+# are devided by '&' and then '=' character is
+# searched. Right-hand-side value and left-hand-side value of '='
+# are stored as key and value in the map.
+#
+# @param str The target string for decomposed
+#
+# @return decomposed key-values in map
+#
+# @endif
+def urlparam2map(_str):
+    qpos = _str.find("?")
+    if qpos == -1:
+        qpos = 0
+    else:
+        qpos+=1
+    tmp = _str[qpos:].split("&")
+    retmap = {}
+    for v in tmp:
+        pos = v.find("=")
+        if pos != -1:
+            retmap[v[0:pos]] = v[pos+1:]
+        else:
+            retmap[v] = ""
+    return retmap
+
+
+def replaceEnv(_str):
+    tmp = _str.split("\%")
+    if len(tmp) < 3:
+        return _str
+    ret = []
+    for i in range(len(tmp)):
+        if i%2 == 1:
+            if tmp[i] in os.environ:
+                ret.append(os.environ[tmp[i]])
+        else:
+            ret.append(tmp[i])
+    ret_str = ""
+    for s in ret:
+        ret_str = ret_str + s
+    return ret_str
+    
+        
