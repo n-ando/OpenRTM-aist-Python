@@ -706,8 +706,8 @@ def urlparam2map(_str):
 # @if jp
 # @brief 文字列中の環境変数を置き換える
 #
-# 文字列中に%で囲まれた文字列がある場合に、環境変数と置き換える
-# 例：%RTM_ROOT%\bin -> C:\Program Files (x86)\OpenRTM-aist\1.1.2\
+# 文字列中に${}で囲まれた文字列がある場合に、環境変数と置き換える
+# 例：${RTM_ROOT}\bin -> C:\Program Files (x86)\OpenRTM-aist\1.1.2\
 #
 # @param _str 置き換え前の文字列
 # @return 置き換え後の文字列
@@ -722,16 +722,19 @@ def urlparam2map(_str):
 #
 # @endif
 def replaceEnv(_str):
-    tmp = _str.split("%")
-    if len(tmp) < 3:
+    tmp = _str.split("${")
+    if len(tmp) < 2:
         return _str
     ret = []
-    for i in range(len(tmp)):
-        if i%2 == 1:
-            if tmp[i] in os.environ:
-                ret.append(os.environ[tmp[i]])
+    for v in tmp:
+        tmp2 = v.split("}")
+        if len(tmp2) == 2:
+            if tmp2[0] in os.environ:
+                ret.append(os.environ[tmp2[0]])
+            ret.append(tmp2[1])
+            
         else:
-            ret.append(tmp[i])
+            ret.append(v)
     ret_str = ""
     for s in ret:
         ret_str = ret_str + s
