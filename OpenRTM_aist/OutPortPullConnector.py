@@ -128,13 +128,9 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
     self._provider = provider
     self._listeners = listeners
     self._buffer = buffer
+    self._directMode = False
 
-    self._directInPort = None
-    self._inPortListeners = None
     
-    self._directNewData = False
-    self._valueMutex = threading.RLock()
-    self._value = None
 
     if not self._buffer:
       self._buffer = self.createBuffer(info)
@@ -189,14 +185,7 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
   #
   # virtual ReturnCode write(const cdrMemoryStream& data);
   def write(self, data):
-    if self._directInPort is not None:
-      
-      guard = OpenRTM_aist.ScopedLock(self._valueMutex)
-      self._value = data
-      self._directNewData = True
-      
-      del guard
-      
+    if self._directMode:
       return self.PORT_OK
     # data -> (conversion) -> CDR stream
     cdr_data = None
@@ -242,9 +231,7 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
       OpenRTM_aist.CdrBufferFactory.instance().deleteObject(self._buffer)
     self._buffer = 0
 
-    if self._directInPort:
-      self._directInPort.removeOutPortConnector(self)
-      self._directInPort = None
+
 
     return self.PORT_OK
 
@@ -343,77 +330,15 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
       self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_DISCONNECT].notify(self._profile)
     return
 
-
   ##
   # @if jp
-  # @brief データをダイレクトに書き込むためのInPortのサーバントを設定する
-  #
-  # @param self
-  # @param directInPort InPortのサーバント
-  # @return True: 設定に成功 False: 既に設定済みのため失敗
+  # @brief ダイレクト接続モードに設定
   # @else
   # @brief 
-  #
-  # @param self
-  # @param directInPort 
-  # @return 
   # @endif
-  #
-  # bool setPorts(InPortBase* directInPort, OutPortBase* outPort);
-  def setInPort(self, directInPort):
-    if self._directInPort is not None:
-      return False
-    self._directInPort = directInPort
-    self._inPortListeners = self._directInPort._listeners
-    
-    self._directInPort.addOutPortConnector(self)
-    return True
+  # void onDisconnect()
+  def setDirectMode(self):
+    self._directMode = True
+  
 
-  ##
-  # @if jp
-  #
-  # @brief データをダイレクトに読み込む
-  #
-  # @param self
-  # @return 判定(データが書き込まれていなければTrue)、読み込むデータ
-  #
-  # @else
-  # @brief 
-  #
-  # @param self
-  # @param data 
-  # @endif
-  # DataType* read()
-  def read(self):
-    guard = OpenRTM_aist.ScopedLock(self._valueMutex)
-    if not self.isNew():
-        self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_EMPTY].notify(self._profile)
-        self._inPortListeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_SENDER_EMPTY].notify(self._profile)
-        self._rtcout.RTC_TRACE("ON_BUFFER_EMPTY(OutPort), ")
-        self._rtcout.RTC_TRACE("ON_SENDER_EMPTY(InPort) ")
-        self._rtcout.RTC_TRACE("callback called in direct mode.")
-        return False, ""
-    
-    data = self._value
-    ret = self._directNewData
-    self._directNewData = False
-    del guard
-    
-    
-    self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
-    self._rtcout.RTC_TRACE("ON_BUFFER_READ(OutPort), ")
-    self._rtcout.RTC_TRACE("callback called in direct mode.")
-    self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_SEND].notify(self._profile, data)
-    self._rtcout.RTC_TRACE("ON_SEND(OutPort), ")
-    self._rtcout.RTC_TRACE("callback called in direct mode.")
-    self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
-    self._rtcout.RTC_TRACE("ON_RECEIVED(InPort), ")
-    self._rtcout.RTC_TRACE("callback called in direct mode.")
-    self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE].notify(self._profile, data)
-    self._rtcout.RTC_TRACE("ON_BUFFER_WRITE(InPort), ")
-    self._rtcout.RTC_TRACE("callback called in direct mode.")
-    
-    return ret, data
 
-  def isNew(self):
-    return self._directNewData

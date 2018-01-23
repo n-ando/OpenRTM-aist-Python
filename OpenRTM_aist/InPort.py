@@ -109,7 +109,6 @@ class InPort(OpenRTM_aist.InPortBase):
 
     self._directNewData = False
     self._valueMutex = threading.RLock()
-    self._outPortConnectorList = []
 
 
   def __del__(self, InPortBase=OpenRTM_aist.InPortBase):
@@ -307,15 +306,7 @@ class InPort(OpenRTM_aist.InPortBase):
     del guard
 
 
-    if len(self._outPortConnectorList) > 0:
-      ret, data = self._outPortConnectorList[0].read()
-      
-      if ret:
-        self._value = data
-        if self._OnReadConvert is not None:
-          self._value = self._OnReadConvert(self._value)
-          self._rtcout.RTC_TRACE("OnReadConvert for direct data called")
-        return self._value
+
 
     if len(self._connectors) == 0:
       self._rtcout.RTC_DEBUG("no connectors")
@@ -426,40 +417,5 @@ class InPort(OpenRTM_aist.InPortBase):
     self._directNewData = True
     del guard
 
-  ##
-  # @if jp
-  # @brief ダイレクト通信用のOutPortPullConnectorを追加
-  # @param self
-  # @param outPortConnector outPortPullConnector
-  # @return OutPortのサーバント(取得に失敗した場合はNone)
-  # @else
-  # @brief Getting local peer InPort if available
-  # @param self
-  # @param profile 
-  # @return 
-  # @endif
-  #
-  # OutPortBase*
-  # setOutPortConnector(const OutPortPullConnector_impl outPortConnector)
-  def addOutPortConnector(self, outPortConnector):
-    self._outPortConnectorList.append(outPortConnector)
-    
 
-
-  ##
-  # @if jp
-  # @brief ダイレクト通信用のOutPortPullConnectorを削除
-  # @param self
-  # @param outPortConnector outPortPullConnector
-  # @else
-  # @brief Getting local peer InPort if available
-  # @param self
-  # @param profile 
-  # @return 
-  # @endif
-  #
-  # OutPortBase*
-  # setOutPortConnector(const OutPortPullConnector_impl outPortConnector)
-  def removeOutPortConnector(self, outPortConnector):
-    self._outPortConnectorList.remove(outPortConnector)
     

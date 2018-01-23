@@ -21,6 +21,7 @@
 from omniORB import any
 
 import OpenRTM_aist
+import threading
 
 
 ##
@@ -101,6 +102,8 @@ class OutPort(OpenRTM_aist.OutPortBase):
     #self._OnUnderflow    = None
     #self._OnConnect      = None
     #self._OnDisconnect   = None
+    self._directNewData = False
+    self._valueMutex = threading.RLock()
     
 
   def __del__(self, OutPortBase=OpenRTM_aist.OutPortBase):
@@ -152,6 +155,7 @@ class OutPort(OpenRTM_aist.OutPortBase):
   # @endif
   # bool operator<<(DataType& value)
   def write(self, value=None):
+    guard = OpenRTM_aist.ScopedLock(self._valueMutex)
     if not value:
       value=self._value
 
@@ -183,6 +187,7 @@ class OutPort(OpenRTM_aist.OutPortBase):
         result = False
         if ret == self.CONNECTION_LOST:
           self.disconnect(con.id())
+    del guard
 
     return result
 
@@ -287,6 +292,32 @@ class OutPort(OpenRTM_aist.OutPortBase):
     val = any.to_any(self._value)
     return str(val.typecode().name())
 
+
+  ##
+  # @if jp
+  #
+  # @brief データをダイレクトに読み込む
+  #
+  # @param self
+  # @param data 読み込むデータ
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @param data 
+  # @endif
+  # void read(const DataType& data)
+  def read(self, data):
+    guard = OpenRTM_aist.ScopedLock(self._valueMutex)
+    self._directNewData = False
+    data[0] = self._value
+    if self._OnWriteConvert:
+      data[0] = self._OnWriteConvert(data[0])
+    del guard
+  def isEmpty(self):
+    return False
+    
 
 
   class subscribe:

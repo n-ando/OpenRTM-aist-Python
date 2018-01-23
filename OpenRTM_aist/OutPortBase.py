@@ -1290,20 +1290,23 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
 
         
       if OpenRTM_aist.StringUtil.normalize([prop.getProperty("interface_type")]) == "direct":
+        if consumer_ is not None:
+          inport = self.getLocalInPort(profile)
         
-        inport = self.getLocalInPort(profile)
-        
-        if inport is None:
-          self._rtcout.RTC_TRACE("interface_type is direct, ")
-          self._rtcout.RTC_TRACE("but a peer InPort servant could not be obtained.")
-          del connector
-          return 0
+          if inport is None:
+            self._rtcout.RTC_TRACE("interface_type is direct, ")
+            self._rtcout.RTC_TRACE("but a peer InPort servant could not be obtained.")
+            del connector
+            return None
 
-        connector.setInPort(inport)
+          connector.setInPort(inport)
         #if consumer_ is not None:
         #  connector.setInPort(inport)
         #elif provider_ is not None:
         #  connector.setInPort(inport)
+        else:
+          connector.setDirectMode()
+          
 
 
       self._connectors.append(connector)
@@ -1313,7 +1316,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
     except:
       self._rtcout.RTC_ERROR("Exeption: OutPortPushConnector creation failed")
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-      return 0
+      return None
 
 
 
