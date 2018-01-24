@@ -338,7 +338,7 @@ def is_in_inactive(rtc, ec_id=0):
 def is_in_active(rtc, ec_id=0):
   ret, state = get_state(rtc, ec_id)
   if ret:
-    if state[0] == RTC.ACTIVE_STATE:
+    if state == RTC.ACTIVE_STATE:
       return True
   return False
 
@@ -364,7 +364,7 @@ def is_in_active(rtc, ec_id=0):
 def is_in_error(rtc, ec_id=0):
   ret, state = get_state(rtc, ec_id)
   if ret:
-    if state[0] == RTC.ERROR_STATE:
+    if state == RTC.ERROR_STATE:
       return True
   return False
 
