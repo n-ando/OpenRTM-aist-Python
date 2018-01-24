@@ -283,7 +283,7 @@ def reset(rtc, ec_id=0):
 # @endif
 def get_state(rtc, ec_id=0):
   if CORBA.is_nil(rtc):
-    return False
+    return False, RTC.CREATED_STATE
   ec = get_actual_ec(rtc, ec_id)
   if CORBA.is_nil(ec):
     return False, RTC.CREATED_STATE
