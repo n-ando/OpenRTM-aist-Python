@@ -1142,7 +1142,7 @@ class ConfigAdmin:
   # @endif
   # bool activateConfigurationSet(const char* config_id);
   def activateConfigurationSet(self, config_id):
-    if config_id == "":
+    if config_id == "" or config_id is None:
       return False
 
     # '_<conf_name>' is special configuration set name
