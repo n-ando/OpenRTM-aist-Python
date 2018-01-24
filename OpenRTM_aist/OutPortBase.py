@@ -579,7 +579,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
         return self._connectors[i]
 
     self._rtcout.RTC_WARN("ConnectorProfile with the id(%s) not found.", id)
-    return 0
+    return None
 
   ##
   # @if jp
@@ -610,7 +610,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
         return self._connectors[i]
 
     self._rtcout.RTC_WARN("ConnectorProfile with the name(%s) not found.", name)
-    return 0
+    return None
 
 
   ##
@@ -1193,7 +1193,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
       self._rtcout.RTC_DEBUG("interface_type:  %s", prop.getProperty("interface_type"))
       self._rtcout.RTC_DEBUG("interface_types: %s",
                              OpenRTM_aist.flatten(self._providerTypes))
-      return 0
+      return None
 
     self._rtcout.RTC_DEBUG("interface_type: %s", prop.getProperty("interface_type"))
     provider = OpenRTM_aist.OutPortProviderFactory.instance().createObject(prop.getProperty("interface_type"))
@@ -1205,12 +1205,12 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
       if not provider.publishInterface(cprof.properties):
         self._rtcout.RTC_ERROR("publishing interface information error")
         OpenRTM_aist.OutPortProviderFactory.instance().deleteObject(provider)
-        return 0
+        return None
 
       return provider
 
     self._rtcout.RTC_ERROR("provider creation failed")
-    return 0
+    return None
 
 
   ##
@@ -1229,7 +1229,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
       self._rtcout.RTC_DEBUG("interface_type:  %s", prop.getProperty("interface_type"))
       self._rtcout.RTC_DEBUG("interface_types: %s",
                              OpenRTM_aist.flatten(self._consumerTypes))
-      return 0
+      return None
     
     self._rtcout.RTC_DEBUG("interface_type: %s", prop.getProperty("interface_type"))
     consumer = OpenRTM_aist.InPortConsumerFactory.instance().createObject(prop.getProperty("interface_type"))
@@ -1247,7 +1247,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
       return consumer
 
     self._rtcout.RTC_ERROR("consumer creation failed")
-    return 0
+    return None
 
 
   ##
@@ -1277,7 +1277,7 @@ class OutPortBase(OpenRTM_aist.PortBase,OpenRTM_aist.DataPortStatus):
 
       else:
         self._rtcout.RTC_ERROR("provider or consumer is not passed. returned 0;")
-        return 0
+        return None
 
       #if connector is None:
       #  self._rtcout.RTC_ERROR("OutPortConnector creation failed")
