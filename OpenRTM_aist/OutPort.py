@@ -104,6 +104,7 @@ class OutPort(OpenRTM_aist.OutPortBase):
     #self._OnDisconnect   = None
     self._directNewData = False
     self._valueMutex = threading.RLock()
+    self._directValue = value
     
     
 
@@ -156,7 +157,6 @@ class OutPort(OpenRTM_aist.OutPortBase):
   # @endif
   # bool operator<<(DataType& value)
   def write(self, value=None):
-    guard = OpenRTM_aist.ScopedLock(self._valueMutex)
     if not value:
       value=self._value
 
@@ -190,6 +190,8 @@ class OutPort(OpenRTM_aist.OutPortBase):
           if ret == self.CONNECTION_LOST:
             self.disconnect(con.id())
       else:
+        guard = OpenRTM_aist.ScopedLock(self._valueMutex)
+        self._directValue = value
         self._directNewData = True
     del guard
 
@@ -315,7 +317,7 @@ class OutPort(OpenRTM_aist.OutPortBase):
   def read(self, data):
     guard = OpenRTM_aist.ScopedLock(self._valueMutex)
     self._directNewData = False
-    data[0] = self._value
+    data[0] = self._directValue
     if self._OnWriteConvert:
       data[0] = self._OnWriteConvert(data[0])
     del guard
