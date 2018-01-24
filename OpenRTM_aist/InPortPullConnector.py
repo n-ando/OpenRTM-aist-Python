@@ -124,7 +124,7 @@ class InPortPullConnector(OpenRTM_aist.InPortConnector):
   #                     OutPortConsumer* consumer,
   #                     ConnectorListeners& listeners,
   #                     CdrBufferBase* buffer = 0);
-  def __init__(self, info, consumer, listeners, buffer = 0):
+  def __init__(self, info, consumer, listeners, buffer = None):
     OpenRTM_aist.InPortConnector.__init__(self, info, buffer)
     self._consumer = consumer
     self._listeners = listeners
@@ -132,10 +132,10 @@ class InPortPullConnector(OpenRTM_aist.InPortConnector):
     self._outPortListeners = None
 
 
-    if buffer == 0:
+    if buffer is None:
       self._buffer = self.createBuffer(self._profile)
 
-    if self._buffer == 0 or not self._consumer:
+    if not self._buffer or not self._consumer:
       raise
         
     self._buffer.init(info.properties.getNode("buffer"))

@@ -123,7 +123,7 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
   #                      OutPortProvider* provider,
   #                      ConnectorListeners& listeners,
   #                      CdrBufferBase* buffer = 0);
-  def __init__(self, info, provider, listeners, buffer = 0):
+  def __init__(self, info, provider, listeners, buffer = None):
     OpenRTM_aist.OutPortConnector.__init__(self, info)
     self._provider = provider
     self._listeners = listeners
