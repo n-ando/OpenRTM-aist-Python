@@ -482,11 +482,12 @@ class ModuleManager:
     comp_spec_name = classname+"_spec"
 
 
-    with open(str(fullname)) as f:
-      if f.read().find(comp_spec_name) == -1:
-        return None
+    
         
     try:
+      with open(str(fullname)) as f:
+        if f.read().find(comp_spec_name) == -1:
+          return None
       imp_file = __import__(basename.split(".")[0])
     except:
       return None
