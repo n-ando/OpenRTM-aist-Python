@@ -16,6 +16,7 @@
 #
 
 import OpenRTM_aist
+from OpenRTM_aist.ext.sdo.observer import ComponentObserverConsumer
 
 def FactoryInit():
     # Buffers
@@ -46,3 +47,4 @@ def FactoryInit():
     OpenRTM_aist.NodeNumberingPolicyInit()
     OpenRTM_aist.NamingServiceNumberingPolicyInit()
     OpenRTM_aist.LogstreamFileInit()
+    ComponentObserverConsumer.ComponentObserverConsumerInit()
