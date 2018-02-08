@@ -282,6 +282,13 @@ class ModuleManager:
     if not self.fileExist(file_path):
       raise ModuleManager.FileNotFound(file_name)
 
+    
+    with open(str(file_path)) as f:
+      if init_func is not None:
+        if f.read().find(init_func) == -1:
+          raise ModuleManager.FileNotFound(file_name)
+          
+
     if not pathChanged:
       splitted_name = os.path.split(file_path)
       sys.path.append(splitted_name[0])
@@ -474,7 +481,13 @@ class ModuleManager:
     # for new
     comp_spec_name = classname+"_spec"
 
+
+    
+        
     try:
+      with open(str(fullname)) as f:
+        if f.read().find(comp_spec_name) == -1:
+          return None
       imp_file = __import__(basename.split(".")[0])
     except:
       return None

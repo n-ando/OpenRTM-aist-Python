@@ -57,6 +57,7 @@ class OutPortConnector(OpenRTM_aist.ConnectorBase):
     self._rtcout = OpenRTM_aist.Manager.instance().getLogbuf("OutPortConnector")
     self._profile = info
     self._endian = True
+    self._directMode = False
     return
 
   ##
@@ -150,3 +151,36 @@ class OutPortConnector(OpenRTM_aist.ConnectorBase):
       self._endian = True # little endian
 
     return RTC.RTC_OK
+
+  ##
+  # @if jp
+  # @brief ダイレクト接続モードに設定
+  #
+  #
+  # @else
+  # @brief 
+  #
+  # This 
+  #
+  # @endif
+  #
+  # const char* name();
+  def setDirectMode(self):
+    self._directMode = True
+
+  ##
+  # @if jp
+  # @brief ダイレクト接続モードかの判定
+  #
+  # @return True：ダイレクト接続モード,false：それ以外
+  #
+  # @else
+  # @brief 
+  #
+  # @return
+  #
+  # @endif
+  #
+  # const char* name();
+  def directMode(self):
+    return self._directMode

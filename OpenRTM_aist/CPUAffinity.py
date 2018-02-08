@@ -130,7 +130,7 @@ def setThreadAffinity(cpu_num_list):
     h = ctypes.windll.kernel32.GetCurrentThread()
     
     result = ctypes.windll.kernel32.SetThreadAffinityMask(h, cpu_num)
-    result = ctypes.windll.kernel32.SetThreadAffinityMask(h, cpu_num)
+    
     
     if result != cpu_num:
       return False

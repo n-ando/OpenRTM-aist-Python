@@ -633,7 +633,7 @@ class ConfigAdmin:
     # update(const char* config_set)
     
     if config_set and config_param is None:
-      if self._configsets.hasKey(config_set) == False:
+      if self._configsets.hasKey(config_set) is None:
         return
       self._changedParam = []
       prop = self._configsets.getNode(config_set)
@@ -803,7 +803,7 @@ class ConfigAdmin:
   # @endif
   # bool haveConfig(const char* config_id);
   def haveConfig(self, config_id):
-    if self._configsets.hasKey(config_id) == False:
+    if self._configsets.hasKey(config_id) is None:
       return False
     else:
       return True
@@ -1142,7 +1142,7 @@ class ConfigAdmin:
   # @endif
   # bool activateConfigurationSet(const char* config_id);
   def activateConfigurationSet(self, config_id):
-    if config_id == "":
+    if config_id == "" or config_id is None:
       return False
 
     # '_<conf_name>' is special configuration set name

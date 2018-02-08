@@ -77,6 +77,7 @@ class NamingServiceNumberingPolicy(OpenRTM_aist.NumberingPolicy):
         return num_str
       else:
         num += 1
+    return OpenRTM_aist.otos(num)
 
   ##
   # @if jp

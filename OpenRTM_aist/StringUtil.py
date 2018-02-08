@@ -14,6 +14,7 @@
 #         Advanced Industrial Science and Technology (AIST), Japan
 #     All rights reserved.
 
+import os
 import sys
 if sys.version_info[0] == 3:
     long = int
@@ -171,7 +172,7 @@ def for_each(_str, instance):
 # 
 # @endif
 def escape(_str):
-  return for_each(_str[0], escape_functor())._str
+  return for_each(_str, escape_functor())._str
 
 
 ##
@@ -199,7 +200,7 @@ def escape(_str):
 # "\"" -> "  <br>
 # @endif
 def unescape(_str):
-  return for_each(_str[0], unescape_functor())._str
+  return for_each(_str, unescape_functor())._str
 
 
 ##
@@ -651,3 +652,92 @@ def flatten(sv, delimiter=", "):
 # @endif
 def toArgv(args):
   return args
+
+
+
+
+##
+# @if jp
+# @brief URLパラメータをmapstringに分解して返す
+#
+# URLパラメータ表現 something?key0=value0&key1=value1.... のうち
+# '?' 以降の部分を分解して、std::map<std::string, std::string> 形式
+# に変換する。与えられた文字列を左からサーチし、'?' より右側の部分に
+# ついて解析を行う。'&'で分割し、左から '=' を検索し、最初の '=' の
+# 右辺と左辺をそれぞれ、key と value として map に格納する。
+#
+# @param str 分解対象文字列
+# @return mapstring 型の key/valueデータ
+#
+#
+# @else
+# @brief Investigate whether the given string is URL or not
+#
+# URL parameter description such as
+# something?key0=value0&key1=value1.... is analyzed. Right hand
+# side string of '?' character is decomposed and it is converted
+# into std::map<std::string, std::string> type.The following string
+# are devided by '&' and then '=' character is
+# searched. Right-hand-side value and left-hand-side value of '='
+# are stored as key and value in the map.
+#
+# @param str The target string for decomposed
+#
+# @return decomposed key-values in map
+#
+# @endif
+def urlparam2map(_str):
+    qpos = _str.find("?")
+    if qpos == -1:
+        qpos = 0
+    else:
+        qpos+=1
+    tmp = _str[qpos:].split("&")
+    retmap = {}
+    for v in tmp:
+        pos = v.find("=")
+        if pos != -1:
+            retmap[v[0:pos]] = v[pos+1:]
+        else:
+            retmap[v] = ""
+    return retmap
+
+##
+# @if jp
+# @brief 文字列中の環境変数を置き換える
+#
+# 文字列中に${}で囲まれた文字列がある場合に、環境変数と置き換える
+# 例：${RTM_ROOT}\bin -> C:\Program Files (x86)\OpenRTM-aist\1.1.2\
+#
+# @param _str 置き換え前の文字列
+# @return 置き換え後の文字列
+#
+#
+# @else
+# @brief 
+#
+# @param _str
+#
+# @return 
+#
+# @endif
+def replaceEnv(_str):
+    tmp = _str.split("${")
+    if len(tmp) < 2:
+        return _str
+    ret = []
+    for v in tmp:
+        tmp2 = v.split("}")
+        if len(tmp2) == 2:
+            if tmp2[0] in os.environ:
+                ret.append(os.environ[tmp2[0]])
+            ret.append(tmp2[1])
+            
+        else:
+            ret.append(v)
+    ret_str = ""
+    for s in ret:
+        ret_str = ret_str + s
+    return ret_str
+    
+        

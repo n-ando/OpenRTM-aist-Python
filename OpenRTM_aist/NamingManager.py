@@ -256,6 +256,10 @@ class NamingOnCorba(NamingBase):
     self._rtcout.RTC_TRACE("isAlive()")
     return self._cosnaming.isAlive()
 
+  def getCorbaNaming(self):
+    self._rtcout.RTC_TRACE("getCorbaNaming()")
+    return self._cosnaming
+
 
   ##
   # @if jp
@@ -275,13 +279,13 @@ class NamingOnCorba(NamingBase):
   # @else
   #
   # @endif
-  def get_RTC_by_Name(self, context, name, rtcs):
+  def getComponentByName(self, context, name, rtcs):
     length = 500
     bl,bi = context.list(length)
     for i in bl:
       if i.binding_type == CosNaming.ncontext:
         next_context = context.resolve(i.binding_name)
-        self.get_RTC_by_Name(next_context, name, rtcs)
+        self.getComponentByName(next_context, name, rtcs)
       elif i.binding_type == CosNaming.nobject:
         
         if i.binding_name[0].id == name and i.binding_name[0].kind == "rtc":
@@ -289,7 +293,8 @@ class NamingOnCorba(NamingBase):
             cc = OpenRTM_aist.CorbaConsumer()
             cc.setObject(context.resolve(i.binding_name))
             obj = cc.getObject()._narrow(RTC.RTObject)
-            rtcs.append(obj)
+            if not obj._non_existent():
+              rtcs.append(obj)
           except:
             self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
     
@@ -325,6 +330,7 @@ class NamingOnCorba(NamingBase):
           rtc_name = url[len(host)+1:]
           
           try:
+            cns = None
             if host == "*":
               cns = self._cosnaming
             else:
@@ -334,12 +340,14 @@ class NamingOnCorba(NamingBase):
             
             if len(names) == 2 and names[0] == "*":
               root_cxt = cns.getRootContext()
-              self.get_RTC_by_Name(root_cxt, names[1], rtc_list)
+              self.getComponentByName(root_cxt, names[1], rtc_list)
               return rtc_list
             else:
               rtc_name += ".rtc"
               obj = cns.resolveStr(rtc_name)
               if CORBA.is_nil(obj):
+                return []
+              if obj._non_existent():
                 return []
               rtc_list.append(obj)
               return rtc_list
@@ -379,9 +387,13 @@ class NamingOnManager(NamingBase):
   #
   # @param self
   # @param orb ORB
-  # @param names NamingServer 名称
+  # @param mgr マネージャ
   #
   # @else
+  #
+  # @param self
+  # @param orb ORB
+  # @param mgr 
   #
   # @endif
   def __init__(self, orb, mgr):
@@ -478,7 +490,7 @@ class NamingOnManager(NamingBase):
   #
   # @param name rtcloc形式でのRTC名
   # rtcloc://localhost:2809/example/ConsoleIn
-  # @return RTCのオブジェクトリファレンス
+  # @return RTCのオブジェクトリファレンスのリスト
   #
   # @else
   #
@@ -503,7 +515,7 @@ class NamingOnManager(NamingBase):
           rtc_name = url[len(host)+1:]
           
           mgr = self.getManager(host)
-          if mgr:
+          if not CORBA.is_nil(mgr):
             rtc_list = mgr.get_components_by_name(rtc_name)
 
             slaves = mgr.get_slave_managers()
@@ -521,6 +533,8 @@ class NamingOnManager(NamingBase):
   # @if jp
   #
   # @brief 指定ホスト名、ポート名でManagerのオブジェクトリファレンスを取得
+  #
+  # @param name ホスト名、ポート名
   # 
   # @return Managerのオブジェクトリファレンス
   #
@@ -536,6 +550,7 @@ class NamingOnManager(NamingBase):
   def getManager(self, name):
     if name == "*":
       mgr_sev = self._mgr.getManagerServant()
+      mgr = None
       if mgr_sev.is_master():
         mgr = mgr_sev.getObjRef()
       else:

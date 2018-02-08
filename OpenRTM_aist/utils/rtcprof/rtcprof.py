@@ -61,6 +61,9 @@ def main():
   # for new
   comp_spec_name = classname+"_spec"
 
+  with open(str(fullname)) as f:
+    if f.read().find(comp_spec_name) == -1:
+      return
   try:
     imp_file = __import__(basename.split(".")[0])
   except:

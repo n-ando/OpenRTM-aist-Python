@@ -481,11 +481,11 @@ class ManagerServant(RTM__POA.Manager):
     self._rtcout.RTC_TRACE("create_component(%s)", module_name)
 
     
-    rtc = self.create_component_by_address(module_name)
+    rtc = self.createComponentByAddress(module_name)
     if not CORBA.is_nil(rtc):
       return rtc
     
-    rtc = self.create_component_by_mgrname(module_name)
+    rtc = self.createComponentByManagerName(module_name)
     
     if not CORBA.is_nil(rtc):
       return rtc
@@ -494,8 +494,8 @@ class ManagerServant(RTM__POA.Manager):
 
     #module_name = module_name.split("&")[0]
     module_name = [module_name]
-    self.get_parameter_by_modulename("manager_address",module_name)
-    manager_name = self.get_parameter_by_modulename("manager_name",module_name)
+    self.getParameterByModulename("manager_address",module_name)
+    manager_name = self.getParameterByModulename("manager_name",module_name)
     module_name = module_name[0]
 
     comp_param = CompParam(module_name)
@@ -522,7 +522,7 @@ class ManagerServant(RTM__POA.Manager):
       if not manager_name:
         module_name = module_name + "&manager_name=manager_%p"
         
-        rtc = self.create_component_by_mgrname(module_name)
+        rtc = self.createComponentByManagerName(module_name)
         return rtc
 
     else:
@@ -1178,9 +1178,9 @@ class ManagerServant(RTM__POA.Manager):
   # @param manager_name
   # @return 
   # @endif
-  # RTC::Manager_ptr findManager_by_name(string manager_name)
-  def findManager_by_name(self, manager_name):
-    self._rtcout.RTC_TRACE("findManager_by_name(manager_name = %s)", manager_name)
+  # RTC::Manager_ptr findManagerByName(string manager_name)
+  def findManagerByName(self, manager_name):
+    self._rtcout.RTC_TRACE("findManagerByName(manager_name = %s)", manager_name)
     prop = self._mgr.getConfig()
     name = prop.getProperty("manager.instance_name")
     if name == manager_name:
@@ -1252,8 +1252,8 @@ class ManagerServant(RTM__POA.Manager):
   # @param module_name
   # @return 
   # @endif
-  # std::string get_parameter_by_modulename(string param_name, string &module_name)
-  def get_parameter_by_modulename(self, param_name, module_name):
+  # std::string getParameterByModulename(string param_name, string &module_name)
+  def getParameterByModulename(self, param_name, module_name):
     arg = module_name[0]
     pos0 = arg.find("&"+param_name+"=")
     pos1 = arg.find("?"+param_name+"=")
@@ -1263,11 +1263,13 @@ class ManagerServant(RTM__POA.Manager):
     if pos0 == -1 and pos1 == -1:
       return ""
 
+    pos = 0
     if pos0 == -1:
       pos = pos1
     else:
       pos = pos0
 
+    paramstr = ""
     endpos = arg.find('&', pos + 1)
     if endpos == -1:
       endpos = arg.find('?', pos + 1)
@@ -1316,14 +1318,14 @@ class ManagerServant(RTM__POA.Manager):
   # @param module_name
   # @return 
   # @endif
-  # RTC::RTObject_ptr create_component_by_mgrname(string module_name)
-  def create_component_by_mgrname(self, module_name):
+  # RTC::RTObject_ptr createComponentByManagerName(string module_name)
+  def createComponentByManagerName(self, module_name):
     
     arg = module_name
     
 
     tmp = [arg]
-    mgrstr = self.get_parameter_by_modulename("manager_name",tmp)
+    mgrstr = self.getParameterByModulename("manager_name",tmp)
     arg = tmp[0]
 
     if not mgrstr:
@@ -1333,7 +1335,7 @@ class ManagerServant(RTM__POA.Manager):
     if mgrstr == "manager_%p":
       mgrobj = RTM.Manager._nil
     else:
-      mgrobj = self.findManager_by_name(mgrstr)
+      mgrobj = self.findManagerByName(mgrstr)
     
 
 
@@ -1373,16 +1375,7 @@ class ManagerServant(RTM__POA.Manager):
       
       
       self._rtcout.RTC_DEBUG("Invoking command: %s.", cmd)
-      
-      ret = OpenRTM_aist.launch_shell(cmd)
 
-      
-      if ret == -1:
-        self._rtcout.RTC_DEBUG("%s: failed", cmd)
-        return RTC.RTObject._nil
-      time.sleep(0.01)
-      count = 0
-      
       slaves_names = []
       regex = r'manager_[0-9]+'
       if mgrstr == "manager_%p":
@@ -1401,6 +1394,19 @@ class ManagerServant(RTM__POA.Manager):
             self._slaves.remove(slave)
             
         del guard_slave
+
+
+
+      ret = OpenRTM_aist.launch_shell(cmd)
+
+      
+      if ret == -1:
+        self._rtcout.RTC_DEBUG("%s: failed", cmd)
+        return RTC.RTObject._nil
+      time.sleep(0.01)
+      count = 0
+      
+
 
       t0_ = OpenRTM_aist.Time()
       
@@ -1425,7 +1431,7 @@ class ManagerServant(RTM__POA.Manager):
           del guard_slave
           
         else:
-          mgrobj = self.findManager_by_name(mgrstr)
+          mgrobj = self.findManagerByName(mgrstr)
         count += 1
         if count > 1000:
           break
@@ -1482,12 +1488,12 @@ class ManagerServant(RTM__POA.Manager):
   # @param module_name
   # @return 
   # @endif
-  # RTC::RTObject_ptr create_component_by_address(string module_name)
-  def create_component_by_address(self, module_name):
+  # RTC::RTObject_ptr createComponentByAddress(string module_name)
+  def createComponentByAddress(self, module_name):
 
     arg = module_name
     tmp = [arg]
-    mgrstr = self.get_parameter_by_modulename("manager_address",tmp)
+    mgrstr = self.getParameterByModulename("manager_address",tmp)
     arg = tmp[0]
 
     if not mgrstr:
@@ -1495,7 +1501,7 @@ class ManagerServant(RTM__POA.Manager):
     
     mgrvstr = mgrstr.split(":")
     if len(mgrvstr) != 2:
-      self._rtcout.RTC_WARN("Invalid manager name: %s", mgrstr)
+      self._rtcout.RTC_WARN("Invalid manager address: %s", mgrstr)
       return RTC.RTObject._nil
 
     
@@ -1579,8 +1585,8 @@ class ManagerServant(RTM__POA.Manager):
   # @brief 
   # @param self
   # @endif
-  # void update_master_manager()
-  def update_master_manager(self):
+  # void updateMasterManager()
+  def updateMasterManager(self):
     if not self._isMaster and self._objref:
       guard = OpenRTM_aist.ScopedLock(self._masterMutex)
       if len(self._masters) > 0:

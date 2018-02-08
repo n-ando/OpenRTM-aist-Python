@@ -21,6 +21,7 @@
 from omniORB import any
 
 import OpenRTM_aist
+import threading
 
 
 ##
@@ -101,6 +102,10 @@ class OutPort(OpenRTM_aist.OutPortBase):
     #self._OnUnderflow    = None
     #self._OnConnect      = None
     #self._OnDisconnect   = None
+    self._directNewData = False
+    self._valueMutex = threading.RLock()
+    self._directValue = value
+    
     
 
   def __del__(self, OutPortBase=OpenRTM_aist.OutPortBase):
@@ -178,11 +183,17 @@ class OutPort(OpenRTM_aist.OutPortBase):
 
     guard = OpenRTM_aist.ScopedLock(self._connector_mutex)
     for con in self._connectors:
-      ret = con.write(value)
-      if ret != self.PORT_OK:
-        result = False
-        if ret == self.CONNECTION_LOST:
-          self.disconnect(con.id())
+      if not con.directMode():
+        ret = con.write(value)
+        if ret != self.PORT_OK:
+          result = False
+          if ret == self.CONNECTION_LOST:
+            self.disconnect(con.id())
+      else:
+        guard = OpenRTM_aist.ScopedLock(self._valueMutex)
+        self._directValue = value
+        self._directNewData = True
+    del guard
 
     return result
 
@@ -287,6 +298,32 @@ class OutPort(OpenRTM_aist.OutPortBase):
     val = any.to_any(self._value)
     return str(val.typecode().name())
 
+
+  ##
+  # @if jp
+  #
+  # @brief データをダイレクトに読み込む
+  #
+  # @param self
+  # @param data 読み込むデータ
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @param data 
+  # @endif
+  # void read(const DataType& data)
+  def read(self, data):
+    guard = OpenRTM_aist.ScopedLock(self._valueMutex)
+    self._directNewData = False
+    data[0] = self._directValue
+    if self._OnWriteConvert:
+      data[0] = self._OnWriteConvert(data[0])
+    del guard
+  def isEmpty(self):
+    return (not self._directNewData)
+    
 
 
   class subscribe:

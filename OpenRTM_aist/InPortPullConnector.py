@@ -124,16 +124,18 @@ class InPortPullConnector(OpenRTM_aist.InPortConnector):
   #                     OutPortConsumer* consumer,
   #                     ConnectorListeners& listeners,
   #                     CdrBufferBase* buffer = 0);
-  def __init__(self, info, consumer, listeners, buffer = 0):
+  def __init__(self, info, consumer, listeners, buffer = None):
     OpenRTM_aist.InPortConnector.__init__(self, info, buffer)
     self._consumer = consumer
     self._listeners = listeners
+    self._directOutPort = None
+    self._outPortListeners = None
 
 
-    if buffer == 0:
+    if buffer is None:
       self._buffer = self.createBuffer(self._profile)
 
-    if self._buffer == 0 or not self._consumer:
+    if not self._buffer or not self._consumer:
       raise
         
     self._buffer.init(info.properties.getNode("buffer"))
@@ -197,6 +199,32 @@ class InPortPullConnector(OpenRTM_aist.InPortConnector):
   # virtual ReturnCode read(cdrMemoryStream& data);
   def read(self, data):
     self._rtcout.RTC_TRACE("InPortPullConnector.read()")
+
+    if self._directOutPort is not None:
+      if self._directOutPort.isEmpty():
+        self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_EMPTY].notify(self._profile)
+        self._outPortListeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_SENDER_EMPTY].notify(self._profile)
+        self._rtcout.RTC_TRACE("ON_BUFFER_EMPTY(InPort,OutPort), ")
+        self._rtcout.RTC_TRACE("ON_SENDER_EMPTY(InPort,OutPort) ")
+        self._rtcout.RTC_TRACE("callback called in direct mode.")
+
+      self._directOutPort.read(data)
+      #self._outPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data[0])
+      self._rtcout.RTC_TRACE("ON_BUFFER_READ(OutPort), ")
+      self._rtcout.RTC_TRACE("callback called in direct mode.")
+      #self._outPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_SEND].notify(self._profile, data[0])
+      self._rtcout.RTC_TRACE("ON_SEND(OutPort), ")
+      self._rtcout.RTC_TRACE("callback called in direct mode.")
+      #self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data[0])
+      self._rtcout.RTC_TRACE("ON_RECEIVED(InPort), ")
+      self._rtcout.RTC_TRACE("callback called in direct mode.")
+      #self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_SEND].notify(self._profile, data[0])
+      self._rtcout.RTC_TRACE("ON_BUFFER_WRITE(InPort), ")
+      self._rtcout.RTC_TRACE("callback called in direct mode.")
+      return self.PORT_OK
+
+
+
     if not self._consumer:
       return self.PORT_ERROR
 
@@ -325,6 +353,29 @@ class InPortPullConnector(OpenRTM_aist.InPortConnector):
       self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_DISCONNECT].notify(self._profile)
     return
 
-  
+
+
+  ##
+  # @if jp
+  # @brief データをダイレクトに書き込むためのOutPortのサーバントを設定する
+  #
+  # @param self
+  # @param directOutPort OutPortのサーバント
+  # @return True: 設定に成功 False: 既に設定済みのため失敗
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @param directOutPort 
+  # @return 
+  # @endif
+  #
+  # bool setOutPort(setOutPort* directOutPort);
+  def setOutPort(self, directOutPort):
+    if self._directOutPort is not None:
+      return False
+    self._directOutPort = directOutPort
+    self._outPortListeners = self._directOutPort._listeners
+    return True
 
 

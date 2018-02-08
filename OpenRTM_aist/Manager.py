@@ -450,10 +450,8 @@ class Manager:
     for i in range(len(mods)):
       if mods[i] is None or mods[i] == "":
         continue
-      tmp = [mods[i]]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      mods[i] = tmp[0]
+      mods[i] = mods[i].strip()
+      
 
       basename = os.path.basename(mods[i]).split(".")[0]
       basename += "Init"
@@ -467,9 +465,9 @@ class Manager:
     sdofactory_ = OpenRTM_aist.SdoServiceConsumerFactory.instance()
     self._config.setProperty("sdo.service.consumer.available_services",
                              OpenRTM_aist.flatten(sdofactory_.getIdentifiers()))
-    if self._initProc:
-      self._initProc(self)
 
+
+    self.invokeInitProc()
     self.initPreCreation()
     
     self.initPreConnection()
@@ -987,9 +985,9 @@ class Manager:
     prop_ = prop.getNode("port")
     prop_.mergeProperties(self._config.getNode("port"))
 
+
     comp = factory.create(self)
-    if self._config.getProperty("corba.endpoints_ipv4") == "":
-      self.setEndpointProperty(comp.getObjRef())
+    
 
     for i in range(len(inherit_prop)):
       if self._config.findNode(inherit_prop[i]):
@@ -999,6 +997,10 @@ class Manager:
       self._rtcout.RTC_ERROR("createComponent: RTC creation failed: %s",
                              comp_id.getProperty("implementation_id"))
       return None
+
+    if self._config.getProperty("corba.endpoints_ipv4") == "":
+      self.setEndpointProperty(comp.getObjRef())
+      
     self._rtcout.RTC_TRACE("RTC Created: %s", comp_id.getProperty("implementation_id"))
     self._listeners.rtclifecycle_.postCreate(comp)
 
@@ -1032,6 +1034,7 @@ class Manager:
       if comp.exit() != RTC.RTC_OK:
         self._rtcout.RTC_DEBUG("%s finalization was failed.",
                                comp_id.getProperty("implementation_id"))
+      comp.exit()
       return None
       
     self._rtcout.RTC_TRACE("RTC initialization succeeded: %s",
@@ -1452,10 +1455,6 @@ class Manager:
 
     lmpm_ = [s.strip() for s in self._config.getProperty("manager.preload.modules").split(",")]
     for mpm_ in lmpm_:
-      tmp = [mpm_]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      mpm_ = tmp[0]
       if len(mpm_) == 0:
         continue
       basename_ = mpm_.split(".")[0]+"Init"
@@ -1730,7 +1729,15 @@ class Manager:
   def initORB(self):
     self._rtcout.RTC_TRACE("Manager.initORB()")
     try:
-      args = OpenRTM_aist.split(self.createORBOptions(), " ")
+      tmp_args = self.createORBOptions().split("\"")
+      args = []
+      for i in range(len(tmp_args)):
+        if i%2 == 0:
+          args.extend(tmp_args[i].split(" "))
+        else:
+          args.append(tmp_args[i])
+        
+      
       args.insert(0,"manager")
       argv = OpenRTM_aist.toArgv(args)
       
@@ -2317,24 +2324,12 @@ class Manager:
           tm.set_time(duration)
         if self._timer:
           self._timer.registerListenerObj(self._mgrservant,
-                                        OpenRTM_aist.ManagerServant.update_master_manager,
+                                        OpenRTM_aist.ManagerServant.updateMasterManager,
                                         tm)
 
     otherref = None
 
-    try:
-      otherref = open(self._config.getProperty("manager.refstring_path"),'r')
-      #refstring = otherref.readline()
-      otherref.close()
-    except:
-      try:
-        reffile = open(self._config.getProperty("manager.refstring_path"),'w')
-      except:
-        self._rtcout.RTC_WARN(OpenRTM_aist.Logger.print_exception())
-        return False
-      else:
-        reffile.write(self._orb.object_to_string(self._mgrservant.getObjRef()))
-        reffile.close()
+
 
 
     return True
@@ -3070,7 +3065,7 @@ class Manager:
   # @if jp
   # @brief 起動時にrtc.confで指定したポートを接続する
   # 例:
-  # manager.components.preconnect: RTC0.port0:RTC0.port1(interface_type=corba_cdr&dataflow_type=pull&~),~
+  # manager.components.preconnect: RTC0.port0?port=RTC0.port1&interface_type=corba_cdr&dataflow_type=pull&~,~
   # @param self
   # @else
   #
@@ -3083,25 +3078,46 @@ class Manager:
     connectors = str(self._config.getProperty("manager.components.preconnect")).split(",")
     
     for c in connectors:
-      tmp = [c]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      c = tmp[0]
+      c = c.strip()
       if len(c) == 0:
         continue
-      conn_prop = c.split("(")
-      if len(conn_prop) < 2:
-        self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
-        continue
-      conn_prop[1] = conn_prop[1].replace(")","")
-      comp_ports = conn_prop[0].split(":")
-      if len(comp_ports) != 2:
-        self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
-        self._rtcout.RTC_ERROR("Format must be Comp0.port0:Comp1.port1()")
-        continue
+      port0_str = c.split("?")[0]
+      param = OpenRTM_aist.urlparam2map(c)
       
-      comp0_name = comp_ports[0].split(".")[0]
-      port0_name = comp_ports[0]
+
+
+      ports = []
+      configs = {}
+      for k,p in param.items():
+        if k == "port":
+          ports.append(p)
+          continue
+        tmp = k.replace("port","")
+        v = [0]
+        if OpenRTM_aist.stringTo(v, tmp):
+          ports.append(p)
+          continue
+        configs[k] = p
+
+      if len(ports) == 0:
+        self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
+        self._rtcout.RTC_ERROR("Format must be Comp0.port0?port=Comp1.port1")
+        continue
+    
+      if not ("dataflow_type" in configs.keys()):
+        configs["dataflow_type"] = "push"
+      if not ("interface_type" in configs.keys()):
+        configs["interface_type"] = "corba_cdr"
+      
+      
+      
+      tmp = port0_str.split(".")
+      tmp.pop()
+      comp0_name = OpenRTM_aist.flatten(tmp,".")
+      
+
+      port0_name = port0_str
+      
       
       if comp0_name.find("://") == -1:
         comp0 = self.getComponent(comp0_name)
@@ -3116,61 +3132,57 @@ class Manager:
           self._rtcout.RTC_ERROR("%s not found." % comp0_name)
           continue
         comp0_ref = rtcs[0]
-        port0_name = comp_ports[0].split("/")[-1]
+        port0_name = port0_str.split("/")[-1]
       
-        
       
       port0_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp0_ref, port0_name)
       
+      
       if CORBA.is_nil(port0_var):
-        self._rtcout.RTC_DEBUG("port %s found: " % comp_ports[0])
+        self._rtcout.RTC_DEBUG("port %s found: " % port0_str)
         continue
 
-      comp1_name = comp_ports[1].split(".")[0]
-      port1_name = comp_ports[1]
+      for port_str in ports:
+      
+        tmp = port_str.split(".")
+        tmp.pop()
+        comp_name = OpenRTM_aist.flatten(tmp,".")
+        port_name = port_str
       
       
 
 
-      if comp1_name.find("://") == -1:
-        comp1 = self.getComponent(comp1_name)
-        if comp1 is None:
-          self._rtcout.RTC_ERROR("%s not found." % comp1_name)
+        if comp_name.find("://") == -1:
+          comp = self.getComponent(comp_name)
+          if comp is None:
+            self._rtcout.RTC_ERROR("%s not found." % comp_name)
+            continue
+          comp_ref = comp.getObjRef()
+        else:
+          rtcs = self._namingManager.string_to_component(comp_name)
+          
+          if len(rtcs) == 0:
+            self._rtcout.RTC_ERROR("%s not found." % comp_name)
+            continue
+          comp_ref = rtcs[0]
+          port_name = port_str.split("/")[-1]
+  
+
+        port_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp_ref, port_name)
+      
+        if CORBA.is_nil(port_var):
+          self._rtcout.RTC_DEBUG("port %s found: " % port_str)
           continue
-        comp1_ref = comp1.getObjRef()
-      else:
-        rtcs = self._namingManager.string_to_component(comp1_name)
+      
+        prop = OpenRTM_aist.Properties()
         
-        if len(rtcs) == 0:
-          self._rtcout.RTC_ERROR("%s not found." % comp1_name)
-          continue
-        comp1_ref = rtcs[0]
-        port1_name = comp_ports[1].split("/")[-1]
-
-
-      port1_var = OpenRTM_aist.CORBA_RTCUtil.get_port_by_name(comp1_ref, port1_name)
+        for k,v in configs.items():
+          k = k.strip()
+          v = v.strip()
+          prop.setProperty("dataport."+k,v)
       
-      if CORBA.is_nil(port1_var):
-        self._rtcout.RTC_DEBUG("port %s found: " % comp_ports[1])
-        continue
-      
-      prop = OpenRTM_aist.Properties()
-      opt_props = conn_prop[1].split("&")
-      for o in opt_props:
-        temp = o.split("=")
-        if len(temp) == 2:
-          s = [temp[0]]
-          OpenRTM_aist.eraseHeadBlank(s)
-          OpenRTM_aist.eraseTailBlank(s)
-          temp[0] = s[0]
-          s = [temp[1]]
-          OpenRTM_aist.eraseHeadBlank(s)
-          OpenRTM_aist.eraseTailBlank(s)
-          temp[1] = s[0]
-          prop.setProperty("dataport."+temp[0],temp[1])
-      
-      if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(c, prop, port0_var, port1_var):
-        self._rtcout.RTC_ERROR("Connection error: %s" % c)
+        if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(c, prop, port0_var, port_var):
+          self._rtcout.RTC_ERROR("Connection error: %s" % c)
       
 
 
@@ -3192,11 +3204,9 @@ class Manager:
     self._rtcout.RTC_TRACE("Components pre-activation: %s" % str(self._config.getProperty("manager.components.preactivation")))
     comps = str(self._config.getProperty("manager.components.preactivation")).split(",")
     for c in comps:
-      tmp = [c]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      c = tmp[0]
+      c = c.strip()
       if c:
+        comp_ref = None
         if c.find("://") == -1:
           comp = self.getComponent(c)
           if comp is None:
@@ -3233,12 +3243,23 @@ class Manager:
     for i in range(len(comps)):
       if comps[i] is None or comps[i] == "":
         continue
-      tmp = [comps[i]]
-      OpenRTM_aist.eraseHeadBlank(tmp)
-      OpenRTM_aist.eraseTailBlank(tmp)
-      comps[i] = tmp[0]
+      comps[i] = comps[i].strip()
 
       self.createComponent(comps[i])
+
+
+  ##
+  # @if jp
+  # @brief 
+  # @else
+  #
+  # @brief 
+  # @param self
+  # @endif
+  # void initPreCreation()
+  def invokeInitProc(self):
+    if self._initProc:
+      self._initProc(self)
     
   ##
   # @if jp

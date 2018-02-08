@@ -780,11 +780,11 @@ class Properties:
       key = []
       value = []
       self.splitKeyValue(pline, key, value)
-      key[0] = OpenRTM_aist.unescape(key)
+      key[0] = OpenRTM_aist.unescape(key[0])
       OpenRTM_aist.eraseHeadBlank(key)
       OpenRTM_aist.eraseTailBlank(key)
 
-      value[0] = OpenRTM_aist.unescape(value)
+      value[0] = OpenRTM_aist.unescape(value[0])
       OpenRTM_aist.eraseHeadBlank(value)
       OpenRTM_aist.eraseTailBlank(value)
 

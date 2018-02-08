@@ -239,20 +239,20 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
 
     if self._directInPort is not None:
       if self._directInPort.isNew():
-        self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_OVERWRITE].notify(self._profile, data)
-        self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_OVERWRITE].notify(self._profile, data)
-        self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_FULL].notify(self._profile, data)
-        self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_FULL].notify(self._profile, data)
+        #self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_OVERWRITE].notify(self._profile, data)
+        #self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_OVERWRITE].notify(self._profile, data)
+        #self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_FULL].notify(self._profile, data)
+        #self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_FULL].notify(self._profile, data)
         self._rtcout.RTC_TRACE("ONBUFFER_OVERWRITE(InPort,OutPort), ")
         self._rtcout.RTC_TRACE("ON_RECEIVER_FULL(InPort,OutPort) ")
         self._rtcout.RTC_TRACE("callback called in direct mode.")
-      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE].notify(self._profile, data)
-      self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE].notify(self._profile, data)
+      #self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE].notify(self._profile, data)
+      #self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE].notify(self._profile, data)
       self._rtcout.RTC_TRACE("ON_BUFFER_WRITE(InPort,OutPort), ")
       self._rtcout.RTC_TRACE("callback called in direct mode.")
       self._directInPort.write(data)
-      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
-      self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
+      #self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
+      #self._inPortListeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED].notify(self._profile, data)
       self._rtcout.RTC_TRACE("ON_RECEIVED(InPort,OutPort), ")
       self._rtcout.RTC_TRACE("callback called in direct mode.")
       return self.PORT_OK

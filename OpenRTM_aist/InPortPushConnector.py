@@ -119,7 +119,7 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
   #
   # InPortPushConnector(ConnectorInfo info, InPortProvider* provider,
   #                    ConnectorListeners listeners, CdrBufferBase* buffer = 0);
-  def __init__(self, info, provider, listeners, buffer = 0):
+  def __init__(self, info, provider, listeners, buffer = None):
     OpenRTM_aist.InPortConnector.__init__(self, info, buffer)
     self._provider = provider
     self._listeners = listeners

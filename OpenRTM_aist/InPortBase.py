@@ -1274,6 +1274,18 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
       elif consumer_ is not None:
         self._rtcout.RTC_TRACE("InPortPullConnector created")
 
+      if OpenRTM_aist.StringUtil.normalize([prop.getProperty("interface_type")]) == "direct":
+        if consumer_ is not None:
+          outport = self.getLocalOutPort(profile)
+
+          if outport is None:
+            self._rtcout.RTC_TRACE("interface_type is direct, ")
+            self._rtcout.RTC_TRACE("but a peer OutPort servant could not be obtained.")
+            del connector
+            return None
+          connector.setOutPort(outport)
+          
+
       # guard = OpenRTM_aist.ScopedLock(self._connector_mutex)
       self._connectors.append(connector)
       self._rtcout.RTC_PARANOID("connector push backed: %d", len(self._connectors))
@@ -1284,3 +1296,35 @@ class InPortBase(OpenRTM_aist.PortBase, OpenRTM_aist.DataPortStatus):
       return None
 
 
+  ##
+  # @if jp
+  # @brief ローカルのピアOutPortを取得
+  # @param self
+  # @param profile コネクタプロファイル
+  # @return OutPortのサーバント(取得に失敗した場合はNone)
+  # @else
+  # @brief Getting local peer OutPort if available
+  # @param self
+  # @param profile 
+  # @return 
+  # @endif
+  #
+  # OutPortBase*
+  # getLocalOutPort(const ConnectorInfo& profile)
+  def getLocalOutPort(self, profile):
+    self._rtcout.RTC_DEBUG("Trying direct port connection.")
+    orb = OpenRTM_aist.Manager.instance().getORB()
+    self._rtcout.RTC_DEBUG("Current connector profile: name=%s, id=%s" % (profile.name, profile.id))
+    for p in profile.ports:
+      obj = orb.string_to_object(p)
+      if self.getPortRef()._is_equivalent(obj):
+        continue
+      self._rtcout.RTC_DEBUG("Peer port found: %s." % p)
+      try:
+        poa = OpenRTM_aist.Manager.instance().getPOA()
+        outport = poa.reference_to_servant(obj)
+        self._rtcout.RTC_DEBUG("OutPortBase servant pointer is obtained.")
+        return outport
+      except:
+        self._rtcout.RTC_DEBUG("Peer port might be a remote port")
+    return None
