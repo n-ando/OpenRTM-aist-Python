@@ -781,12 +781,10 @@ class Properties:
       value = []
       self.splitKeyValue(pline, key, value)
       key[0] = OpenRTM_aist.unescape(key[0])
-      OpenRTM_aist.eraseHeadBlank(key)
-      OpenRTM_aist.eraseTailBlank(key)
+      key[0] = key[0].strip()
 
       value[0] = OpenRTM_aist.unescape(value[0])
-      OpenRTM_aist.eraseHeadBlank(value)
-      OpenRTM_aist.eraseTailBlank(value)
+      value[0] = value[0].strip()
 
       self.setProperty(key[0], value[0])
       pline = ""

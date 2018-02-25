@@ -278,10 +278,12 @@ class ManagerConfig :
       if opt == "-o":
         pos = arg.find(":")
         if pos > 0:
-          key = [arg[:pos]]
-          value = [arg[pos+1:]]
-          OpenRTM_aist.eraseTailBlank(key)
-          OpenRTM_aist.eraseTailBlank(value)
+          key = arg[:pos]
+          value = arg[pos+1:]
+          key = OpenRTM_aist.unescape(key)
+          key = key.strip()
+          value = OpenRTM_aist.unescape(value)
+          value = value.strip()
           self._argprop.setProperty(key[0],value[0])
 
       if opt == "-p":
