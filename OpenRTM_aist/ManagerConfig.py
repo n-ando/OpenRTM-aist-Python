@@ -292,7 +292,7 @@ class ManagerConfig :
           key = key.strip()
           value = OpenRTM_aist.unescape(value)
           value = value.strip()
-          self._argprop.setProperty(key[0],value[0])
+          self._argprop.setProperty(key,value)
 
       if opt == "-p":
         num = [-1]
