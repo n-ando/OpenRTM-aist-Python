@@ -101,7 +101,7 @@ class SeqIn(OpenRTM_aist.DataFlowComponentBase):
       octetSeqDisp_.append(ord(octet_data[i]))
 
     maxsize = max(octetSize_, shortSize_, longSize_, floatSize_, doubleSize_)
-    octetSeqDisp_   = octetSeqDisp_   + ['-'] * (maxsize - octetSize_)
+    octetSeqDisp_   = octetSeqDisp_   + [ord("-")] * (maxsize - octetSize_)
     shortSeq_.data  = shortSeq_.data  + ['-'] * (maxsize - shortSize_)
     longSeq_.data   = longSeq_.data   + ['-'] * (maxsize - longSize_)
     floatSeq_.data  = floatSeq_.data  + ['-'] * (maxsize - floatSize_)
