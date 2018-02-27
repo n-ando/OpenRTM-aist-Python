@@ -34,7 +34,11 @@ class SeqIn(OpenRTM_aist.DataFlowComponentBase):
     self._long      = RTC.TimedLong(RTC.Time(0,0),0)
     self._float     = RTC.TimedFloat(RTC.Time(0,0),0)
     self._double    = RTC.TimedDouble(RTC.Time(0,0),0)
-    self._octetSeq  = RTC.TimedOctetSeq(RTC.Time(0,0),[])
+    
+    self._octetSeq  = RTC.TimedOctetSeq(RTC.Time(0,0),"")
+    if sys.version_info[0] == 3:
+      self._octetSeq.data = self._octetSeq.data.encode("utf-8")
+    
     self._shortSeq  = RTC.TimedShortSeq(RTC.Time(0,0),[])
     self._longSeq   = RTC.TimedLongSeq(RTC.Time(0,0),[])
     self._floatSeq  = RTC.TimedFloatSeq(RTC.Time(0,0),[])
@@ -80,7 +84,13 @@ class SeqIn(OpenRTM_aist.DataFlowComponentBase):
     floatSeq_  = self._floatSeqIn.read()
     doubleSeq_ = self._doubleSeqIn.read()
 
-    octetSize_  = len(octetSeq_.data)
+
+    if sys.version_info[0] == 2:
+      octet_data = octetSeq_.data
+    else:
+      octet_data = octetSeq_.data.decode("utf-8")
+
+    octetSize_  = len(octet_data)
     shortSize_  = len(shortSeq_.data)
     longSize_   = len(longSeq_.data)
     floatSize_  = len(floatSeq_.data)
@@ -88,7 +98,7 @@ class SeqIn(OpenRTM_aist.DataFlowComponentBase):
 
     octetSeqDisp_ = []
     for i in range(octetSize_):
-      octetSeqDisp_.append(ord(octetSeq_.data[i]))
+      octetSeqDisp_.append(ord(octet_data[i]))
 
     maxsize = max(octetSize_, shortSize_, longSize_, floatSize_, doubleSize_)
     octetSeqDisp_   = octetSeqDisp_   + ['-'] * (maxsize - octetSize_)
