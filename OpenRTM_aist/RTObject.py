@@ -637,6 +637,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     if self._exiting:
       return RTC.RTC_OK
 
+    organizations = self.get_organizations()
+    
+
+    for o in organizations:
+      o.remove_member(self.getInstanceName())
+    
+
     # deactivate myself on owned EC
     OpenRTM_aist.CORBA_SeqUtil.for_each(self._ecMine,
                                         self.deactivate_comps(self._objref))
