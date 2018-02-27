@@ -284,6 +284,10 @@ class ManagerServant(RTM__POA.Manager):
     del guard_master
     if self._objref:
       self._objref._release()
+
+    poa = self._mgr.getORB().resolve_initial_references("omniINSPOA")
+    poa.deactivate_object(poa.servant_to_id(self))
+
     return
 
   ##

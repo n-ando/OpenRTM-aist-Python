@@ -4497,6 +4497,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       self._poa.deactivate_object(self._poa.servant_to_id(self._SdoConfigImpl))
       self._poa.deactivate_object(self._poa.servant_to_id(self))
       self._sdoservice.exit()
+      poa = self._orb.resolve_initial_references("omniINSPOA")
+      poa.deactivate_object(poa.servant_to_id(self))
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
