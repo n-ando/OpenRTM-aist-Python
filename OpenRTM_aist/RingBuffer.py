@@ -257,6 +257,7 @@ class RingBuffer(OpenRTM_aist.BufferBase):
   # 
   # ReturnCode advanceWptr(long int n = 1)
   def advanceWptr(self, n = 1, unlock_enable=True):
+    empty = False
     if unlock_enable and n > 0:
       self._empty_cond.acquire()
       empty = self.empty()
@@ -276,7 +277,7 @@ class RingBuffer(OpenRTM_aist.BufferBase):
     self._fillcount += n
 
     if unlock_enable and n > 0:
-      if empty and n > 0:
+      if empty:
         self._empty_cond.notify()
       self._empty_cond.release()
     
@@ -516,6 +517,7 @@ class RingBuffer(OpenRTM_aist.BufferBase):
   # 
   # DataType* rptr(long int n = 0)
   def advanceRptr(self, n = 1, unlock_enable=True):
+    full_ = False
     if unlock_enable and n > 0:
       self._full_cond.acquire()
       full_ = self.full()
