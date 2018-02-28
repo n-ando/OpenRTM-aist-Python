@@ -237,7 +237,8 @@ class RingBuffer(OpenRTM_aist.BufferBase):
   # 書き込み可能な要素数以上の数値を指定した場合、PRECONDITION_NOT_MET
   # を返す。
   # 
-  # @param  n 書込みポインタ + n の位置のポインタ 
+  # @param  n 書込みポインタ + n の位置のポインタ
+  # @param unlock_enable Trueの場合にバッファエンプティのブロックを解除する
   # @return BUFFER_OK:            正常終了
   #         PRECONDITION_NOT_MET: n > writable()
   # 
@@ -247,14 +248,18 @@ class RingBuffer(OpenRTM_aist.BufferBase):
   #
   # Pure virtual function to get the buffer length.
   #
+  # @param  n 
+  # @param unlock_enable 
+  #
   # @return buffer length
   # 
   # @endif
   # 
   # ReturnCode advanceWptr(long int n = 1)
-  def advanceWptr(self, n = 1):
-    self._empty_cond.acquire()
-    empty = self.empty()
+  def advanceWptr(self, n = 1, unlock_enable=True):
+    if unlock_enable and n > 0:
+      self._empty_cond.acquire()
+      empty = self.empty()
     # n > 0 :
     #     n satisfies n <= writable elements
     #                 n <= m_length - m_fillcout
@@ -270,10 +275,10 @@ class RingBuffer(OpenRTM_aist.BufferBase):
     self._wpos = (self._wpos + n + self._length) % self._length
     self._fillcount += n
 
-
-    if empty:
-      self._empty_cond.notify()
-    self._empty_cond.release()
+    if unlock_enable:
+      if empty and n > 0:
+        self._empty_cond.notify()
+      self._empty_cond.release()
     
     return OpenRTM_aist.BufferStatus.BUFFER_OK
 
@@ -367,7 +372,7 @@ class RingBuffer(OpenRTM_aist.BufferBase):
           overwrite  = False
 
         if overwrite and not timedwrite:       # "overwrite" mode
-          self.advanceRptr()
+          self.advanceRptr(unlock_enable=False)
 
         elif not overwrite and not timedwrite: # "do_nothing" mode
           self._full_cond.release()
@@ -491,7 +496,8 @@ class RingBuffer(OpenRTM_aist.BufferBase):
   # 
   # 現在の読み出し位置のポインタを n 個進める。
   # 
-  # @param  n 読み出しポインタ + n の位置のポインタ 
+  # @param  n 読み出しポインタ + n の位置のポインタ
+  # @param unlock_enable Trueの場合にバッファフルのブロックを解除する
   # @return BUFFER_OK: 正常終了
   #         BUFFER_ERROR: 異常終了
   # 
@@ -501,14 +507,18 @@ class RingBuffer(OpenRTM_aist.BufferBase):
   #
   # Pure virtual function to get the buffer length.
   #
+  # @param  n 
+  # @param unlock_enable 
+  #
   # @return buffer length
   # 
   # @endif
   # 
   # DataType* rptr(long int n = 0)
-  def advanceRptr(self, n = 1):
-    self._full_cond.acquire()
-    full_ = self.full()
+  def advanceRptr(self, n = 1, unlock_enable=True):
+    if unlock_enable and n > 0:
+      self._full_cond.acquire()
+      full_ = self.full()
     # n > 0 :
     #     n satisfies n <= readable elements
     #                 n <= m_fillcout 
@@ -525,10 +535,10 @@ class RingBuffer(OpenRTM_aist.BufferBase):
     
     
     
-    
-    if full_:
-      self._full_cond.notify()
-    self._full_cond.release()
+    if unlock_enable and n > 0:
+      if full_:
+        self._full_cond.notify()
+      self._full_cond.release()
     
     return OpenRTM_aist.BufferStatus.BUFFER_OK
 
