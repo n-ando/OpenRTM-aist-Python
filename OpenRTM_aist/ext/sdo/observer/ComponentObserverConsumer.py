@@ -66,13 +66,6 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
   # @endif
   #
   def __del__(self):
-    self.unsetComponentProfileListeners()
-    self.unsetComponentStatusListeners()
-    self.unsetPortProfileListeners()
-    self.unsetExecutionContextListeners()
-    self.unsetConfigurationListeners()
-    self.unsetHeartbeat()
-    del self._timer
     return
 
 
@@ -150,6 +143,8 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
     self.unsetExecutionContextListeners()
     self.unsetConfigurationListeners()
     self.unsetHeartbeat()
+
+    del self._timer
     return
 
 
