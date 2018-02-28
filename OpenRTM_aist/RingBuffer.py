@@ -253,6 +253,8 @@ class RingBuffer(OpenRTM_aist.BufferBase):
   # 
   # ReturnCode advanceWptr(long int n = 1)
   def advanceWptr(self, n = 1):
+    self._empty_cond.acquire()
+    empty = self.empty()
     # n > 0 :
     #     n satisfies n <= writable elements
     #                 n <= m_length - m_fillcout
@@ -267,6 +269,12 @@ class RingBuffer(OpenRTM_aist.BufferBase):
 
     self._wpos = (self._wpos + n + self._length) % self._length
     self._fillcount += n
+
+
+    if empty:
+      self._empty_cond.notify()
+    self._empty_cond.release()
+    
     return OpenRTM_aist.BufferStatus.BUFFER_OK
 
 
@@ -349,6 +357,7 @@ class RingBuffer(OpenRTM_aist.BufferBase):
   def write(self, value, sec = -1, nsec = 0):
     try:
       self._full_cond.acquire()
+      self.full()
       if self.full():
         timedwrite = self._timedwrite # default is False
         overwrite  = self._overwrite  # default is True
@@ -388,19 +397,11 @@ class RingBuffer(OpenRTM_aist.BufferBase):
         else: # unknown condition
           self._full_cond.release()
           return OpenRTM_aist.BufferStatus.PRECONDITION_NOT_MET
-      
       self._full_cond.release()
 
       self.put(value)
       
-      self._empty_cond.acquire()
-      empty = self.empty()
-      if empty:
-        self.advanceWptr(1)
-        self._empty_cond.notify()
-      else:
-        self.advanceWptr(1)
-      self._empty_cond.release()
+      self.advanceWptr(1)
 
       return OpenRTM_aist.BufferStatus.BUFFER_OK
     except:
@@ -506,6 +507,8 @@ class RingBuffer(OpenRTM_aist.BufferBase):
   # 
   # DataType* rptr(long int n = 0)
   def advanceRptr(self, n = 1):
+    self._full_cond.acquire()
+    full_ = self.full()
     # n > 0 :
     #     n satisfies n <= readable elements
     #                 n <= m_fillcout 
@@ -519,6 +522,14 @@ class RingBuffer(OpenRTM_aist.BufferBase):
 
     self._rpos = (self._rpos + n + self._length) % self._length
     self._fillcount -= n
+    
+    
+    
+    
+    if full_:
+      self._full_cond.notify()
+    self._full_cond.release()
+    
     return OpenRTM_aist.BufferStatus.BUFFER_OK
 
 
@@ -655,16 +666,7 @@ class RingBuffer(OpenRTM_aist.BufferBase):
     else:
       value.append(val)
 
-    self._full_cond.acquire()
-    full_ = self.full()
-
-    if full_:
-      self.advanceRptr()
-      self._full_cond.notify()
-    else:
-      self.advanceRptr()
-
-    self._full_cond.release()
+    self.advanceRptr()
 
 
     return OpenRTM_aist.BufferStatus.BUFFER_OK
