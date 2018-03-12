@@ -637,6 +637,13 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     if self._exiting:
       return RTC.RTC_OK
 
+    organizations = self.get_organizations()
+    
+
+    for o in organizations:
+      o.remove_member(self.getInstanceName())
+    
+
     # deactivate myself on owned EC
     OpenRTM_aist.CORBA_SeqUtil.for_each(self._ecMine,
                                         self.deactivate_comps(self._objref))
@@ -4497,6 +4504,8 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
       self._poa.deactivate_object(self._poa.servant_to_id(self._SdoConfigImpl))
       self._poa.deactivate_object(self._poa.servant_to_id(self))
       self._sdoservice.exit()
+      poa = self._orb.resolve_initial_references("omniINSPOA")
+      poa.deactivate_object(poa.servant_to_id(self))
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 

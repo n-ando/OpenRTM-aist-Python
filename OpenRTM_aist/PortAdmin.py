@@ -443,4 +443,5 @@ class PortAdmin:
     len_ = len(ports)
     for i in range(len_):
       idx = (len_ - 1) - i
+      ports[idx].exit()
       self.removePort(ports[idx])

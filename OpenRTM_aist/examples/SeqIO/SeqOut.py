@@ -101,7 +101,11 @@ class SeqOut(OpenRTM_aist.DataFlowComponentBase):
     # Moving cursor (^[[nA : n lines upward)
     print("[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r[A\r")
         
-    self._octetSeq.data = octetSeq
+    
+    if sys.version_info[0] == 2:
+      self._octetSeq.data = octetSeq
+    else:
+      self._octetSeq.data = octetSeq.encode("utf-8")
     self._shortSeq.data = shortSeq
     self._longSeq.data = longSeq
     self._floatSeq.data = floatSeq

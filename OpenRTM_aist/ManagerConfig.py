@@ -150,10 +150,12 @@ class ManagerConfig :
   # コマンドライン引数に応じて初期化を実行する。コマンドラインオプションは
   # 以下のものが使用可能である。
   #
+  # -a        : マネージャサービスをOFFにする。<br>
   # -f file   : コンフィギュレーションファイルを指定する。<br>
   # -l module : ロードするモジュールを指定する。(未実装)<br>
   # -o options: その他オプションを指定する。<br>
-  # -d        : デフォルトのコンフィギュレーションを使う。<br>
+  # -p        : ポート番号を指定する。<br>
+  # -d        : マスターマネージャを起動する。<br>
   #
   # @param self
   # @param argv コマンドライン引数
@@ -165,10 +167,12 @@ class ManagerConfig :
   # Initialize with command line options. The following command options
   # are available.
   #
+  # -a        : Disable Manager service<br>
   # -f file   : Specify a configuration file. <br>
   # -l module : Specify modules to be loaded at the beginning. <br>
   # -o options: Other options. <br>
-  # -d        : Use default static configuration. <br>
+  # -p        : Specify a port number. <br>
+  # -d        : Run Master Manager. <br>
   #
   # @endif
   def init(self, argv):
@@ -240,10 +244,12 @@ class ManagerConfig :
   #
   # @brief コマンド引数をパースする
   #
+  # -a        : マネージャサービスをOFFにする。<br>
   # -f file   : コンフィギュレーションファイルを指定する。<br>
   # -l module : ロードするモジュールを指定する。(未実装)<br>
   # -o options: その他オプションを指定する。<br>
-  # -d        : デフォルトのコンフィギュレーションを使う。<br>
+  # -p        : ポート番号を指定する。<br>
+  # -d        : マスターマネージャを起動する。<br>
   #
   # @param self
   # @param argv コマンドライン引数
@@ -252,10 +258,12 @@ class ManagerConfig :
   #
   # @brief Parse command arguments
   #
+  # -a        : Disable Manager service<br>
   # -f file   : Specify a configuration file. <br>
   # -l module : Specify modules to be loaded at the beginning. <br>
   # -o options: Other options. <br>
-  # -d        : Use default static configuration. <br>
+  # -p        : Specify a port number. <br>
+  # -d        : Run Master Manager. <br>
   #
   # @endif
   def parseArgs(self, argv):
@@ -278,7 +286,13 @@ class ManagerConfig :
       if opt == "-o":
         pos = arg.find(":")
         if pos > 0:
-          self._argprop.setProperty(arg[:pos],arg[pos+1:])
+          key = arg[:pos]
+          value = arg[pos+1:]
+          key = OpenRTM_aist.unescape(key)
+          key = key.strip()
+          value = OpenRTM_aist.unescape(value)
+          value = value.strip()
+          self._argprop.setProperty(key,value)
 
       if opt == "-p":
         num = [-1]

@@ -173,7 +173,8 @@ class BufferBase(OpenRTM_aist.BufferStatus):
   # 
   # 現在の書き込み位置のポインタを n 個進める。
   # 
-  # @param  n 書込みポインタ + n の位置のポインタ 
+  # @param  n 書込みポインタ + n の位置のポインタ
+  # @param unlock_enable Trueの場合にバッファエンプティのブロックを解除する
   # @return BUFFER_OK: 正常終了
   #         BUFFER_ERROR: 異常終了
   # 
@@ -186,7 +187,7 @@ class BufferBase(OpenRTM_aist.BufferStatus):
   # @return buffer length
   # 
   # @endif
-  def advanceWptr(self, n = 1):
+  def advanceWptr(self, n = 1, unlock_enable=True)):
     pass
 
 
@@ -310,7 +311,8 @@ class BufferBase(OpenRTM_aist.BufferStatus):
   # 
   # 現在の読み出し位置のポインタを n 個進める。
   # 
-  # @param  n 読み出しポインタ + n の位置のポインタ 
+  # @param  n 読み出しポインタ + n の位置のポインタ
+  # @param unlock_enable Trueの場合にバッファフルのブロックを解除する
   # @return BUFFER_OK: 正常終了
   #         BUFFER_ERROR: 異常終了
   # 
@@ -323,7 +325,7 @@ class BufferBase(OpenRTM_aist.BufferStatus):
   # @return buffer length
   # 
   # @endif
-  def advanceRptr(self, n = 1):
+  def advanceRptr(self, n = 1, unlock_enable=True):
     pass
 
 

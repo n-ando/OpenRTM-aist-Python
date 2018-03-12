@@ -190,6 +190,25 @@ class PortBase(RTC__POA.PortService):
   # @endif
   #
   def __del__(self):
+    pass
+    
+
+  ##
+  # @if jp
+  #
+  # @brief ½ªÎ»´Ø¿ô
+  #
+  # @param self 
+  #
+  # @else
+  #
+  # @brief 
+  #
+  # @param self 
+  #
+  # @endif
+  #
+  def exit(self):
     self._rtcout.RTC_TRACE("PortBase.__del__()")
     try:
       poa = OpenRTM_aist.Manager.instance().getPOA()
@@ -197,7 +216,6 @@ class PortBase(RTC__POA.PortService):
       poa.deactivate_object(oid)
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
-    
 
   ##
   # @if jp
