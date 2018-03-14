@@ -187,7 +187,7 @@ class BufferBase(OpenRTM_aist.BufferStatus):
   # @return buffer length
   # 
   # @endif
-  def advanceWptr(self, n = 1, unlock_enable=True)):
+  def advanceWptr(self, n = 1, unlock_enable=True):
     pass
 
 
