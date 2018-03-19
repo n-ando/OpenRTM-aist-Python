@@ -102,7 +102,7 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "manager.modules.C++.suffixes",  cpp_suffixes,
                  "manager.modules.Python.suffixes",  "py",
                  "manager.modules.Java.suffixes",  "class",
-                 "manager.modules.C++.load_paths",  "./",
-                 "manager.modules.Python.load_paths",  "./",
-                 "manager.modules.Java.load_paths",  "./",
+                 "manager.modules.C++.load_paths",  "",
+                 "manager.modules.Python.load_paths",  "",
+                 "manager.modules.Java.load_paths",  "",
                  ""]
