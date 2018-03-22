@@ -107,7 +107,7 @@ class ConsoleOut(OpenRTM_aist.DataFlowComponentBase):
 
   def onExecute(self, ec_id):
 
-    if self._inport.isNew():
+    if self._inport.isNew() or True:
       data = self._inport.read()
       print("Received: ", data)
       print("Received: ", data.data)
