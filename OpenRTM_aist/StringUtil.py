@@ -16,6 +16,8 @@
 
 import os
 import sys
+import glob
+
 if sys.version_info[0] == 3:
     long = int
 
@@ -740,4 +742,63 @@ def replaceEnv(_str):
         ret_str = ret_str + s
     return ret_str
     
-        
+
+
+##
+# @if jp
+# @brief 指定ファイル名を指定ディレクトリから探査する
+#
+# @param dir ディレクトリパス
+# @param filename ファイル名
+# @param filelist ファイル一覧
+#
+#
+#
+# @else
+# @brief 
+#
+# @param dir 
+# @param filename
+# @param filelist 
+#
+#
+# @endif
+def findFile(dir, filename, filelist):
+	dirs = glob.glob(os.path.join(dir,"*"))
+	for d in dirs:
+		if os.path.isdir(d):
+			findFile(d, filename, filelist)
+	files = glob.glob(os.path.join(dir,filename))
+	for f in files:
+		if os.path.isfile(d):
+			filelist.append(f)
+
+
+##
+# @if jp
+# @brief ファイル一覧を指定ディレクトリから探査する
+#
+# @param dir ディレクトリパス
+# @param ext 拡張子
+# @param filelist ファイル一覧
+#
+#
+#
+# @else
+# @brief 
+#
+# @param dir 
+# @param ext 
+# @param filelist 
+#
+#
+# @endif
+def getFileList(dir, ext, filelist):
+    dirs = glob.glob(os.path.join(dir,"*"))
+    for d in dirs:
+        if os.path.isdir(d):
+            getFileList(d, ext, filelist)
+    files = glob.glob(os.path.join(dir,"*."+ext))
+    for f in files:
+        if os.path.isfile(d):
+            filelist.append(f)

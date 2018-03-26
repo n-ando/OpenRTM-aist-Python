@@ -288,9 +288,9 @@ class ManagerConfig :
         if pos > 0:
           key = arg[:pos]
           value = arg[pos+1:]
-          key = OpenRTM_aist.unescape(key)
+          #key = OpenRTM_aist.unescape(key)
           key = key.strip()
-          value = OpenRTM_aist.unescape(value)
+          #value = OpenRTM_aist.unescape(value)
           value = value.strip()
           self._argprop.setProperty(key,value)
 
