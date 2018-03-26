@@ -1364,6 +1364,7 @@ class ManagerServant(RTM__POA.Manager):
       
       if platform.system() == "Windows":
         cmd = "cmd /c " + rtcd_cmd
+        load_path = load_path.replace("\\","\\\\")
       else:
         cmd = rtcd_cmd
       cmd += " -o " + "manager.is_master:NO"
@@ -1400,7 +1401,7 @@ class ManagerServant(RTM__POA.Manager):
         del guard_slave
 
 
-
+  
       ret = OpenRTM_aist.launch_shell(cmd)
 
       

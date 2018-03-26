@@ -543,6 +543,7 @@ class ModuleManager:
     paths.extend(self._loadPath)
     paths = self.deleteSamePath(paths)
     
+    
 
     suffixes = lprop.getProperty("suffixes").split(",")
 
@@ -560,7 +561,10 @@ class ModuleManager:
         OpenRTM_aist.eraseHeadBlank(tmp)
         suffix = tmp[0]
         
-        tmp = glob.glob(path + os.sep + '*.' + suffix)
+        tmp = []
+        OpenRTM_aist.getFileList(path,suffix,tmp)
+        
+        #tmp = glob.glob(path + os.sep + '*.' + suffix)
         if lang == "Python":
           for f in tmp:
             if f.find("__init__.py") != -1:
@@ -836,14 +840,20 @@ class ModuleManager:
   def findFile(self, fname, load_path):
     file_name = fname
     for path in load_path:
-      if fname.find(".py") == -1:
-        f = str(path) + os.sep + str(file_name)+".py"
+      suffix = self._properties.getProperty("manager.modules.Python.suffixes")
+      if fname.find("."+suffix) == -1:
+        f = str(path) + os.sep + str(file_name)+"."+suffix
       else:
         f = str(path)+ os.sep + str(file_name)
       if self.fileExist(f):
         f = f.replace("\\","/")
         f = f.replace("//","/")
         return f
+      filelist = []
+      OpenRTM_aist.findFile(path,file_name,filelist)
+      
+      if len(filelist) > 0:
+        return filelist[0]
     return ""
 
 
@@ -863,8 +873,9 @@ class ModuleManager:
   # @endif
   def fileExist(self, filename):
     fname = filename
-    if fname.find(".py") == -1:
-      fname = str(filename)+".py"
+    suffix = self._properties.getProperty("manager.modules.Python.suffixes")
+    if fname.find("."+suffix) == -1:
+      fname = str(filename)+"."+suffix
 
     if os.path.isfile(fname):
       return True
