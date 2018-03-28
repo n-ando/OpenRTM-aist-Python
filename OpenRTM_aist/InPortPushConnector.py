@@ -211,20 +211,32 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
     if not self._buffer:
       return self.PRECONDITION_NOT_MET
 
-    if type(data) == list:
-      ret = self._buffer.read(data)
+    cdr = [""]
+    ret = self._buffer.read(cdr)
+
+    if not self._dataType:
+      return self.PRECONDITION_NOT_MET
+    if self._endian is not None:
+      if ret == OpenRTM_aist.BufferStatus.BUFFER_OK:
+        _data = cdrUnmarshal(any.to_any(self._dataType).typecode(),cdr[0],self._endian)
+        if type(data) == list:
+          data[0] = _data
     else:
-      tmp = [data]
-      ret = self._buffer.read(tmp)
-            
+      self._rtcout.RTC_ERROR("unknown endian from connector")
+      return self.PRECONDITION_NOT_MET
+
+
             
     if ret == OpenRTM_aist.BufferStatus.BUFFER_OK:
+      self.onBufferRead(cdr[0])
       return self.PORT_OK
 
     elif ret == OpenRTM_aist.BufferStatus.BUFFER_EMPTY:
+      self.onBufferEmpty(cdr[0])
       return self.BUFFER_EMPTY
 
     elif ret == OpenRTM_aist.BufferStatus.TIMEOUT:
+      self.onBufferReadTimeout(cdr[0])
       return self.BUFFER_TIMEOUT
 
     elif ret == OpenRTM_aist.BufferStatus.PRECONDITION_NOT_MET:
@@ -406,4 +418,19 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
   def onDisconnect(self):
     if self._listeners and self._profile:
       self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_DISCONNECT].notify(self._profile)
+    return
+
+
+
+  def onBufferRead(self, data):
+    if self._listeners and self._profile:
+      self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
+    return
+  def onBufferEmpty(self, data):
+    if self._listeners and self._profile:
+      self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_EMPTY].notify(self._profile)
+    return
+  def onBufferReadTimeout(self, data):
+    if self._listeners and self._profile:
+      self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_READ_TIMEOUT].notify(self._profile)
     return

@@ -211,7 +211,9 @@ class SdoServiceAdmin:
                                        properties,
                                        svc._this())
 
-      svc.init(rtobj, prof)
+      if not svc.init(rtobj, prof):
+        svc.finalize()
+        continue
       self._providers.append(svc)
     
 

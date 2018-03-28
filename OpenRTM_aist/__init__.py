@@ -117,4 +117,15 @@ from CPUAffinity import *
 from LogstreamBase import *
 from LogstreamFile import *
 from SimulatorExecutionContext import *
+from FsmActionListener import *
+from StaticFSM import *
+from EventPort import *
+from Timestamp import *
+from OutPortDSConsumer import *
+from OutPortDSProvider import *
+from InPortDSConsumer import *
+from InPortDSProvider import *
+from FsmObject import *
+from FiniteStateMachineComponent import *
+import Macho
 

@@ -214,7 +214,9 @@ baseidl_files = [
   "SDOPackage.idl",
   "SharedMemory.idl",
   "IORProfile.idl",
-  "../ext/sdo/observer/ComponentObserver.idl"
+  "../ext/sdo/observer/ComponentObserver.idl",
+  "ExtendedFsmService.idl",
+  "DataPort_OpenRTM.idl"
   ]
 baseidl_mods  = ["RTM", "RTC", "SDOPackage", "OpenRTM"]
 baseidl_path  = os.path.normpath(current_dir + "/" + baseidl_dir)

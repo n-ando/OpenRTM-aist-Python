@@ -47,4 +47,8 @@ def FactoryInit():
     OpenRTM_aist.NodeNumberingPolicyInit()
     OpenRTM_aist.NamingServiceNumberingPolicyInit()
     OpenRTM_aist.LogstreamFileInit()
+    OpenRTM_aist.OutPortDSProviderInit()
+    OpenRTM_aist.OutPortDSConsumerInit()
+    OpenRTM_aist.InPortDSProviderInit()
+    OpenRTM_aist.InPortDSConsumerInit()
     ComponentObserverConsumer.ComponentObserverConsumerInit()

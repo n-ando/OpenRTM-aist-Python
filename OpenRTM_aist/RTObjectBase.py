@@ -2,8 +2,8 @@
 # -*- coding: euc-jp -*-
 
 ##
-# @file RTObject.py
-# @brief RT component base class
+# @file RTObjectBase.py
+# @brief RT Object base class
 # @date $Date: $
 # @author Noriaki Ando <n-ando@aist.go.jp> and Shinji Kurihara
 #
@@ -65,7 +65,7 @@ default_conf = [
 # @else
 #
 # @endif
-class RTObject_impl:
+class RTObjectBase:
   """
   """
 
@@ -444,6 +444,8 @@ class RTObject_impl:
     self._rtcout.RTC_TRACE("onRatechanged(%d)",ec_id)
     return RTC.RTC_OK
 
+
+
   ##
   # @if jp
   #
@@ -459,7 +461,7 @@ class RTObject_impl:
   # @endif
   def onAction(self, ec_id):
     self._rtcout.RTC_TRACE("onAction(%d)",ec_id)
-    return RTC.RTC_OK
+    return RTC.RTC_OK 
 
 
   #============================================================
@@ -654,13 +656,6 @@ class RTObject_impl:
       return RTC.PRECONDITION_NOT_MET
     if self._exiting:
       return RTC.RTC_OK
-
-    organizations = self.get_organizations()
-    
-
-    for o in organizations:
-      o.remove_member(self.getInstanceName())
-    
 
     # deactivate myself on owned EC
     OpenRTM_aist.CORBA_SeqUtil.for_each(self._ecMine,
@@ -863,7 +858,7 @@ class RTObject_impl:
     return execlist
 
 
-  #
+  ##
   # @if jp
   # @brief [CORBA interface] ExecutionContext のハンドルを返す
   #
@@ -1536,6 +1531,11 @@ class RTObject_impl:
       ret = RTC.RTC_ERROR
     self.postOnReset(ec_id, ret)
     return ret
+
+
+
+
+
 
 
 
@@ -2660,7 +2660,7 @@ class RTObject_impl:
       self._rtcout.RTC_ERROR("addInPort() failed.")
       return ret
       
-    inport.init(prop_)
+    inport.init(self._properties.getNode(propkey))
     self._inports.append(inport)
     return ret
 
@@ -2704,7 +2704,7 @@ class RTObject_impl:
       self._rtcout.RTC_ERROR("addOutPort() failed.")
       return ret
 
-    outport.init(prop_)
+    outport.init(self._properties.getNode(propkey))
     self._outports.append(outport)
     return ret
 
@@ -3426,14 +3426,14 @@ class RTObject_impl:
   def finalizeContexts(self):
     self._rtcout.RTC_TRACE("finalizeContexts()")
     len_ = len(self._eclist)
-    for ec in self._eclist:
-      ec.stop()
+    for i in range(len_):
+      idx = (len_ - 1) - i
+      self._eclist[idx].stop()
       try:
-        self._poa.deactivate_object(self._poa.servant_to_id(ec))
+        self._poa.deactivate_object(self._poa.servant_to_id(self._eclist[idx]))
       except:
         self._rtcout.RTC_TRACE(OpenRTM_aist.Logger.print_exception())
-      ec.exit()
-    self._eclist = []
+      del self._eclist[idx]
 
 
     return
@@ -4343,38 +4343,6 @@ class RTObject_impl:
 
   ##
   # @if jp
-  #
-  # @brief ConfigurationSetNameListener を削除する
-  #
-  # addConfigurationSetNameListener で追加されたリスナオブジェクトを
-  # 削除する。
-  #
-  # @param type ConfigurationSetNameListenerType型の値。
-  #             ON_UPDATE_CONFIG_PARAM がある。
-  # @param listener 与えたリスナオブジェクトへのポインタ
-  # 
-  # @else
-  #
-  # @brief Removing ConfigurationSetNameListener 
-  # 
-  # This function removes a listener object which is added by
-  # addConfigurationSetNameListener() function.
-  #
-  # @param type ConfigurationSetNameListenerType value
-  #             ON_UPDATE_CONFIG_PARAM is only allowed.
-  # @param listener a pointer to ConfigurationSetNameListener
-  #             listener object.
-  #
-  # @endif
-  # void
-  # removeConfigurationSetNameListener(ConfigurationSetNameListenerType type,
-  #                                    ConfigurationSetNameListener* listener);
-  def removeConfigurationSetNameListener(self, type, listener):
-    self._configsets.removeConfigurationSetNameListener(type, listener)
-    return
-
-  ##
-  # @if jp
   # @brief PreFsmActionListener リスナを追加する
   #
   # FsmAction 実装関数の呼び出し直前のイベントに関連する各種リ
@@ -4800,7 +4768,6 @@ class RTObject_impl:
     self._fsmActionListeners.structure_[listener_type].removeListener(listener)
     return
 
-
   ##
   # @if jp
   #
@@ -4823,8 +4790,6 @@ class RTObject_impl:
       self._poa.deactivate_object(self._poa.servant_to_id(self._SdoConfigImpl))
       self._poa.deactivate_object(self._poa.servant_to_id(self))
       self._sdoservice.exit()
-      poa = self._orb.resolve_initial_references("omniINSPOA")
-      poa.deactivate_object(poa.servant_to_id(self))
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
@@ -4994,7 +4959,6 @@ class RTObject_impl:
   def onDetachExecutionContext(self, ec_id):
     self._actionListeners.ecaction_[OpenRTM_aist.ExecutionContextActionListenerType.EC_DETACHED].notify(ec_id)
     return
-
 
 
   

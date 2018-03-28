@@ -60,6 +60,8 @@ class RTObjectStateMachine:
                              self.onStateUpdate)
     self._sm.setExitAction  (RTC.ACTIVE_STATE,
                              self.onDeactivated)
+    #self._sm.setDoAction  (RTC.ACTIVE_STATE,
+    #                        self.onAction)
     self._sm.setEntryAction (RTC.ERROR_STATE,
                              self.onAborting)
     self._sm.setDoAction    (RTC.ERROR_STATE,

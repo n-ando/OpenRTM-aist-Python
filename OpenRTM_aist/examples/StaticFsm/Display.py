@@ -1,26 +1,37 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# -*- Python -*-
+# -*- coding: euc-jp -*-
 
+##
+# @file Display.py
+# @brief example StaticFSM
+# @date $Date: $
+# @author Nobuhiko Miyamoto <n-miyamoto@aist.go.jp>
+#
+# Copyright (C) 2017
+#     Intelligent Systems Research Institute,
+#     National Institute of
+#         Advanced Industrial Science and Technology (AIST), Japan
+#     All rights reserved.
 
 from __future__ import print_function
 import sys
-import time
 
 import RTC
 import OpenRTM_aist
+import OpenRTM_aist.StringUtil
 
-consoleout_spec = ["implementation_id", "ConsoleOut",
-                   "type_name",         "ConsoleOut",
-                   "description",       "Console output component",
-                   "version",           "1.0",
-                   "vendor",            "Shinji Kurihara",
-                   "category",          "example",
-                   "activity_type",     "DataFlowComponent",
-                   "max_instance",      "10",
-                   "language",          "Python",
-                   "lang_type",         "script",
-                   ""]
+display_spec = ["implementation_id", "Display",
+                  "type_name",         "Display",
+                  "description",       "Console input component",
+                  "version",           "1.0",
+                  "vendor",            "Nobuhiko Miyamoto",
+                  "category",          "example",
+                  "activity_type",     "DataFlowComponent",
+                  "max_instance",      "10",
+                  "language",          "Python",
+                  "lang_type",         "script",
+                  ""]
+
 
 
 class DataListener(OpenRTM_aist.ConnectorDataListenerT):
@@ -58,78 +69,85 @@ class ConnListener(OpenRTM_aist.ConnectorListener):
 
 
 
-class ConsoleOut(OpenRTM_aist.DataFlowComponentBase):
+
+class Display(OpenRTM_aist.DataFlowComponentBase):
   def __init__(self, manager):
     OpenRTM_aist.DataFlowComponentBase.__init__(self, manager)
     return
 
   def onInitialize(self):
-    self._data = RTC.TimedLong(RTC.Time(0,0),0)
-    self._inport = OpenRTM_aist.InPort("in", self._data)
-    # Set InPort buffer
-    self.addInPort("in", self._inport)
+    self._in = RTC.TimedLong(RTC.Time(0,0),0)
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE,
+    
+    self._inIn = OpenRTM_aist.InPort("in", self._in)
+
+    # Set OutPort buffer
+    self.addInPort("in", self._inIn)
+
+
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE,
                                           DataListener("ON_BUFFER_WRITE"))
 
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_FULL, 
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_FULL, 
                                           DataListener("ON_BUFFER_FULL"))
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE_TIMEOUT, 
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_WRITE_TIMEOUT, 
                                           DataListener("ON_BUFFER_WRITE_TIMEOUT"))
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_OVERWRITE, 
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_OVERWRITE, 
                                           DataListener("ON_BUFFER_OVERWRITE"))
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ, 
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ, 
                                           DataListener("ON_BUFFER_READ"))
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_SEND, 
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_SEND, 
                                           DataListener("ON_SEND"))
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
                                           DataListener("ON_RECEIVED"))
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_FULL, 
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_FULL, 
                                           DataListener("ON_RECEIVER_FULL"))
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_TIMEOUT, 
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_TIMEOUT, 
                                           DataListener("ON_RECEIVER_TIMEOUT"))
 
-    self._inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_ERROR,
+    self._inIn.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVER_ERROR,
                                           DataListener("ON_RECEIVER_ERROR"))
 
-    self._inport.addConnectorListener(OpenRTM_aist.ConnectorListenerType.ON_CONNECT,
+    self._inIn.addConnectorListener(OpenRTM_aist.ConnectorListenerType.ON_CONNECT,
                                       ConnListener("ON_CONNECT"))
-    self._inport.addConnectorListener(OpenRTM_aist.ConnectorListenerType.ON_DISCONNECT,
+    self._inIn.addConnectorListener(OpenRTM_aist.ConnectorListenerType.ON_DISCONNECT,
                                       ConnListener("ON_DISCONNECT"))
 
+
     return RTC.RTC_OK
 
+        
   def onExecute(self, ec_id):
-
-    if self._inport.isNew():
-      data = self._inport.read()
-      print("Received: ", data)
+    if self._inIn.isNew():
+      data = self._inIn.read()
       print("Received: ", data.data)
-      print("TimeStamp: ", data.tm.sec, "[s] ", data.tm.nsec, "[ns]")
+      print("TimeStamp: ", data.tm.sec,"[s]")
+      print("TimeStamp: ", data.tm.nsec,"[ns]")
 
+    
     return RTC.RTC_OK
 
 
-def ConsoleOutInit(manager):
-  profile = OpenRTM_aist.Properties(defaults_str=consoleout_spec)
+def DisplayInit(manager):
+  profile = OpenRTM_aist.Properties(defaults_str=display_spec)
   manager.registerFactory(profile,
-                          ConsoleOut,
+                          Display,
                           OpenRTM_aist.Delete)
 
+
 def MyModuleInit(manager):
-  ConsoleOutInit(manager)
+  DisplayInit(manager)
 
   # Create a component
-  comp = manager.createComponent("ConsoleOut")
-
+  comp = manager.createComponent("Display")
 
 def main():
   # Initialize manager

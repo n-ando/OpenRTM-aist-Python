@@ -19,6 +19,43 @@ from omniORB import cdrUnmarshal
 from omniORB import any
 
 import OpenRTM_aist
+import OpenRTM_aist.Guard
+import threading
+
+
+##
+# @if jp
+# @class ConnectorListenerStatus mixin class
+# @brief ConnectorListenerStatus mixin クラス
+#
+# このクラスは、enum定義されたリターンコードを、ConnectorListener関
+# 連のサブクラスで共通利用するための mixin クラスである。このリター
+# ンコードを使用するクラスでは、ConnectorListenerStatus クラスを
+# public 継承し、下にdefine してある CONNLISTENER_STATUS_ENUM をクラ
+# ス内に記述することで利用可能となる。これにより、enum を
+# ReturnCode 型として typedef し、以後 ReturnCode を利用できるように
+# するとともに、名前空間に enum 定義された各識別子を当該クラス名前空
+# 間内に導入する。
+#
+# @else
+# @class DataPortStatus mixin class
+# @brief DataPortStatus mixin class
+#
+# This is a mixin class to provide enumed return codes that are
+# commonly utilised in connector listener related sub-classes. To
+# use this class, sub-class should inherit this class as a public
+# super class, and declare CONNLISTENERSTATUS_ENUM defined
+# below. Consequently, ReturnCode type that is typedefed by this
+# macro can be used in the sub-class, and enumed identifiers are
+# imported to the class's namespace.
+#
+# @endif
+#
+class ConnectorListenerStatus:
+  NO_CHANGE = 0
+  INFO_CHANGED = 1 << 0
+  DATA_CHANGED = 1 << 1
+  BOTH_CHANGED = INFO_CHANGED | DATA_CHANGED
 
 
 ##
@@ -180,7 +217,7 @@ class ConnectorDataListener:
   def __del__(self):
     pass
 
-  # virtual void operator()(const ConnectorInfo& info,
+  # virtual ReturnCode operator()(const ConnectorInfo& info,
   #                         const cdrMemoryStream& data) = 0;
   def __call__(self, info, data):
     pass
@@ -284,7 +321,7 @@ class ConnectorDataListenerT(ConnectorDataListener):
   #
   # @endif
   #
-  # virtual void operator()(const ConnectorInfo& info,
+  # virtual ReturnCode operator()(const ConnectorInfo& info,
   #                         const cdrMemoryStream& cdrdata)
   def __call__(self, info, cdrdata, data):
     endian = info.properties.getProperty("serializer.cdr.endian","little")
@@ -349,6 +386,7 @@ class ConnectorListenerType:
 ##
 # @if jp
 # @class ConnectorListener クラス
+# @brief ConnectorListener クラス
 #
 # データポートの Connector において発生する各種イベントに対するコー
 # ルバックを実現するリスナクラスの基底クラス。
@@ -362,51 +400,62 @@ class ConnectorListenerType:
 # 場合などにコールされるファンクタの引数に何もとらならい
 # ConnecotorListener がある。
 #
-# データポートには、接続時にデータの送受信方法についてデータフロー型、
-# サブスクリプション型等を設定することができる。
-# ConnectorDaataListener/ConnectorListener は共にに、様々なイベント
-# に対するコールバックを設定することができるが、これらデータフロー型
-# およびサブスクリプション型の設定に応じて、利用できるもの、できない
-# もの、また呼び出されるタイミングが異なる。以下に、インターフェース
-# がCORBA CDR型の場合のコールバック一覧を示す。
+# ConnectorListener クラスによって関連する動作をフックしたい場合、以
+# 下の例のように、このクラスを継承し、コネクタの情報を引数に取る以下
+# のようなコールバックオブジェクトを定義し、データポートの適切なコー
+# ルバック設定関数からコールバックオブジェクトをセットする必要がある。
+#
+# <pre>
+# class MyListener
+#   : public ConnectorListener
+# {
+# public:
+#   MyListener(const char* name) : m_name(name) {}
+#   virtual ~MyListener() {}
+#   virtual ReturnCode operator()(ConnectorInfo& info)
+#   {
+#     std::cout << "Data Listener: " << m_name       << std::endl;
+#     std::cout << "Profile::name: " << info.name    << std::endl;
+#     std::cout << "Profile::id:   " << info.id      << std::endl;
+#     std::cout << "Profile::properties: "           << std::endl;
+#     std::cout << info.properties;
+#   };
+#   std::string m_name;
+# };
+# </pre>
+#
+# このようにして定義されたリスナクラスは、以下のようにデータポートに
+# 対して、以下のようにセットされる。
+#
+# <pre>
+# RTC::ReturnCode_t ConsoleIn::onInitialize()
+# {
+#     m_outOut.
+#         addConnectorListener(ON_BUFFER_EMPTY,
+#                              new MyListener("ON_BUFFER_EMPTY"));
+#    :
+# </pre>
+#
+# 第1引数の "ON_BUFFER_EMPTY" は、コールバックをフックするポイントで
+# あり、以下に列挙する値を取ることが可能である。データポートには、接
+# 続時にデータの送受信方法について、インターフェース型、データフロー
+# 型、サブスクリプション型等を設定することができるが、これらの設定に
+# よりフックされるポイントは異なる。以下に、インターフェースがCORBA
+# CDR型の場合のコールバック一覧を示す。
 #
 # OutPort:
 # -  Push型: Subscription Typeによりさらにイベントの種類が分かれる。
 #   - Flush: Flush型にはバッファがないため ON_BUFFER 系のイベントは発生しない
-#     - ON_SEND
-#     - ON_RECEIVED
-#     - ON_RECEIVER_FULL
-#     - ON_RECEIVER_TIMEOUT
-#     - ON_RECEIVER_ERROR
 #     - ON_CONNECT
 #     - ON_DISCONNECT
 #     .
 #   - New型
-#     - ON_BUFFER_WRITE
-#     - ON_BUFFER_FULL
-#     - ON_BUFFER_WRITE_TIMEOUT
-#     - ON_BUFFER_OVERWRITE
-#     - ON_BUFFER_READ
-#     - ON_SEND
-#     - ON_RECEIVED
-#     - ON_RECEIVER_FULL
-#     - ON_RECEIVER_TIMEOUT
-#     - ON_RECEIVER_ERROR
-#     - ON_SENDER_ERROR
 #     - ON_CONNECT
 #     - ON_DISCONNECT
 #     .
 #   - Periodic型
-#     - ON_BUFFER_WRITE
-#     - ON_BUFFER_FULL
-#     - ON_BUFFER_WRITE_TIMEOUT
-#     - ON_BUFFER_READ
-#     - ON_SEND
-#     - ON_RECEIVED
-#     - ON_RECEIVER_FULL
-#     - ON_RECEIVER_TIMEOUT
-#     - ON_RECEIVER_ERROR
 #     - ON_BUFFER_EMPTY
+#     - ON_BUFFER_READ_TIMEOUT
 #     - ON_SENDER_EMPTY
 #     - ON_SENDER_ERROR
 #     - ON_CONNECT
@@ -414,8 +463,6 @@ class ConnectorListenerType:
 #     .
 #   .
 # - Pull型
-#   - ON_BUFFER_READ
-#   - ON_SEND
 #   - ON_BUFFER_EMPTY
 #   - ON_BUFFER_READ_TIMEOUT
 #   - ON_SENDER_EMPTY
@@ -423,29 +470,117 @@ class ConnectorListenerType:
 #   - ON_SENDER_ERROR
 #   - ON_CONNECT
 #   - ON_DISCONNECT
-#
+#   .
 # InPort:
 # - Push型:
-#     - ON_BUFFER_WRITE
-#     - ON_BUFFER_FULL
-#     - ON_BUFFER_WRITE_TIMEOUT
-#     - ON_BUFFER_WRITE_OVERWRITE
-#     - ON_RECEIVED
-#     - ON_RECEIVER_FULL
-#     - ON_RECEIVER_TIMEOUT
-#     - ON_RECEIVER_ERROR
+#     - ON_BUFFER_EMPTY
+#     - ON_BUFFER_READ_TIMEOUT
 #     - ON_CONNECT
 #     - ON_DISCONNECT
 #     .
 # - Pull型
 #     - ON_CONNECT
 #     - ON_DISCONNECT
+#
 # @else
 # @class ConnectorListener class
+# @brief ConnectorListener class
 #
 # This class is abstract base class for listener classes that
-# provides callbacks for various events in the data port's
+# realize callbacks for various events in the data port's
 # connectors.
+#
+# Callbacks can be hooked to the various kind of events which occur
+# throgh OutPort side data write action to InPort side data-read
+# action. Two types listener classes exist. One is
+# ConnectorDataListener which receives valid data-port's data value
+# at that time such as buffer-full event, data-send event, and so
+# on. Other is ConnectorListener which does not receive any data
+# such as buffer-empty event, buffer-read-timeout event and so on.
+#
+# If you want to hook related actions by
+# ConnectorListener, a class which inherits this class should
+# be defined, and the functor should receive a connector
+# information as an argument. And then, the defined
+# class must be set to data-port object through its member
+# function, as follows.
+#
+# <pre>
+# class MyListener
+#   : public ConnectorListener
+# {
+# public:
+#   MyListener(const char* name) : m_name(name) {}
+#   virtual ~MyListener() {}
+#   virtual ReturnCode operator()(ConnectorInfo& info)
+#   {
+#     std::cout << "Data Listener: " << m_name       << std::endl;
+#     std::cout << "Profile::name: " << info.name    << std::endl;
+#     std::cout << "Profile::id:   " << info.id      << std::endl;
+#     std::cout << "Profile::properties: "           << std::endl;
+#     std::cout << info.properties;
+#   };
+#   std::string m_name;
+# };
+# </pre>
+#
+# The listener class defained as above can be attached to a
+# data-port as follows.
+#
+# <pre>
+# RTC::ReturnCode_t ConsoleIn::onInitialize()
+# {
+#     m_outOut.
+#         addConnectorListener(ON_BUFFER_EMPTY,
+#                              new MyDataListener("ON_BUFFER_EMPTY"));
+#    :
+# </pre>
+#
+# The first argument "ON_BUFFER_EMPTY" specifies hook point of
+# callback, and the following values are available. Data-port can
+# be specified some properties such as interface-type,
+# dataflow-type, subscription type and so on. Available hook points
+# vary by the those settings. The following hook points are
+# available when interface type is CORBA CDR type.
+#
+# OutPort:
+# -  Push type: Available hook event varies by subscription type.
+#   - Flush: No ON_BUFFER* events since flush-type has no buffer.
+#     - ON_CONNECT
+#     - ON_DISCONNECT
+#     .
+#   - New type:
+#     - ON_CONNECT
+#     - ON_DISCONNECT
+#     .
+#   - Periodic type:
+#     - ON_BUFFER_EMPTY
+#     - ON_BUFFER_READ_TIMEOUT
+#     - ON_SENDER_EMPTY
+#     - ON_SENDER_ERROR
+#     - ON_CONNECT
+#     - ON_DISCONNECT
+#     .
+#   .
+# - Pull type:
+#   - ON_BUFFER_EMPTY
+#   - ON_BUFFER_READ_TIMEOUT
+#   - ON_SENDER_EMPTY
+#   - ON_SENDER_TIMEOUT
+#   - ON_SENDER_ERROR
+#   - ON_CONNECT
+#   - ON_DISCONNECT
+#   .
+# InPort:
+# - Push type:
+#     - ON_BUFFER_EMPTY
+#     - ON_BUFFER_READ_TIMEOUT
+#     - ON_CONNECT
+#     - ON_DISCONNECT
+#     .
+# - Pull type:
+#     - ON_CONNECT
+#     - ON_DISCONNECT
 #
 # @endif
 #
@@ -527,6 +662,7 @@ class ConnectorDataListenerHolder:
   #
   def __init__(self):
     self._listeners = []
+    self._mutex = threading.RLock()
     return
 
 
@@ -538,6 +674,7 @@ class ConnectorDataListenerHolder:
   # @endif
   #
   def __del__(self):
+    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
     for listener in self._listeners:
       for (k,v) in listener.items():
         if v:
@@ -570,6 +707,7 @@ class ConnectorDataListenerHolder:
   #
   # void addListener(ConnectorDataListener* listener, bool autoclean);
   def addListener(self, listener, autoclean):
+    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
     self._listeners.append({listener:autoclean})
     return
 
@@ -595,6 +733,7 @@ class ConnectorDataListenerHolder:
   #
   # void removeListener(ConnectorDataListener* listener);
   def removeListener(self, listener):
+    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
     for (i, _listener) in enumerate(self._listeners):
       if listener in _listener:
         del self._listeners[i][listener]
@@ -622,13 +761,15 @@ class ConnectorDataListenerHolder:
   # @param cdrdata Data
   # @endif
   #
-  # void notify(const ConnectorInfo& info,
+  # ReturnCode notify(const ConnectorInfo& info,
   #             const cdrMemoryStream& cdrdata);
   def notify(self, info, cdrdata):
+    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
+    ret = ConnectorListenerStatus.NO_CHANGE
     for listener in self._listeners:
       for (k,v) in listener.items():
-        k(info, cdrdata)
-    return
+        ret = ret | k(info, cdrdata)
+    return ret
 
 
 ##
@@ -657,6 +798,7 @@ class ConnectorListenerHolder:
   #
   def __init__(self):
     self._listeners = []
+    self._mutex = threading.RLock()
     return
 
     
@@ -668,6 +810,7 @@ class ConnectorListenerHolder:
   # @endif
   #
   def __del__(self):
+    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
     for listener in self._listeners:
       for (k,v) in listener.items():
         if v:
@@ -700,6 +843,7 @@ class ConnectorListenerHolder:
   #
   # void addListener(ConnectorListener* listener, bool autoclean);
   def addListener(self, listener, autoclean):
+    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
     self._listeners.append({listener:autoclean})
     return
 
@@ -725,6 +869,7 @@ class ConnectorListenerHolder:
   #
   # void removeListener(ConnectorListener* listener);
   def removeListener(self, listener):
+    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
     for (i, _listener) in enumerate(self._listeners):
       if listener in _listener:
         del self._listeners[i][listener]
@@ -740,6 +885,7 @@ class ConnectorListenerHolder:
   #
   # @param self
   # @param info ConnectorInfo
+  # @return ReturnCode
   # @else
   #
   # @brief Notify listeners. 
@@ -748,14 +894,17 @@ class ConnectorListenerHolder:
   #
   # @param self
   # @param info ConnectorInfo
+  # @return ReturnCode
   # @endif
   #
   # void notify(const ConnectorInfo& info);
   def notify(self, info):
+    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
+    ret = ConnectorListenerStatus.NO_CHANGE
     for listener in self._listeners:
       for (k,v) in listener.items():
-        k(info)
-    return
+        ret = ret | k(info)
+    return ret
 
 
   

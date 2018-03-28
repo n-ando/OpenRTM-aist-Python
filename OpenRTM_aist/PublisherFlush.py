@@ -492,3 +492,6 @@ def PublisherFlushInit():
   OpenRTM_aist.PublisherFactory.instance().addFactory("flush",
                                                       OpenRTM_aist.PublisherFlush,
                                                       OpenRTM_aist.Delete)
+  OpenRTM_aist.PublisherFactory.instance().addFactory("block",
+                                                      OpenRTM_aist.PublisherFlush,
+                                                      OpenRTM_aist.Delete)

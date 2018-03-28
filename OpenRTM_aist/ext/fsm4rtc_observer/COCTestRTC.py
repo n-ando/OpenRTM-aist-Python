@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
-from __future__ import print_function
 import sys
 
 import RTC
 import OpenRTM_aist
 
-consolein_spec = ["implementation_id", "ConsoleIn",
-                  "type_name",         "ConsoleIn",
+coctestrtc_spec = ["implementation_id", "COCTestRTC",
+                  "type_name",         "COCTestRTC",
                   "description",       "Console input component",
                   "version",           "1.0",
                   "vendor",            "Shinji Kurihara",
@@ -36,7 +35,6 @@ class DataListener(OpenRTM_aist.ConnectorDataListenerT):
     print("Profile::id:    ", info.id)
     print("Data:           ", data.data)
     print("------------------------------")
-    return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
     
 class ConnListener(OpenRTM_aist.ConnectorListener):
   def __init__(self, name):
@@ -51,10 +49,9 @@ class ConnListener(OpenRTM_aist.ConnectorListener):
     print("Profile::name:  ", info.name)
     print("Profile::id:    ", info.id)
     print("------------------------------")
-    return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
 
-class ConsoleIn(OpenRTM_aist.DataFlowComponentBase):
+class COCTestRTC(OpenRTM_aist.DataFlowComponentBase):
   def __init__(self, manager):
     OpenRTM_aist.DataFlowComponentBase.__init__(self, manager)
     return
@@ -94,27 +91,26 @@ class ConsoleIn(OpenRTM_aist.DataFlowComponentBase):
 
         
   def onExecute(self, ec_id):
-    print("Please input number: ",end="")
-    self._data.data = int(input())
-    
+    print("Please input number: ")
+    self._data.data = long(sys.stdin.readline())
     OpenRTM_aist.setTimestamp(self._data)
     print("Sending to subscriber: ", self._data.data)
     self._outport.write()
     return RTC.RTC_OK
 
 
-def ConsoleInInit(manager):
-  profile = OpenRTM_aist.Properties(defaults_str=consolein_spec)
+def COCTestRTCInit(manager):
+  profile = OpenRTM_aist.Properties(defaults_str=coctestrtc_spec)
   manager.registerFactory(profile,
-                          ConsoleIn,
+                          COCTestRTC,
                           OpenRTM_aist.Delete)
 
 
 def MyModuleInit(manager):
-  ConsoleInInit(manager)
+  COCTestRTCInit(manager)
 
   # Create a component
-  comp = manager.createComponent("ConsoleIn")
+  comp = manager.createComponent("COCTestRTC")
 
 def main():
   # Initialize manager
