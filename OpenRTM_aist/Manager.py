@@ -3243,7 +3243,6 @@ class Manager:
     for i in range(len(comps)):
       if comps[i] is None or comps[i] == "":
         continue
-      comps[i] = comps[i].strip()
 
       self.createComponent(comps[i])
 
@@ -3256,7 +3255,7 @@ class Manager:
   # @brief 
   # @param self
   # @endif
-  # void initPreCreation()
+  # void invokeInitProc()
   def invokeInitProc(self):
     if self._initProc:
       self._initProc(self)
