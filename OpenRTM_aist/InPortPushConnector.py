@@ -381,19 +381,7 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
   #
   # ReturnCode write(const OpenRTM::CdrData& data);
   def write(self, data):
-    if not self._dataType:
-      return OpenRTM_aist.BufferStatus.PRECONDITION_NOT_MET
-
-    _data = None
-    # CDR -> (conversion) -> data
-    if self._endian is not None:
-      _data = cdrUnmarshal(any.to_any(self._dataType).typecode(),data,self._endian)
-
-    else:
-      self._rtcout.RTC_ERROR("unknown endian from connector")
-      return OpenRTM_aist.BufferStatus.PRECONDITION_NOT_MET
-
-    return self._buffer.write(_data)
+    return self._buffer.write(data)
         
     
   ##
