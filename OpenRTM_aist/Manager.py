@@ -1977,7 +1977,7 @@ class Manager:
 
     #meths = OpenRTM_aist.split(self._config.getProperty("naming.type"),",")
     meths = [s.strip() for s in self._config.getProperty("naming.type").split(",")]
-    print(meths)
+    
     
     for meth in meths:
       #names = OpenRTM_aist.split(self._config.getProperty(meth+".nameservers"), ",")
