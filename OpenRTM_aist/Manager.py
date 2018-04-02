@@ -1975,10 +1975,13 @@ class Manager:
     if not OpenRTM_aist.toBool(self._config.getProperty("naming.enable"), "YES", "NO", True):
       return True
 
-    meths = OpenRTM_aist.split(self._config.getProperty("naming.type"),",")
+    #meths = OpenRTM_aist.split(self._config.getProperty("naming.type"),",")
+    meths = [s.strip() for s in self._config.getProperty("naming.type").split(",")]
+    
     
     for meth in meths:
-      names = OpenRTM_aist.split(self._config.getProperty(meth+".nameservers"), ",")
+      #names = OpenRTM_aist.split(self._config.getProperty(meth+".nameservers"), ",")
+      names = [s.strip() for s in self._config.getProperty(meth+".nameservers").split(",")]
       for name in names:
         self._rtcout.RTC_TRACE("Register Naming Server: %s/%s", (meth, name))
         self._namingManager.registerNameServer(meth,name)
