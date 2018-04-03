@@ -275,6 +275,7 @@ class RingBuffer(OpenRTM_aist.BufferBase):
 
     self._wpos = (self._wpos + n + self._length) % self._length
     self._fillcount += n
+    del guard
 
     if unlock_enable and n > 0:
       if empty:
@@ -534,6 +535,7 @@ class RingBuffer(OpenRTM_aist.BufferBase):
 
     self._rpos = (self._rpos + n + self._length) % self._length
     self._fillcount -= n
+    del guard
     
     
     
