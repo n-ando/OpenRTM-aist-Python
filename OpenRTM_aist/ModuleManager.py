@@ -575,8 +575,9 @@ class ModuleManager:
       
       for f in flist:
         f = f.replace("\\","/")
+        f = f.replace("//","/")
         self.addNewFile(f, modules)
-
+    modules = list(set(modules))
 
 
         
