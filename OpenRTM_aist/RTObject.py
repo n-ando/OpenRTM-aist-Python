@@ -110,11 +110,13 @@ class RTObject_impl:
     self._configsets = OpenRTM_aist.ConfigAdmin(self._properties.getNode("conf"))
     self._profile = RTC.ComponentProfile("","","","","","",[],None,[])
 
+    self.setInstanceName(str(OpenRTM_aist.uuid1()))
+
     self._sdoservice = OpenRTM_aist.SdoServiceAdmin(self)
     self._SdoConfigImpl = OpenRTM_aist.Configuration_impl(self._configsets,self._sdoservice)
     self._SdoConfig = self._SdoConfigImpl.getObjRef()
     self._execContexts = []
-    self._objref = self._this()
+    
     self._sdoOwnedOrganizations = [] #SDOPackage.OrganizationList()
     self._sdoSvcProfiles        = [] #SDOPackage.ServiceProfileList()
     self._sdoOrganizations      = [] #SDOPackage.OrganizationList()
@@ -132,6 +134,7 @@ class RTObject_impl:
     self._actionListeners = OpenRTM_aist.ComponentActionListeners()
     self._portconnListeners = OpenRTM_aist.PortConnectListeners()
     self._fsmActionListeners = OpenRTM_aist.FsmActionListeners()
+    self._insref = RTC.RTObject._nil
     return
 
 
@@ -4823,8 +4826,9 @@ class RTObject_impl:
       self._poa.deactivate_object(self._poa.servant_to_id(self._SdoConfigImpl))
       self._poa.deactivate_object(self._poa.servant_to_id(self))
       self._sdoservice.exit()
-      poa = self._orb.resolve_initial_references("omniINSPOA")
-      poa.deactivate_object(poa.servant_to_id(self))
+      if not CORBA.is_nil(self._insref):
+        poa = self._orb.resolve_initial_references("omniINSPOA")
+        poa.deactivate_object(poa.servant_to_id(self))
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
 
@@ -5289,7 +5293,13 @@ class RTObject_impl:
     
     return ret_
 
-
+  ##
+  # @brief omniINSPOAから取得したオブジェクトを登録
+  #
+  # @param self 
+  # @param obj 
+  def setINSObjRef(self, obj):
+    self._insref = obj
 
     
     

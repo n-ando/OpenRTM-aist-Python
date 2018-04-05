@@ -1080,9 +1080,12 @@ class Manager:
     try:
       poa = self._orb.resolve_initial_references("omniINSPOA")
       poa._get_the_POAManager().activate()
-      id = comp.getCategory() + "/" + comp.getInstanceName()
+      id = comp.getCategory() + "." + comp.getInstanceName()
       poa.activate_object_with_id(id, comp)
       
+      rtcobj = poa.id_to_reference(id)
+      rtcobj._narrow(RTC.RTObject)
+      comp.setINSObjRef(rtcobj)
     except:
       self._rtcout.RTC_DEBUG(OpenRTM_aist.Logger.print_exception())
       

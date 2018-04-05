@@ -53,6 +53,7 @@ class DataFlowComponentBase(OpenRTM_aist.RTObject_impl, OpenRTM__POA.DataFlowCom
   # @endif
   def __init__(self, manager=None, orb=None, poa=None):
     OpenRTM_aist.RTObject_impl.__init__(self, manager, orb, poa)
+    self._objref = self._this()
 
 
   ##

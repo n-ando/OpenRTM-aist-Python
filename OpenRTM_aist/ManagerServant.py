@@ -197,7 +197,7 @@ class ManagerServant(RTM__POA.Manager):
     self._slaves = []
     self._masterMutex = threading.RLock()
     self._slaveMutex = threading.RLock()
-    self._objref = None
+    self._objref = RTM.Manager._nil
     
 
     config = copy.deepcopy(self._mgr.getConfig())
@@ -282,11 +282,10 @@ class ManagerServant(RTM__POA.Manager):
 
     del guard_slave
     del guard_master
-    if self._objref:
-      self._objref._release()
-
-    poa = self._mgr.getORB().resolve_initial_references("omniINSPOA")
-    poa.deactivate_object(poa.servant_to_id(self))
+    if not CORBA.is_nil(self._objref):
+      poa = self._mgr.getORB().resolve_initial_references("omniINSPOA")
+      poa.deactivate_object(poa.servant_to_id(self))
+      #self._objref._release()
 
     return
 
