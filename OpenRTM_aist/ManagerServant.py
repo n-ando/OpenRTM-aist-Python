@@ -1365,6 +1365,7 @@ class ManagerServant(RTM__POA.Manager):
       if platform.system() == "Windows":
         cmd = "cmd /c " + rtcd_cmd
         load_path = load_path.replace("\\","\\\\")
+        load_path = load_path.replace("\\","\\\\")
       else:
         cmd = rtcd_cmd
       cmd += " -o " + "manager.is_master:NO"
