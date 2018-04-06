@@ -102,6 +102,7 @@ class ModuleManager:
     if not self._rtcout:
       self._rtcout = self._mgr.getLogbuf("ModuleManager")
     self._modprofs = []
+    self._loadfailmods = []
 
   ##
   # @if jp
@@ -602,6 +603,10 @@ class ModuleManager:
         exists = True
         self._rtcout.RTC_DEBUG("Module %s already exists in cache.",fpath)
         break
+    for loadfailmod in self._loadfailmods:
+      if loadfailmod == fpath:
+        exists = True
+        break
     if not exists:
       self._rtcout.RTC_DEBUG("New module: %s",fpath)
       modules.append(fpath)
@@ -666,10 +671,13 @@ class ModuleManager:
             prop.setProperty("module_file_name",os.path.basename(mod_))
             prop.setProperty("module_file_path", mod_)
             modprops.append(prop)
+          else:
+            self._loadfailmods.append(mod_)
               
           
         except:
           self._rtcout.RTC_ERROR("popen faild")
+          self._loadfailmods.append(mod_)
 
 
   ##
