@@ -464,6 +464,7 @@ class ExecutionContextBase:
   #
   # @endif
   def bindComponent(self, rtc):
+    self.setOwner(rtc.getObjRef())
     return self._worker.bindComponent(rtc)
 
 
