@@ -453,7 +453,7 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
 
     outports = self._rtobj.getOutPorts()
     for outport in outports:
-      msg = "RECEIVE:OutPort:"
+      msg = "SEND:OutPort:"
       msg += outport.getName()
       outport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_SEND,
                                            self.DataPortAction(self, msg))
