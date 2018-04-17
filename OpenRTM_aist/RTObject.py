@@ -4937,7 +4937,10 @@ class RTObject_impl(OpenRTM__POA.DataFlowComponent):
     return ret_
 
 
-
+  def getInPorts(self):
+    return self._inports
+  def getOutPorts(self):
+    return self._outports
     
     
   ##
