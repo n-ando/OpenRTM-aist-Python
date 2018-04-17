@@ -444,6 +444,19 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
       self._portaction.portDisconnectListener = \
           self._rtobj.addPortConnectRetListener(pclistener_.ON_DISCONNECTED,
                                                 self._portaction.onDisconnect)
+    inports = self._rtobj.getInPorts()
+    for inport in inports:
+      msg = "RECEIVE:InPort:"
+      msg += inport.getName()
+      inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
+                                           self.DataPortAction(self, msg))
+
+    outports = self._rtobj.getOutPorts()
+    for outport in outports:
+      msg = "RECEIVE:OutPort:"
+      msg += outport.getName()
+      outport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_SEND,
+                                           self.DataPortAction(self, msg))
 
     return
 
@@ -783,6 +796,27 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
       return
 
 
+
+  ##
+  # @if jp
+  # @brief DataPortデータ送信・受信アクションリスナ
+  # @else
+  # @brief DataPort's data send/receive action listener
+  # @endif
+  #
+  class DataPortAction(OpenRTM_aist.ConnectorDataListenerT):
+    """
+    """
+    def __init__(self, coc, msg):
+      self._coc = coc
+      self._msg = msg
+      return
+    
+    def __call__(self, info, cdrdata):
+      self._coc.updateStatus(OpenRTM.PORT_PROFILE, self._msg)
+      return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
+
+
   ##
   # @if jp
   # @brief ExecutionContextActionListener
@@ -910,6 +944,16 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
     def activateConfigSet(self, config_set_name):
       msg_ = "ACTIVATE_CONFIG_SET: "
       msg_ += config_set_name
+      self._coc.updateStatus(OpenRTM.CONFIGURATION, msg_)
+      return
+
+  class ConnectorDataAction:
+    def __init__(self, coc, portname):
+      self.onBufferWriteListener = None
+      self._coc = coc
+      self._portname = portname
+    def onBufferWrite(self, info, cdrdata):
+      param = self._portname + ":" + info
       self._coc.updateStatus(OpenRTM.CONFIGURATION, msg_)
       return
 

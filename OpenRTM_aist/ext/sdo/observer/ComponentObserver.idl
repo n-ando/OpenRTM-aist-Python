@@ -17,7 +17,6 @@
  */
 
 #include <SDOPackage.idl>
-#include <RTC.idl>
 
 /*!
  * @if jp
@@ -189,7 +188,7 @@ module OpenRTM
      * hint には、いずれかのアクションが行われたかと、対象となるポート
      * の名前が与えられる。
      *
-     * hint: (ADD, REMOVE, CONNECT, DISCONNECT):<port name>
+     * hint: (ADD, REMOVE, CONNECT, DISCONNECT, SEND, RECEIVE):<port name>
      * 例:
      *   CONNECT:velocity (velocity ポートで接続が確立された)
      *
@@ -202,7 +201,7 @@ module OpenRTM
      * target port's name is given to the hint argument in
      * ComponentObserver::updateStatus() operation.
      *
-     * hint: (ADD, REMOVE, CONNECT, DISCONNECT):<port name>
+     * hint: (ADD, REMOVE, CONNECT, DISCONNECT, SEND_RECEIVE):<port name>
      * Example:
      *   CONNECT:velocity (A connection established in the velocity port)
      *

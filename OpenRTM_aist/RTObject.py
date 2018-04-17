@@ -5293,6 +5293,13 @@ class RTObject_impl:
     
     return ret_
 
+
+  def getInPorts(self):
+    return self._inports
+  def getOutPorts(self):
+    return self._outports
+
+
   ##
   # @brief omniINSPOAから取得したオブジェクトを登録
   #
