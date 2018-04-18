@@ -306,4 +306,8 @@ def OpenHRPExecutionContextInit(manager):
   OpenRTM_aist.ExecutionContextFactory.instance().addFactory("OpenHRPExecutionContext",
                                                              OpenRTM_aist.OpenHRPExecutionContext,
                                                              OpenRTM_aist.ECDelete)
+  OpenRTM_aist.ExecutionContextFactory.instance().addFactory("SynchExtTriggerEC",
+                                                             OpenRTM_aist.OpenHRPExecutionContext,
+                                                             OpenRTM_aist.ECDelete)
+  
   return
