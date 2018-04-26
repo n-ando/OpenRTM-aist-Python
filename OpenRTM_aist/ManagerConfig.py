@@ -138,8 +138,10 @@ class ManagerConfig :
     self._configFile = ""
     self._argprop = OpenRTM_aist.Properties()
     self._isMaster   = False
+    self._ignoreNoConf = False
     if argv:
       self.init(argv)
+    
 
 
   ##
@@ -268,7 +270,7 @@ class ManagerConfig :
   # @endif
   def parseArgs(self, argv):
     try:
-      opts, args = getopt.getopt(argv[1:], "adlf:o:p:")
+      opts, args = getopt.getopt(argv[1:], "adif:o:p:")
     except getopt.GetoptError:
       print(OpenRTM_aist.Logger.print_exception())
       return
@@ -279,9 +281,6 @@ class ManagerConfig :
 
       if opt == "-f":
         self._configFile = arg
-
-      if opt == "-l":
-        pass
 
       if opt == "-o":
         pos = arg.find(":")
@@ -303,7 +302,10 @@ class ManagerConfig :
 
       if opt == "-d":
         self._isMaster = True
-        pass
+        
+      if opt == "-i":
+        self._ignoreNoConf = True
+        
 
     return
 
@@ -347,7 +349,10 @@ class ManagerConfig :
   def findConfigFile(self):
     if self._configFile != "":
       if not self.fileExist(self._configFile):
-        print(OpenRTM_aist.Logger.print_exception())
+        #print(OpenRTM_aist.Logger.print_exception())
+        print("Configuration file: " + self._configFile + " not found.")
+        if not self._ignoreNoConf:
+          sys.exit()
         return False
       return True
 
