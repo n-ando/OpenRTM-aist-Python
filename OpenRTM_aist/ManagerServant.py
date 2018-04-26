@@ -1018,6 +1018,16 @@ class ManagerServant(RTM__POA.Manager):
   #
   # ReturnCode_t shutdown()
   def shutdown(self):
+    guard_master = OpenRTM_aist.ScopedLock(self._masterMutex)
+    for i in range(len(self._masters)):
+      try:
+        if CORBA.is_nil(self._masters[i]):
+          continue
+        self._masters[i].remove_slave_manager(self._objref)
+      except:
+        self._masters[i] = RTM.Manager._nil
+    self._masters = []
+    
     self._mgr.createShutdownThread(1)
     
     return RTC.RTC_OK
