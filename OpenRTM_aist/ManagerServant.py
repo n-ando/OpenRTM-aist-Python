@@ -1027,8 +1027,26 @@ class ManagerServant(RTM__POA.Manager):
       except:
         self._masters[i] = RTM.Manager._nil
     self._masters = []
+
+    guard_slave = OpenRTM_aist.ScopedLock(self._slaveMutex)
+    for i in range(len(self._slaves)):
+      try:
+        if CORBA.is_nil(self._slaves[i]):
+          continue
+        self._slaves[i].remove_master_manager(self._objref)
+      except:
+        self._slaves[i] = RTM.Manager._nil
+    self._slaves = []
+
+    wait_time = 1.0
+    if self._mgr.getConfig().findNode("manager.termination_waittime"):
+      s = self._mgr.getConfig().getProperty("manager.termination_waittime")
+      ret = [wait_time]
+      if OpenRTM_aist.stringTo(ret, s):
+        wait_time = ret[0]
     
-    self._mgr.createShutdownThread(1)
+    
+    self._mgr.createShutdownThread(wait_time)
     
     return RTC.RTC_OK
 

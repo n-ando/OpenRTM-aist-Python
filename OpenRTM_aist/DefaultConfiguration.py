@@ -83,6 +83,7 @@ default_config =["config.version",                   OpenRTM_aist.openrtm_versio
                  "manager.shutdown_on_nortcs",       "YES",
                  "manager.shutdown_auto",            "YES",
                  "manager.auto_shutdown_duration",   "10.0",
+                 "manager.termination_waittime",          "1.0",
                  "manager.name",                     "manager",
                  "manager.command",                  "rtcd",
                  "manager.nameservers",               "default",
