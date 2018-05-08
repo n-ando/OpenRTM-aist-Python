@@ -132,7 +132,7 @@ class Time:
 
   # inline int settimeofday(const struct timeval *tv , const struct timezone *tz)
   def settimeofday(self, tv, tz):
-    if sys.platform == "win32":
+    if os.name == "nt":
       from ctypes import windll, Structure, c_ushort, byref, c_ulong, c_long
       class SYSTEMTIME(Structure):
         _fields_ = [('wYear', c_ushort), 

@@ -21,7 +21,6 @@ import time
 from omniORB import CORBA
 import OpenRTM_aist
 import RTC,RTM,RTM__POA
-import platform
 import re
 
 
@@ -1389,7 +1388,7 @@ class ManagerServant(RTM__POA.Manager):
       load_path_language = config.getProperty("manager.modules."+comp_param.language()+".load_paths")
       load_path = load_path + "," + load_path_language
       
-      if platform.system() == "Windows":
+      if os.name == "nt":
         cmd = "cmd /c " + rtcd_cmd
         load_path = load_path.replace("\\","\\\\")
         load_path = load_path.replace("\\","\\\\")
@@ -1556,7 +1555,7 @@ class ManagerServant(RTM__POA.Manager):
       load_path_language = config.getProperty("manager.modules."+comp_param.language()+".load_path")
       load_path = load_path + "," + load_path_language
 
-      if platform.system() == "Windows":
+      if os.name == "nt":
         cmd = "cmd /c " + rtcd_cmd
         load_path = load_path.replace("\\","\\\\")
       else:

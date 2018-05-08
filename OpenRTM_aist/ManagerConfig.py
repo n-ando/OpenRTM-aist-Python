@@ -87,7 +87,7 @@ class ManagerConfig :
   # @else
   # @brief The default configuration file path for manager
   # @endif
-  if sys.platform == 'win32':
+  if os.name == 'nt':
 
     config_file_path = ["./rtc.conf",
                         "${RTM_ROOT}bin/${RTM_VC_VERSION}/rtc.conf",
@@ -403,7 +403,7 @@ class ManagerConfig :
   #
   # @endif
   def setSystemInformation(self, prop):
-    if sys.platform == 'win32':
+    if os.name == 'nt':
       sysinfo = platform.uname()
     else:
       sysinfo = os.uname()

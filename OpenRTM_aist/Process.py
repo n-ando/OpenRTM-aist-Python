@@ -19,7 +19,6 @@ import os,sys
 import traceback
 import subprocess
 import shlex
-import platform
 
 ##
 # @if jp
@@ -33,7 +32,7 @@ def launch_shell(command):
   #args = command.split(" ")
   args = shlex.split(command," ")
 
-  if sys.platform == "win32":
+  if os.name == "nt":
     CREATE_NEW_PROCESS_GROUP = 0x00000200
     subproc_args = { 'stdin':     None,
                      'stdout':    None,
@@ -72,7 +71,7 @@ def launch_shell(command):
 #
 # int fork()
 def fork():
-  if platform.system() == "Windows":
+  if os.name == "nt":
     return -1
   else:
     pid = os.fork()
