@@ -22,6 +22,7 @@ from omniORB import CORBA
 import OpenRTM_aist
 import RTC,RTM,RTM__POA
 import re
+import os
 
 
 ##

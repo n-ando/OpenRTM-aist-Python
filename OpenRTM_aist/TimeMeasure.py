@@ -22,6 +22,7 @@
 import sys
 import time
 import math
+import os
 
 import OpenRTM_aist
 
