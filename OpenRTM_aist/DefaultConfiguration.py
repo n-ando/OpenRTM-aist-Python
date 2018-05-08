@@ -17,12 +17,12 @@
 
 
 import OpenRTM_aist
-import platform
+import os
 
 
-if platform.system() == "Windows":
+if os.name == "nt":
     cpp_suffixes = "dll"
-elif platform.system() == "Linux":
+elif os.name == "posix":
     cpp_suffixes = "so"
 else:
     cpp_suffixes = "dylib"

@@ -10,7 +10,7 @@
 
 
 import mmap, os
-import platform, ctypes
+import ctypes
 from omniORB import cdrMarshal
 from omniORB import cdrUnmarshal
 from omniORB import CORBA
@@ -70,7 +70,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     self._shm_address = ""
     self._memory_size = SharedMemory.default_memory_size
     self._endian = True
-    if platform.system() == "Windows":
+    if os.name == "nt":
       pass
     else:
       #from ctypes.util import find_library
@@ -182,7 +182,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
       self._memory_size = memory_size
       self._shm_address = shm_address
 
-      if platform.system() == "Windows":
+      if os.name == "nt":
         self._shmem = mmap.mmap(0, self._memory_size, self._shm_address, mmap.ACCESS_WRITE)
       else:
         O_RDWR = 2
@@ -231,7 +231,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     self._memory_size = memory_size
     self._shm_address = shm_address
     if self._shmem is None:
-      if platform.system() == "Windows":
+      if os.name == "nt":
         self._shmem = mmap.mmap(0, self._memory_size, self._shm_address, mmap.ACCESS_WRITE)
       else:
         O_RDWR = 2
@@ -266,7 +266,7 @@ class SharedMemory(OpenRTM__POA.PortSharedMemory):
     self._rtcout.RTC_TRACE("open()")
     if self._shmem:
       self._shmem.close()
-      if platform.system() == "Windows":
+      if os.name == "nt":
         pass
       else:
         if unlink:

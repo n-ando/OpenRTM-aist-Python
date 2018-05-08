@@ -10,7 +10,6 @@
 
 
 import os
-import platform
 import ctypes
 
 
@@ -61,7 +60,7 @@ def setProcessAffinity(cpu_num_list):
     return False
   pid = os.getpid()
   
-  if platform.system() == "Windows":
+  if os.name == "nt":
     
     PROCESS_QUERY_INFORMATION   = 0x0400
     PROCESS_SET_INFORMATION     = 0x0200
@@ -123,7 +122,7 @@ def setThreadAffinity(cpu_num_list):
     return False
   
   
-  if platform.system() == "Windows":
+  if os.name == "nt":
     
 
 

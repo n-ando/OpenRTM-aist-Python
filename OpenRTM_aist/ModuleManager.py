@@ -18,7 +18,6 @@
 
 import sys,os
 import glob
-import platform
 
 import OpenRTM_aist
 
@@ -644,7 +643,7 @@ class ModuleManager:
       else:
         prop = OpenRTM_aist.Properties()
         cmd = lprop.getProperty("profile_cmd")
-        if platform.system() == "Windows":
+        if os.name == "nt":
           cmd = "cmd /c " + cmd
         cmd = cmd + " \""+mod_+"\""
         
