@@ -71,6 +71,7 @@ class Microwave(OpenRTM_aist.DataFlowComponentBase):
 
         
   def onExecute(self, ec_id):
+    self._fsm.run_event()
     
     
     return RTC.RTC_OK

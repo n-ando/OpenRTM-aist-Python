@@ -63,17 +63,25 @@ class Machine(OpenRTM_aist.Macho.Machine):
     #super(Machine,self).__init__(TOP, OpenRTM_aist.Macho.TopBase(TOP))
     self._rtComponent = comp
     super(Machine,self).__init__(TOP)
+    self._buffer = OpenRTM_aist.CdrBufferFactory.instance().createObject("ring_buffer")
     
     
     
   def __del__(self):
     pass
+  def getBuffer(self):
+    return self._buffer
   def init_other(self, other):
     pass
   def equal(self, snapshot):
     pass
   def getComp(self):
     return self._rtComponent
+  def run_event(self):
+    while self._buffer.readable() > 0:
+      event = self._buffer.get()
+      event()
+      self._buffer.advanceRptr()
 
 
 

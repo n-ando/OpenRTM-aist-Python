@@ -17,51 +17,78 @@ import OpenRTM_aist
 import OpenRTM_aist.StaticFSM_pyfsm
 import pyfsm
 
+class Event0:
+  def __init__(self, eb):
+    self._eb = eb
+  def __call__(self):
+    self._eb.run()
+
+
+class Event1(Event0):
+  def __init__(self, eb, data):
+    Event0.__init__(self, eb)
+    self._data = data
+  def __call__(self):
+    self._eb.run(self._data)
 
 class EventBinder0(OpenRTM_aist.ConnectorDataListener):
-  def __init__(self, fsm, event_name, handler, ptask=False):
+  def __init__(self, fsm, event_name, handler, buffer):
     self._fsm = fsm
     self._eventName = event_name
     self._handler = handler
-    self._ptask = ptask
+    self._buffer = buffer
+    
   def __del__(self):
     pass
   def __call__(self, info, data):
     if info.properties.getProperty("fsm_event_name") == self._eventName or info.name == self._eventName:
-      if not self._ptask:
-        self._fsm.dispatch(pyfsm.Event(self._handler))
-      else:
-        task = OpenRTM_aist.Async_tInvoker(self._fsm, pyfsm.Machine.dispatch, pyfsm.Event(self._handler))
-        task.invoke()
+      self._buffer.write(Event0(self))
       return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
     return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
-    
+  def run(self):
+    self._fsm.dispatch(pyfsm.Event(self._handler))
+
 
 class EventBinder1(OpenRTM_aist.ConnectorDataListenerT):
-  def __init__(self, fsm, event_name, handler, data_type, ptask=False):
+  def __init__(self, fsm, event_name, handler, data_type, buffer):
     self._fsm = fsm
     self._eventName = event_name
     self._handler = handler
     self._data_type = data_type
-    self._ptask = ptask
+    self._buffer = buffer
+    
   def __del__(self):
     pass
   def __call__(self, info, data):
     data_ = OpenRTM_aist.ConnectorDataListenerT.__call__(self, info, data, self._data_type)
     
     if info.properties.getProperty("fsm_event_name") == self._eventName or info.name == self._eventName:
-      if not self._ptask:
-        self._fsm.dispatch(pyfsm.Event(self._handler, data_))
-      else:
-        task = OpenRTM_aist.Async_tInvoker(self._fsm, pyfsm.Machine.dispatch, pyfsm.Event(self._handler, data_))
-        task.invoke()
+      self._buffer.write(Event1(self, data_))
       return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
     return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
+  def run(self, data):
+    self._fsm.dispatch(pyfsm.Event(self._handler, data_))
 
 
+class EventConnListener(OpenRTM_aist.ConnectorListener):
+  def __init__(self, buffer, thebuffer):
+    self._buffer = buffer
+    self._thebuffer = thebuffer
 
+  def __del__(self):
+    pass
+
+  def __call__(self, info):
+    prop = OpenRTM_aist.Properties()
+    prop.setProperty("write.full_policy", "do_nothing")
+    prop.setProperty("read.empty_policy", "do_nothing")
+    self._thebuffer.init(prop)
+
+      
+    self._buffer.init(info.properties.getNode("inport.buffer"))
+    return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
 
 ##
@@ -168,6 +195,8 @@ class EventInPort(OpenRTM_aist.InPortBase):
     super(EventInPort, self).__init__(name, "any")
     self._name = name
     self._fsm = fsm
+    self._buffer = self._fsm.getBuffer()
+    
   ##
   # @if jp
   #
@@ -207,13 +236,18 @@ class EventInPort(OpenRTM_aist.InPortBase):
   def name(self):
     return self._name
 
-  def bindEvent0(self, name, handler, ptask=False):
+  def init(self, prop):
+    OpenRTM_aist.InPortBase.init(self, prop)
+    self.addConnectorListener(OpenRTM_aist.ConnectorListenerType.ON_CONNECT,
+                                      EventConnListener(self._buffer, self._thebuffer))
+
+  def bindEvent0(self, name, handler):
     self.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
-                                  EventBinder0(self._fsm, name, handler, ptask))
+                                  EventBinder0(self._fsm, name, handler, self._buffer))
     
-  def bindEvent1(self, name, handler, data_type, ptask=False):
+  def bindEvent1(self, name, handler, data_type):
     self.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
-                                  EventBinder1(self._fsm, name, handler, data_type, ptask))
+                                  EventBinder1(self._fsm, name, handler, data_type, self._buffer))
   
 
 
