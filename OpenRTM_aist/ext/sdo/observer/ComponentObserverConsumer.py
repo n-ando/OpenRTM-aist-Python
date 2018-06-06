@@ -53,6 +53,9 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
     self._heartbeat = False
     self._hblistenerid = None
 
+    self._inportInterval = OpenRTM_aist.TimeValue(1, 0)
+    self._outportInterval = OpenRTM_aist.TimeValue(1, 0)
+
     # このタイマーはいずれグローバルなタイマにおきかえる
     self._timer = OpenRTM_aist.Timer(self._interval)
     return
@@ -88,6 +91,7 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
     prop = OpenRTM_aist.Properties()
     OpenRTM_aist.NVUtil.copyToProperties(prop, profile.properties)
     self.setHeartbeat(prop)
+    self.setDataPortInterval(prop)
     self.setListeners(prop)
     return True
 
@@ -285,6 +289,27 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
     return
 
 
+
+  ##
+  # @if jp
+  # @brief データポートイベントの間隔を設定する
+  # @else
+  # @brief Setting interval of dataport events
+  # @endif
+  #
+  # void setDataPortInterval(coil::Properties& prop);
+  def setDataPortInterval(self, prop):
+    
+    outportInterval = [0.0]
+    if OpenRTM_aist.stringTo(outportInterval, prop.getProperty("port_profile.send_event.min_interval")):
+      self._outportInterval = OpenRTM_aist.TimeValue(outportInterval[0])
+
+    inportInterval = [0.0]
+    if OpenRTM_aist.stringTo(inportInterval, prop.getProperty("port_profile.receive_event.min_interval")):
+      self._inportInterval = OpenRTM_aist.TimeValue(inportInterval[0])
+      
+    
+
   ##
   # @if jp
   # @brief ハートビートを設定する
@@ -448,15 +473,17 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
     for inport in inports:
       msg = "RECEIVE:InPort:"
       msg += inport.getName()
+      
       inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
-                                           self.DataPortAction(self, msg))
+                                           self.DataPortAction(self, msg, self._inportInterval))
 
     outports = self._rtobj.getOutPorts()
     for outport in outports:
       msg = "SEND:OutPort:"
       msg += outport.getName()
+      
       outport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_SEND,
-                                           self.DataPortAction(self, msg))
+                                           self.DataPortAction(self, msg, self._outportInterval))
 
     return
 
@@ -807,13 +834,22 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
   class DataPortAction(OpenRTM_aist.ConnectorDataListenerT):
     """
     """
-    def __init__(self, coc, msg):
+    def __init__(self, coc, msg, interval):
       self._coc = coc
       self._msg = msg
+      self._interval = interval
+      self._last = OpenRTM_aist.Time()
       return
     
     def __call__(self, info, cdrdata):
-      self._coc.updateStatus(OpenRTM.PORT_PROFILE, self._msg)
+      curr = OpenRTM_aist.Time()
+      intvl = curr - self._last
+      
+      
+      if intvl.getTime().toDouble() > self._interval.toDouble():
+        self._last = curr
+        self._coc.updateStatus(OpenRTM.PORT_PROFILE, self._msg)
+        
       #return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
 
