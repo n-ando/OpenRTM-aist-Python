@@ -3,7 +3,12 @@
 # -*- Python -*-
 
 from __future__ import print_function
-from Tkinter import *
+
+import sys
+if sys.version_info[0] == 2:
+	from Tkinter import *
+else:
+	from tkinter import *
 #import thread
 import dummy_threading
 import time

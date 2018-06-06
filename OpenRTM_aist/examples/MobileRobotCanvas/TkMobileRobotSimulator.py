@@ -21,7 +21,11 @@
 #
 
 #from Tkinter import *
-from Tix import *
+import sys
+if sys.version_info[0] == 2:
+  from Tix import *
+else:
+  from tkinter.tix import *
 import time
 import math
 
@@ -318,7 +322,10 @@ class SimulatedObject:
     return self.simulator.get_tick()
 
 
-import tkSimpleDialog
+if sys.version_info[0] == 2:
+  import tkSimpleDialog
+else:
+  import tkinter.simpledialog as tkSimpleDialog
 
 class PropertyDialog:
   def __init__(self):
@@ -565,7 +572,7 @@ class DDMobileRobot(SimulatedObject):
     return self.name
 
 
-  def set_pos(self, (x, y, th)):
+  def set_pos(self, x, y, th):
     self.model.set_pos((x, y, th))
     return
 
@@ -637,7 +644,7 @@ class DDMobileRobot(SimulatedObject):
 
 
   def on_reset_output(self):
-    self.set_pos((0.0, 0.0, math.pi/2))
+    self.set_pos(0.0, 0.0, math.pi/2)
     return
 
 
@@ -852,7 +859,10 @@ class TkMobileRobot(Frame):
     om = OptionMenu(frame, label="Type: ", variable=self.robot_kind_var)
     for opt in self.robot_factory.keys():
       om.add_command(opt, label=opt)
-    self.robot_kind_var.set(self.robot_factory.keys()[0])
+    if sys.version_info[0] == 2:
+      self.robot_kind_var.set(self.robot_factory.keys()[0])
+    else:
+      self.robot_kind_var.set(list(self.robot_factory.keys())[0])
 
     creater = Button(frame, text="Create", command=self.create_robot)
     deleter = Button(frame, text="Delete", command=self.delete_robot)

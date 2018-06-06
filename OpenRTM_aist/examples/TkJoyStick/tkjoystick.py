@@ -22,11 +22,18 @@
 #
 
 from __future__ import print_function
-from Tkinter import *
+
 import time
 import math
-import mutex
 import sys
+
+
+if sys.version_info[0] == 2:
+    from Tkinter import *
+else:
+    from tkinter import *
+
+
 
 class ToggleItem:
     def __init__(self):
@@ -121,7 +128,10 @@ class CanvasCircle(ToggleItem):
         else:
             circnum = max(self.width, self.height) / self.pitch
         circrange = range(int(circnum))
-        circrange.reverse()
+        if sys.version_info[0] == 2:
+            circrange.reverse()
+        else:
+            circrange = list(reversed(circrange))
         for i in circrange:
             x0 = self.x - self.pitch * i
             y0 = self.y - self.pitch * i

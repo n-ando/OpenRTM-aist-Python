@@ -2,8 +2,14 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
-from Tkinter import *
-import thread
+import sys
+if sys.version_info[0] == 2:
+	from Tkinter import *
+	import thread
+else:
+	from tkinter import *
+	import _thread as thread
+
 import time
 import math
 
@@ -37,7 +43,7 @@ class TkMotor(Frame):
 		self.sx2 = []
 		self.sy2 = []
 		
-		for i in xrange(self.num):
+		for i in range(self.num):
 			self.x.append(self.r * self.space / 2 * (i+0.5) * 2)
 			self.y.append(self.r * self.space / 2)
 			self.x1.append(self.x[i] - self.r)
