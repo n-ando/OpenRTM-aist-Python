@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- Python -*-
 
+from __future__ import print_function
 import sys
 
 from omniORB import CORBA
@@ -10,10 +11,10 @@ import RTC
 import OpenRTM_aist
 
 def usage():
-    print "usage: ConnectorComp [options]"
-    print " python MyServiceProvider.py  "
-    print " python MyServiceConsumer.py  "
-    print " python Connector.py  "
+    print("usage: ConnectorComp [options]")
+    print(" python MyServiceProvider.py  ")
+    print(" python MyServiceConsumer.py  ")
+    print(" python Connector.py  ")
 
 
 def main():
