@@ -17,7 +17,7 @@
 from __future__ import print_function
 import sys,os,platform
 import time
-import commands
+import subprocess
 
 nsport="2809"
 sysinfo = platform.uname()
@@ -25,42 +25,58 @@ hostname= sysinfo[1]
 plat=sys.platform
 
 if plat == "win32":
-    os.system("start \"\" \"%RTM_ROOT%\\bin\\rtm-naming.bat\"")
-    os.system("start python SliderComp.py")
-    os.system("start python TkMotorComp.py")
+    subprocess.call("start \"\" \"%RTM_ROOT%\\bin\\rtm-naming.bat\"", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     time.sleep(5)
-    os.system("python Connector.py")
+    subprocess.call("start python SliderComp.py", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.call("start python TkMotorComp.py", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    time.sleep(5)
+    subprocess.call("python Connector.py", shell=True)
 
 else:
-    status,term=commands.getstatusoutput("which xterm")
+    p=subprocess.Popen("which xterm", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    term, stderr = p.communicate()
+    status = p.returncode
+    term = term.replace("\n","")
     term += " -e"
     if status != 0:
-        status,term=commands.getstatusoutput("which kterm")
-        term += " -e"
+      p=subprocess.Popen("which kterm", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      term, stderr = p.communicate()
+      status = p.returncode
+      term = term.replace("\n","")
+      term += " -e"
 
     if status != 0:
-        status,term=commands.getstatusoutput("which uxterm")
-        term += " -e"
+      p=subprocess.Popen("which uxterm", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      term, stderr = p.communicate()
+      status = p.returncode
+      term = term.replace("\n","")
+      term += " -e"
+      
+    if status != 0:
+      p=subprocess.Popen("which gnome-terminal", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      term, stderr = p.communicate()
+      status = p.returncode
+      term = term.replace("\n","")
+      term += " -x"
 
     if status != 0:
-        status,term=commands.getstatusoutput("which gnome-terminal")
-        term += " -x"
+      print("No terminal program (kterm/xterm/gnome-terminal) exists.")
+      sys.exit(0)
 
-    if status != 0:
-        print("No terminal program (kterm/xterm/gnome-terminal) exists.")
-        exit
-
+    """
     path = None
     for p in sys.path:
-        if os.path.exists(os.path.join(p,"OpenRTM_aist")):
-            path = os.path.join(p,"OpenRTM_aist","utils","rtm-naming")
-            break
+      if os.path.exists(os.path.join(p,"OpenRTM_aist")):
+        path = os.path.join(p,"OpenRTM_aist","utils","rtm-naming")
+        break
     if path is None:
-        print("rtm-naming directory not exist.")
-        sys.exit(0)
-
+      print("rtm-naming directory not exist.")
+      sys.exit(0)
     os.system('python %s/rtm-naming.py &'%path)
-    os.system('%s python SliderComp.py &'%term)
-    os.system('%s python TkMotorComp.py &'%term)
-    time.sleep(3)
-    os.system("python Connector.py")
+    """
+    cmd = 'rtm-naming&'
+    subprocess.call(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = '%s python SliderComp.py &'%term
+    subprocess.call(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = '%s python TkMotorComp.py &'%term
+    subprocess.call(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
