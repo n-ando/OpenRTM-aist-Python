@@ -264,7 +264,7 @@ class OutPortPushConnector(OpenRTM_aist.OutPortConnector):
       self._rtcout.RTC_ERROR("write(): endian %s is not support.",self._endian)
       return self.UNKNOWN_ERROR
 
-    return self._publisher.write(cdr_data, 0, 0)
+    return self._publisher.write(cdr_data, -1, 0)
 
 
   ##
