@@ -271,6 +271,8 @@ class RingBuffer(OpenRTM_aist.BufferBase):
     guard = OpenRTM_aist.ScopedLock(self._pos_mutex)
     if (n > 0 and n > (self._length - self._fillcount)) or \
           (n < 0 and n < (-self._fillcount)):
+      if unlock_enable and n > 0:
+        self._empty_cond.release()
       return OpenRTM_aist.BufferStatus.PRECONDITION_NOT_MET
 
     self._wpos = (self._wpos + n + self._length) % self._length
@@ -531,6 +533,8 @@ class RingBuffer(OpenRTM_aist.BufferBase):
     guard = OpenRTM_aist.ScopedLock(self._pos_mutex)
     if (n > 0 and n > self._fillcount) or \
           (n < 0 and n < (self._fillcount - self._length)):
+      if unlock_enable and n > 0:
+        self._full_cond.release()
       return OpenRTM_aist.BufferStatus.PRECONDITION_NOT_MET
 
     self._rpos = (self._rpos + n + self._length) % self._length
