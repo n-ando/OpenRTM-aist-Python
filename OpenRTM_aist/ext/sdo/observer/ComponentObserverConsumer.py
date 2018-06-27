@@ -170,7 +170,7 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
     try:
       self._observer._ptr().update_status(statuskind, msg)
     except:
-      self._rtobj.removeSdoServiceConsumer(self._profile.id)
+      self._rtobj.removeSdoServiceConsumerStartThread(self._profile.id)
     return
 
   ##

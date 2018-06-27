@@ -3259,6 +3259,27 @@ class RTObject_impl:
 
   ##
   # @if jp
+  # @brief [local interface] SDO service consumer を別スレッドで削除する
+  # @else
+  # @brief [local interface] Remove a SDO service consumer
+  # @endif
+  #
+  # bool removeSdoServiceConsumer(const char* id);
+  def removeSdoServiceConsumerStartThread(self, id):
+    class remove_Task(OpenRTM_aist.Task):
+      def __init__(self, sdoservice, id):
+        OpenRTM_aist.Task.__init__(self)
+        self._sdoservice = sdoservice
+        self._id = id
+      def svc(self):
+        self._sdoservice.removeSdoServiceConsumer(self._id)
+        
+    self._sdoservice.removeSdoServiceConsumer(id)
+    self.remove_thread = remove_Task(self._sdoservice, id)
+    self.remove_thread.activate()
+
+  ##
+  # @if jp
   #
   # @brief 全 InPort のデータを読み込む。
   #
