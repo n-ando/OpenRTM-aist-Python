@@ -761,10 +761,14 @@ class Properties:
       OpenRTM_aist.eraseHeadBlank(tmp)
       _str = tmp[0]
       
-      if _str[0] == "#" or _str[0] == "!" or _str[0] == "\n":
+      if _str[0] == "#" or _str[0] == "!" or _str[0] == "\n" or (_str[0] == "\r" and _str[1] == "\n"):
         continue
 
       _str = _str.rstrip('\r\n')
+      _str = _str.rstrip('\n')
+
+      if not _str:
+        continue
 
       if _str[len(_str)-1] == "\\" and not OpenRTM_aist.isEscaped(_str, len(_str)-1):
         #_str = _str[0:len(_str)-1]
