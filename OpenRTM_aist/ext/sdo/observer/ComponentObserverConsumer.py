@@ -22,6 +22,8 @@ import RTC
 import OpenRTM
 import OpenRTM_aist
 
+import threading
+
 ##
 # @if jp
 # @else
@@ -58,6 +60,9 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
 
     # このタイマーはいずれグローバルなタイマにおきかえる
     self._timer = OpenRTM_aist.Timer(self._interval)
+    self._mutex = threading.RLock()
+    self._recievedactions = []
+    self._sendactions = []
     return
 
 
@@ -141,6 +146,7 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
   #
   # virtual void finalize();
   def finalize(self):
+    guard = OpenRTM_aist.ScopedLock(self._mutex)
     self.unsetComponentProfileListeners()
     self.unsetComponentStatusListeners()
     self.unsetPortProfileListeners()
@@ -474,16 +480,20 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
       msg = "RECEIVE:InPort:"
       msg += inport.getName()
       
+      action = self.DataPortAction(self, msg, self._inportInterval)
       inport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
-                                           self.DataPortAction(self, msg, self._inportInterval))
+                                           action)
+      self._recievedactions.append(action)
 
     outports = self._rtobj.getOutPorts()
     for outport in outports:
       msg = "SEND:OutPort:"
       msg += outport.getName()
       
+      action = self.DataPortAction(self, msg, self._outportInterval)
       outport.addConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_SEND,
-                                           self.DataPortAction(self, msg, self._outportInterval))
+                                           action)
+      self._sendactions.append(action)
 
     return
 
@@ -518,6 +528,21 @@ class ComponentObserverConsumer(OpenRTM_aist.SdoServiceConsumerBase):
                                                self._portaction.portDisconnectListener)
       self._portaction.portDisconnectListener = None
 
+
+    inports = self._rtobj.getInPorts()
+    for inport in inports:
+      for action in self._recievedactions:
+        inport.removeConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_RECEIVED,
+                                           action)
+
+
+    outports = self._rtobj.getOutPorts()
+    for outport in outports:
+      for action in self._sendactions:
+        outport.removeConnectorDataListener(OpenRTM_aist.ConnectorDataListenerType.ON_SEND,
+                                           action)
+
+      
     return
 
 
