@@ -467,7 +467,7 @@ class Organization_impl(SDOPackage__POA.Organization):
   def set_owner(self, sdo):
     self.__rtcout.RTC_TRACE("set_owner()")
     if CORBA.is_nil(sdo):
-      raise SDOPackage.InvalidParameter("set_owner()")
+      raise SDOPackage.InvalidParameter("set_owner(): sdo is nil")
 
 
     self._varOwner = sdo

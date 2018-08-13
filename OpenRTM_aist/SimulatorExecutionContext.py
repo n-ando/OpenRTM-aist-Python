@@ -134,7 +134,7 @@ class SimulatorExecutionContext(OpenRTM_aist.OpenHRPExecutionContext):
     if not rtobj.isCurrentState(RTC.ACTIVE_STATE):
       return RTC.PRECONDITION_NOT_MET
       
-    self._syncActivation = False
+    self._syncDeactivation = False
     OpenRTM_aist.ExecutionContextBase.deactivateComponent(self, comp)
     
     self.invokeWorkerPreDo()
@@ -175,8 +175,8 @@ class SimulatorExecutionContext(OpenRTM_aist.OpenHRPExecutionContext):
     if not rtobj.isCurrentState(RTC.ERROR_STATE):
       return RTC.PRECONDITION_NOT_MET
       
-    self._syncActivation = False
-    OpenRTM_aist.ExecutionContextBase.activateComponent(self, comp)
+    self._syncReset = False
+    OpenRTM_aist.ExecutionContextBase.resetComponent(self, comp)
     
     self.invokeWorkerPreDo()
     self.invokeWorkerDo()
