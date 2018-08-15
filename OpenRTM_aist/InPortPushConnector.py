@@ -232,11 +232,11 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
       return self.PORT_OK
 
     elif ret == OpenRTM_aist.BufferStatus.BUFFER_EMPTY:
-      self.onBufferEmpty(cdr[0])
+      self.onBufferEmpty()
       return self.BUFFER_EMPTY
 
     elif ret == OpenRTM_aist.BufferStatus.TIMEOUT:
-      self.onBufferReadTimeout(cdr[0])
+      self.onBufferReadTimeout()
       return self.BUFFER_TIMEOUT
 
     elif ret == OpenRTM_aist.BufferStatus.PRECONDITION_NOT_MET:
@@ -414,11 +414,11 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
     if self._listeners and self._profile:
       self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
     return
-  def onBufferEmpty(self, data):
+  def onBufferEmpty(self):
     if self._listeners and self._profile:
       self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_EMPTY].notify(self._profile)
     return
-  def onBufferReadTimeout(self, data):
+  def onBufferReadTimeout(self):
     if self._listeners and self._profile:
       self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_READ_TIMEOUT].notify(self._profile)
     return
