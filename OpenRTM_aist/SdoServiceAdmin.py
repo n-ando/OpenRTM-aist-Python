@@ -386,11 +386,11 @@ class SdoServiceAdmin:
     
     # Not supported consumer type -> error return
     if not self.isEnabledConsumerType(sProfile):
-      self._rtcout.RTC_ERROR("Not supported consumer type. %s", profile.id)
+      self._rtcout.RTC_ERROR("Not supported consumer type. %s", profile.interface_type)
       return False
   
     if not self.isExistingConsumerType(sProfile):
-      self._rtcout.RTC_ERROR("type %s already exists.", profile.id)
+      self._rtcout.RTC_ERROR("type %s not exists.", profile.interface_type)
       return False
     if str(profile.id) ==  "":
       self._rtcout.RTC_WARN("No id specified. It should be given by clients.")
