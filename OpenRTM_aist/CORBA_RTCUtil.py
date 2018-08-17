@@ -952,10 +952,13 @@ def connect_multi(name, prop, port, target_ports):
     return RTC.BAD_PARAMETER
   for p in target_ports:
     if CORBA.is_nil(p):
+      ret = RTC.BAD_PARAMETER
       continue
     if p._is_equivalent(port):
+      ret = RTC.BAD_PARAMETER
       continue
     if already_connected(port, p):
+      ret = RTC.BAD_PARAMETER
       continue
     if RTC.RTC_OK != connect(name, prop, port, p):
       ret = RTC.BAD_PARAMETER
