@@ -15,7 +15,7 @@
 
 import OpenRTM_aist
 import OpenRTM_aist.Macho
-
+import copy
 
 
     
@@ -96,8 +96,10 @@ class EventConnListener(OpenRTM_aist.ConnectorListener):
     prop.setProperty("read.empty_policy", "do_nothing")
     self._thebuffer.init(prop)
 
-      
-    self._buffer.init(info.properties.getNode("inport.buffer"))
+    prop_ = copy.copy(info.properties.getNode("dataport.buffer"))
+    prop_.mergeProperties(info.properties.getNode("inport.buffer"))
+    
+    self._buffer.init(prop_)
     return OpenRTM_aist.ConnectorListenerStatus.NO_CHANGE
 
 
