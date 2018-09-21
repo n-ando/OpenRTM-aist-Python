@@ -363,6 +363,11 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
   #
   # void addParticipantToEC(Member& member)
   def addParticipantToEC(self, member):
+    self.addRTCToEC(member._rtobj)
+    
+    return
+  
+  def addRTCToEC(self, rtobj):
     if CORBA.is_nil(self._ec) or self._ec is None:
       ecs = self._rtobj.get_owned_contexts()
       if len(ecs) > 0:
@@ -370,17 +375,22 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
       else:
         return
     # set ec to target RTC
-    self._ec.add_component(member._rtobj)
+    
 
-    orglist = member._rtobj.get_organizations()
+    orglist = rtobj.get_owned_organizations()
+    if len(orglist) == 0:
+      self._ec.add_component(rtobj)
+
+    #orglist = member._rtobj.get_organizations()
+    
     for org in orglist:
       sdos = org.get_members()
       for sdo in sdos:
         dfc = [None]
         if not self.sdoToDFC(sdo, dfc):
           continue
-        self._ec.add_component(dfc[0])
-    return
+        self.addRTCToEC(dfc[0])
+    
 
 
   ##
@@ -401,7 +411,8 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
         return
     self._ec.remove_component(member._rtobj)
 
-    orglist = member._rtobj.get_organizations()
+    #orglist = member._rtobj.get_organizations()
+    orglist = member._rtobj.get_owned_organizations()
 
     for org in orglist:
       sdos = org.get_members()
@@ -654,6 +665,10 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
     self._configsets.addConfigurationSetListener(\
       OpenRTM_aist.ConfigurationSetListenerType.ON_ADD_CONFIG_SET,
       addCallback(self._org))
+    self._properties.setProperty("exec_cxt.periodic.sync_transition","NO")
+    self._properties.setProperty("exec_cxt.periodic.sync_activation","NO")
+    self._properties.setProperty("exec_cxt.periodic.sync_deactivation","NO")
+    self._properties.setProperty("exec_cxt.periodic.sync_reset","NO")
 
     return
 
@@ -709,6 +724,8 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
     mgr = OpenRTM_aist.Manager.instance()
     sdos = []
     for member in self._members[0]:
+      member = member.replace("|","")
+      member = member.strip()
       if member == "":
         continue
 
@@ -728,6 +745,7 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
       self._org.set_members(sdos)
     except:
       self._rtcout.RTC_ERROR(OpenRTM_aist.Logger.print_exception())
+    
 
     return RTC.RTC_OK
 
@@ -765,14 +783,13 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
   #
   def onActivated(self, exec_handle):
     self._rtcout.RTC_TRACE("onActivated(%d)", exec_handle)
-    ecs = self.get_owned_contexts()
     sdos = self._org.get_members()
 
     for sdo in sdos:
       rtc = sdo._narrow(RTC.RTObject)
       #ecs[0].activate_component(rtc)
-      therad = MemberComponentThread(rtc, ecs[0].activate_component)
-      therad.activate()
+      self.activateChildComp(rtc)
+      
 
     len_ = len(self._members[0])
 
@@ -789,6 +806,20 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
     return RTC.RTC_OK
 
 
+  def activateChildComp(self, rtobj):
+    ecs = self.get_owned_contexts()
+
+    orglist = rtobj.get_owned_organizations()
+    if len(orglist) == 0:
+      ecs[0].activate_component(rtobj)
+      
+    for org in orglist:
+      child_sdos = org.get_members()
+      for child_sdo in child_sdos:
+        child = child_sdo._narrow(RTC.RTObject)
+        self.activateChildComp(child)
+
+    
   ##
   # @if jp
   #
@@ -827,12 +858,23 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
 
     for sdo in sdos:
       rtc = sdo._narrow(RTC.RTObject)
-      #ecs[0].deactivate_component(rtc)
-      therad = MemberComponentThread(rtc, ecs[0].deactivate_component)
-      therad.activate()
+      self.deactivateChildComp(rtc)
 
     return RTC.RTC_OK
 
+
+  def deactivateChildComp(self, rtobj):
+    ecs = self.get_owned_contexts()
+
+    orglist = rtobj.get_owned_organizations()
+    if len(orglist) == 0:
+      ecs[0].deactivate_component(rtobj)
+      
+    for org in orglist:
+      child_sdos = org.get_members()
+      for child_sdo in child_sdos:
+        child = child_sdo._narrow(RTC.RTObject)
+        self.deactivateChildComp(child)
 
   ##
   # @if jp
@@ -870,13 +912,31 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
     sdos = self._org.get_members()
 
     for sdo in sdos:
-      rtc = sdo._narrow(RTC.RTObject)
-      #ecs[0].reset_component(rtc)
-      therad = MemberComponentThread(rtc, ecs[0].reset_component)
-      therad.activate()
+      orglist = rtc.get_owned_organizations()
+      for org in orglist:
+        child_sdos = org.get_members()
+        for child_sdo in child_sdos:
+          child = child_sdo._narrow(RTC.RTObject)
+          
+          self.resetChildComp(child)
 
     return RTC.RTC_OK
 
+
+
+  def resetChildComp(self, rtobj):
+    ecs = self.get_owned_contexts()
+
+    orglist = rtobj.get_owned_organizations()
+    if len(orglist) == 0:
+      ecs[0].reset_component(rtobj)
+
+    
+    for org in orglist:
+      child_sdos = org.get_members()
+      for child_sdo in child_sdos:
+        child = child_sdo._narrow(RTC.RTObject)
+        self.resetChildComp(child)
 
   ##
   # @if jp
@@ -910,14 +970,6 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
 
 
 
-class MemberComponentThread(OpenRTM_aist.Task):
-  def __init__(self, rto, func):
-    OpenRTM_aist.Task.__init__(self)
-    self.rto = rto
-    self.func = func
-  def svc(self):
-    self.func(self.rto)
-    
 
 
     

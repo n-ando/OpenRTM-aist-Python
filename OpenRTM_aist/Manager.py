@@ -2049,6 +2049,8 @@ class Manager:
     OpenRTM_aist.ExtTrigExecutionContextInit(self)
     OpenRTM_aist.OpenHRPExecutionContextInit(self)
     OpenRTM_aist.SimulatorExecutionContextInit(self)
+    OpenRTM_aist.MultilayerCompositeECInit(self)
+    
     self.initCpuAffinity()
     return True
 
