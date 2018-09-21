@@ -156,9 +156,9 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
       self._worker._cond.release()
 
     def getPeriodStat(self):
-      self._task.getPeriodStat()
+      return self._task.getPeriodStat()
     def getExecStat(self):
-      self._task.getExecStat()
+      return self._task.getExecStat()
     
   def addTask(self, owner, rtcs):
     prop = self._profile.getProperties().getNode("ec"+str(len(self._tasklist)))
@@ -292,13 +292,13 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
         self._rtcout.RTC_PARANOID("Execution: %f [s]", exctm_)
         self._rtcout.RTC_PARANOID("Sleep:     %f [s]", slptm_)
         
-        for i in range(self._tasklist):
+        for i in range(len(self._tasklist)):
           task = self._tasklist[i]
           stat = task.getExecStat()
-          self._rtcout.RTC_PARANOID("MAX(%d):   %f [s]", i,stat._max_interval)
-          self._rtcout.RTC_PARANOID("MIN(%d):   %f [s]", i,stat._min_interval)
-          self._rtcout.RTC_PARANOID("MEAN(%d):  %f [s]", i,stat._mean_interval)
-          self._rtcout.RTC_PARANOID("SD(%d):    %f [s]", i,stat._std_deviation)
+          self._rtcout.RTC_PARANOID("MAX(%d):   %f [s]", (i,stat._max_interval))
+          self._rtcout.RTC_PARANOID("MIN(%d):   %f [s]", (i,stat._min_interval))
+          self._rtcout.RTC_PARANOID("MEAN(%d):  %f [s]", (i,stat._mean_interval))
+          self._rtcout.RTC_PARANOID("SD(%d):    %f [s]", (i,stat._std_deviation))
           
 
 
