@@ -129,4 +129,6 @@ from FsmObject import *
 from FiniteStateMachineComponent import *
 import Macho
 from Timestamp import *
+from MultilayerCompositeEC import *
+#from MultilayerCompositeChildEC import *
 
