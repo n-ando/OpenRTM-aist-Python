@@ -69,6 +69,8 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
 
   def exit(self, Task=OpenRTM_aist.Task):
     OpenRTM_aist.PeriodicExecutionContext.exit(self)
+    for task in self._tasklist:
+      task.finalize()
     return
 
   def init(self, props):
@@ -159,6 +161,13 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
       return self._task.getPeriodStat()
     def getExecStat(self):
       return self._task.getExecStat()
+
+    def finalize(self):
+      self._task.resume()
+      self._task.finalize()
+
+      OpenRTM_aist.PeriodicTaskFactory.instance().deleteObject(self._task)
+      
     
   def addTask(self, owner, rtcs):
     prop = self._profile.getProperties().getNode("ec"+str(len(self._tasklist)))
@@ -252,12 +261,14 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
       # Thread will stopped when all RTCs are INACTIVE.
       # Therefore WorkerPreDo(updating state) have to be invoked
       # before stopping thread.
+      
       guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
       while not self._workerthread._running:
         self._workerthread._cond.wait()
       del guard
 
       t0_ = OpenRTM_aist.Time()
+      
       
       #OpenRTM_aist.ExecutionContextBase.invokeWorkerDo(self)
       self._ownersm.workerDo()
@@ -269,6 +280,7 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
         task.signal()
 
       #time.sleep(0.1)
+      
       
       for task in self._tasklist:
         task.join()
@@ -282,6 +294,7 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
       
 
       t1_ = OpenRTM_aist.Time()
+      
 
       period_ = self.getPeriod()
 

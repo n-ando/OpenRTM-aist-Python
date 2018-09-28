@@ -859,7 +859,8 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
     for sdo in sdos:
       rtc = sdo._narrow(RTC.RTObject)
       self.deactivateChildComp(rtc)
-
+      
+    
     return RTC.RTC_OK
 
 
