@@ -363,17 +363,19 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
   #
   # void addParticipantToEC(Member& member)
   def addParticipantToEC(self, member):
-    self.addRTCToEC(member._rtobj)
-    
-    return
-  
-  def addRTCToEC(self, rtobj):
     if CORBA.is_nil(self._ec) or self._ec is None:
       ecs = self._rtobj.get_owned_contexts()
       if len(ecs) > 0:
         self._ec = ecs[0]
       else:
         return
+      
+    self.addRTCToEC(member._rtobj)
+    
+    return
+  
+  def addRTCToEC(self, rtobj):
+    
     # set ec to target RTC
     
 
