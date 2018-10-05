@@ -691,7 +691,20 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
   def __del__(self):
     self._rtcout.RTC_TRACE("destructor of PeriodicECSharedComposite")
     OpenRTM_aist.RTObject_impl.__del__(self)
-    
+
+  ##
+  # @if jp
+  # @brief 終了関数
+  # オーガナイズオブジェクトを非アクティブにする
+  #
+  # @param self
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  #
+  # @endif
   def shutdown(self):
     OpenRTM_aist.RTObject_impl.shutdown(self)
     poa = OpenRTM_aist.Manager.instance().getPOA()
@@ -807,7 +820,21 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
     
     return RTC.RTC_OK
 
-
+  ##
+  # @if jp
+  # @brief RTCをアクティブ化する
+  # 複合コンポーネントの場合は子コンポーネントをアクティブ化する
+  #
+  # @param self
+  # @param rtobj RTC
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @param rtobj RTC
+  #
+  # @endif
   def activateChildComp(self, rtobj):
     ecs = self.get_owned_contexts()
 
@@ -865,7 +892,21 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
     
     return RTC.RTC_OK
 
-
+  ##
+  # @if jp
+  # @brief RTCを非アクティブ化する
+  # 複合コンポーネントの場合は子コンポーネントを非アクティブ化する
+  #
+  # @param self
+  # @param rtobj RTC
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @param rtobj RTC
+  #
+  # @endif
   def deactivateChildComp(self, rtobj):
     ecs = self.get_owned_contexts()
 
@@ -926,7 +967,21 @@ class PeriodicECSharedComposite(OpenRTM_aist.DataFlowComponentBase):
     return RTC.RTC_OK
 
 
-
+  ##
+  # @if jp
+  # @brief RTCをリセットする
+  # 複合コンポーネントの場合は子コンポーネントをリセットする
+  #
+  # @param self
+  # @param rtobj RTC
+  #
+  # @else
+  # @brief 
+  #
+  # @param self
+  # @param rtobj RTC
+  #
+  # @endif
   def resetChildComp(self, rtobj):
     ecs = self.get_owned_contexts()
 

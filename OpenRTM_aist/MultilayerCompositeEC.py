@@ -66,20 +66,56 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
 
     return
 
-
+  ##
+  # @if jp
+  # @brief 終了関数
+  #
+  # @param self　
+  # @param Task　
+  #
+  # @else
+  # @brief 
+  # @param self　
+  # @param Task　
+  # @endif
   def exit(self, Task=OpenRTM_aist.Task):
     OpenRTM_aist.PeriodicExecutionContext.exit(self)
     for task in self._tasklist:
       task.finalize()
     return
 
+  ##
+  # @if jp
+  # @brief 初期化関数
+  #
+  # @param self　
+  # @param props プロパティ
+  #
+  # @else
+  # @brief 
+  # @param self　
+  # @param props 
+  # @endif
   def init(self, props):
     OpenRTM_aist.PeriodicExecutionContext.init(self, props)
     #prop.getProperty("thread_type", "default")
     
 
 
-
+  ##
+  # @if jp
+  # @brief コンポーネントをバインドする。
+  #
+  # @param self
+  # @param rtc RTC
+  #
+  # @else
+  # @brief Bind the component.
+  #
+  # @param self
+  # @param rtc RTC
+  #
+  # @endif
   def bindComponent(self, rtc):
     ret = OpenRTM_aist.ExecutionContextBase.bindComponent(self, rtc)
 
@@ -107,36 +143,137 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
           continue
         rtcs.append(rtobj)
         
-      self.addTask(rtc, rtcs)
+      self.addTask(rtcs)
 
         
     return ret
 
+  ##
+  # @if jp
+  # @class 
+  # @brief worker 用状態変数クラス
+  # @else
+  # @brief
+  #
+  # @endif
   class WorkerThreadCtrl:
+    ##
+    # @if jp
+    # @brief コンストラクタ
+    #
+    # コンストラクタ
+    #
+    # @param self
+    #
+    # @else
+    # @brief Constructor
+    # @endif
     def __init__(self):
       self._mutex = threading.RLock()
       self._cond = threading.Condition(self._mutex)
       self._running = False
-      
+
+  ##
+  # @if jp
+  # @class 
+  # @brief RTC周期実行スレッド
+  # @else
+  # @brief
+  #
+  # @endif
   class ChildTask:
+    ##
+    # @if jp
+    # @brief コンストラクタ
+    #
+    # @param self
+    # @param task 周期実行スレッド
+    # @param ec 実行コンテキスト
+    #
+    # @else
+    #
+    # @brief 
+    #
+    # @param self
+    # @param task 
+    # @param ec 
+    #
+    # @endif
     def __init__(self, task, ec):
       self._rtcs = []
       self._task = task
       self._ec = ec
       self._comps = []
       self._worker = MultilayerCompositeEC.WorkerThreadCtrl()
+      self._signal_worker = MultilayerCompositeEC.WorkerThreadCtrl()
+
+    ##
+    # @if jp
+    # @brief 実行するRTCを追加
+    #
+    # @param self
+    # @param rtc RTC
+    #
+    # @else
+    #
+    # @brief 
+    #
+    # @param self
+    # @param rtc RTC
+    #
+    # @endif
     def addComponent(self, rtc):
       self._rtcs.append(rtc)
 
+    ##
+    # @if jp
+    # @brief ステートマシンのリストを更新
+    #
+    # @param self
+    # @param return
+    #
+    # @else
+    #
+    # @brief 
+    #
+    # @param self
+    # @param return
+    #
+    # @endif
     def updateCompList(self):
       for rtc in self._rtcs[:]:
         comp = self._ec.findComponent(rtc)
         if comp:
           self._rtcs.remove(rtc)
           self._comps.append(comp)
-        
+
+    ##
+    # @if jp
+    # @brief スレッド実行関数
+    #
+    # @param self
+    # @param return
+    #
+    # @else
+    #
+    # @brief 
+    #
+    # @param self
+    # @param return
+    #
+    # @endif
     def svc(self):
       self._worker._running = True
+      
+      
+      self._signal_worker._cond.acquire()
+      while not self._signal_worker._running:
+        self._signal_worker._cond.wait()
+      self._signal_worker._cond.release()
+      self._signal_worker._running = False
+      
+      
+      
       self.updateCompList()
       for comp in self._comps:
         comp.workerPreDo()
@@ -146,36 +283,150 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
       self._worker._cond.acquire()
       self._worker._cond.notify()
       self._worker._cond.release()
+
       
+      self._signal_worker._cond.acquire()
+      while not self._signal_worker._running:
+        self._signal_worker._cond.wait()
+      self._signal_worker._cond.release()
+      self._signal_worker._running = False
+      
+      
+      return 0
+
+    ##
+    # @if jp
+    # @brief 1回の処理を実行
+    #
+    # @param self
+    #
+    # @else
+    #
+    # @brief 
+    #
+    # @param self
+    #
+    # @endif
     def signal(self):
+      
       while not self._worker._running:
         self._task.signal()
-        
+      
+      
+      self._signal_worker._running = True
+      self._signal_worker._cond.acquire()
+      self._signal_worker._cond.notify()
+      self._signal_worker._cond.release()
+      
+      
+      
+    ##
+    # @if jp
+    # @brief 1回の処理終了まで待機
+    #
+    # @param self
+    #
+    # @else
+    #
+    # @brief 
+    #
+    # @param self
+    #
+    # @endif
     def join(self):
+      
       self._worker._cond.acquire()
       while self._worker._running:
         self._worker._cond.wait()
       self._worker._cond.release()
+      
 
+      self._signal_worker._running = True
+      self._signal_worker._cond.acquire()
+      self._signal_worker._cond.notify()
+      self._signal_worker._cond.release()
+      
+
+    ##
+    # @if jp
+    # @brief タスク周期時間計測結果を取得
+    #
+    # @param self
+    # @return 計測結果
+    #
+    # @else
+    #
+    # @brief 
+    #
+    # @param self
+    # @return
+    #
+    # @endif
     def getPeriodStat(self):
       return self._task.getPeriodStat()
+
+
+    ##
+    # @if jp
+    # @brief タスク関数実行時間計測結果を取得
+    #
+    # @param self
+    # @return 計測結果
+    #
+    # @else
+    #
+    # @brief 
+    #
+    # @param self
+    # @return
+    #
+    # @endif
     def getExecStat(self):
       return self._task.getExecStat()
 
+    ##
+    # @if jp
+    # @brief RTC実行スレッド終了関数
+    #
+    # @param self
+    #
+    # @else
+    #
+    # @brief 
+    #
+    # @param self
+    #
+    # @endif
     def finalize(self):
       self._task.resume()
       self._task.finalize()
 
       OpenRTM_aist.PeriodicTaskFactory.instance().deleteObject(self._task)
       
-    
-  def addTask(self, owner, rtcs):
+  ##
+  # @if jp
+  # @brief RTC実行スレッド作成
+  #
+  # @param self
+  # @param rtcs スレッドに関連付けるRTC一覧
+  # @return ステートマシン
+  #
+  # @else
+  #
+  # @brief 
+  #
+  # @param self
+  # @param rtcs 
+  #
+  # @endif
+  def addTask(self, rtcs):
     prop = self._profile.getProperties().getNode("ec"+str(len(self._tasklist)))
     factory = OpenRTM_aist.PeriodicTaskFactory.instance()
 
     task = factory.createObject(prop.getProperty("thread_type", "default"))
     if not task:
       self._rtcout.RTC_ERROR("Task creation failed: %s", prop.getProperty("thread_type", "default"))
+      return
 
     ct = MultilayerCompositeEC.ChildTask(task, self)
 
@@ -204,15 +455,45 @@ class MultilayerCompositeEC(OpenRTM_aist.PeriodicExecutionContext):
     task.suspend()
 
 
-      
 
-
-        
-
-    return True
+  ##
+  # @if jp
+  # @brief コンポーネント探索関数
+  #
+  # @param self
+  # @param rtobj RTC
+  # @return ステートマシン
+  #
+  # @else
+  #
+  # @brief 
+  #
+  # @param self
+  # @param rtobj 
+  # @return 
+  #
+  # @endif
   def findComponent(self, rtobj):
     return self._worker.findComponent(rtobj)
 
+  ##
+  # @if jp
+  # @brief RTC実行スレッドにRTCを追加
+  # 複合コンポーネントの場合は子コンポーネントも追加
+  #
+  # @param self
+  # @param task RTC実行スレッド
+  # @param rtobj RTC
+  #
+  # @else
+  #
+  # @brief 
+  #
+  # @param self
+  # @param task
+  # @param rtobj 
+  #
+  # @endif
   def addRTCToTask(self, task, rtobj):
     #comp = self._worker.findComponent(rtobj)
     orglist = rtobj.get_owned_organizations()

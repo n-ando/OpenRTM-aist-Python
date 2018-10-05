@@ -78,7 +78,18 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
 
     return
 
-
+  ##
+  # @if jp
+  # @brief 終了関数
+  #
+  # @param self　
+  # @param Task　
+  #
+  # @else
+  # @brief 
+  # @param self　
+  # @param Task　
+  # @endif
   def exit(self, Task=OpenRTM_aist.Task):
     import OpenRTM_aist.Guard
     self._rtcout.RTC_TRACE("PeriodicExecutionContext.__del__()")
@@ -97,6 +108,19 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     OpenRTM_aist.ExecutionContextBase.exit(self)
     return
 
+
+  ##
+  # @if jp
+  # @brief 初期化関数
+  #
+  # @param self　
+  # @param props プロパティ
+  #
+  # @else
+  # @brief 
+  # @param self　
+  # @param props 
+  # @endif
   def init(self, props):
     OpenRTM_aist.ExecutionContextBase.init(self, props)
     self.setCpuAffinity(props)
@@ -606,19 +630,7 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
     return RTC.RTC_OK
 
 
-  def onStopped(self):
-    guard = OpenRTM_aist.ScopedLock(self._svcmutex)
-    self._svc = False
-    del guard
 
-    guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
-    self._workerthread._cond.acquire()
-    self._workerthread._running = True
-    self._workerthread._cond.notify()
-    self._workerthread._cond.release()
-    del guard
-    self.wait()
-    return RTC.RTC_OK
 
   def onAddedComponent(self, rtobj):
     guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
@@ -641,13 +653,14 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
                                self.getStateString(comp.getStates().next)))
     # Now comp's next state must be ACTIVE state
     # If worker thread is stopped, restart worker thread.
-    guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
-    if self._workerthread._running == False:
-      self._workerthread._running = True
-      self._workerthread._cond.acquire()
-      self._workerthread._cond.notify()
-      self._workerthread._cond.release()
-    del guard
+    if self.isRunning():
+      guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
+      if self._workerthread._running == False:
+        self._workerthread._running = True
+        self._workerthread._cond.acquire()
+        self._workerthread._cond.notify()
+        self._workerthread._cond.release()
+      del guard
     return RTC.RTC_OK
 
 
@@ -665,13 +678,14 @@ class PeriodicExecutionContext(OpenRTM_aist.ExecutionContextBase,
 
     # Now comp's next state must be ACTIVE state
     # If worker thread is stopped, restart worker thread.
-    guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
-    if self._workerthread._running == False:
-      self._workerthread._running = True
-      self._workerthread._cond.acquire()
-      self._workerthread._cond.notify()
-      self._workerthread._cond.release()
-    del guard
+    if self.isRunning():
+      guard = OpenRTM_aist.ScopedLock(self._workerthread._mutex)
+      if self._workerthread._running == False:
+        self._workerthread._running = True
+        self._workerthread._cond.acquire()
+        self._workerthread._cond.notify()
+        self._workerthread._cond.release()
+      del guard
     return RTC.RTC_OK
 
 
