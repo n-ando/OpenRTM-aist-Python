@@ -70,10 +70,10 @@ class ExecutionContextProfile:
     self._rtcout.RTC_DEBUG("Actual rate: %d [sec], %d [usec]",
                            (self._period.sec(), self._period.usec()))
     self._profileMutex = threading.RLock()
-    self._ref = None
+    self._ref = RTC.ExecutionContext._nil
     self._profile = RTC.ExecutionContextProfile(RTC.PERIODIC,
                                                 (1.0/self._period.toDouble()),
-                                                None, [], [])
+                                                RTC.DataFlowComponent._nil, [], [])
     return
 
 
@@ -93,10 +93,10 @@ class ExecutionContextProfile:
     self._rtcout.RTC_TRACE("exit")
 
     # cleanup EC's profile
-    self._profile.owner = None
+    self._profile.owner = RTC.DataFlowComponent._nil
     self._profile.participants = []
     self._profile.properties = []
-    self._ref = None
+    self._ref = RTC.ExecutionContext._nil
     return
 
 

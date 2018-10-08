@@ -3096,21 +3096,22 @@ class Manager:
 
       ports = []
       configs = {}
+      
       for k,p in param.items():
         if k == "port":
           ports.append(p)
           continue
         tmp = k.replace("port","")
         v = [0]
-        if OpenRTM_aist.stringTo(v, tmp):
+        if OpenRTM_aist.stringTo(v, tmp) and k.find("port") != -1:
           ports.append(p)
           continue
         configs[k] = p
 
-      if len(ports) == 0:
-        self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
-        self._rtcout.RTC_ERROR("Format must be Comp0.port0?port=Comp1.port1")
-        continue
+      #if len(ports) == 0:
+      #  self._rtcout.RTC_ERROR("Invalid format for pre-connection.")
+      #  self._rtcout.RTC_ERROR("Format must be Comp0.port0?port=Comp1.port1")
+      #  continue
     
       if not ("dataflow_type" in configs.keys()):
         configs["dataflow_type"] = "push"
@@ -3149,6 +3150,17 @@ class Manager:
       if CORBA.is_nil(port0_var):
         self._rtcout.RTC_DEBUG("port %s found: " % port0_str)
         continue
+
+      if len(ports) == 0:
+        prop = OpenRTM_aist.Properties()
+        
+        for k,v in configs.items():
+          k = k.strip()
+          v = v.strip()
+          prop.setProperty("dataport."+k,v)
+
+        if RTC.RTC_OK != OpenRTM_aist.CORBA_RTCUtil.connect(c, prop, port0_var, RTC.PortService._nil):
+          self._rtcout.RTC_ERROR("Connection error: %s" % c)
 
       for port_str in ports:
       

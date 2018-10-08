@@ -832,7 +832,10 @@ def get_connector_ids(rtc, port_name):
 # RTC::ConnectorProfile_var create_connector(const std::string name,const coil::Properties prop_arg,const RTC::PortService_ptr port0,const RTC::PortService_ptr port1)
 def create_connector(name, prop_arg, port0, port1):
   prop = prop_arg
-  conn_prof = RTC.ConnectorProfile(name, "", [port0, port1],[])
+  if CORBA.is_nil(port1):
+    conn_prof = RTC.ConnectorProfile(name, "", [port0],[])
+  else:
+    conn_prof = RTC.ConnectorProfile(name, "", [port0, port1],[])
 
 
 
@@ -912,10 +915,11 @@ def already_connected(localport, otherport):
 def connect(name, prop, port0, port1):
   if CORBA.is_nil(port0):
     return RTC.BAD_PARAMETER
-  if CORBA.is_nil(port1):
-    return RTC.BAD_PARAMETER
-  if port0._is_equivalent(port1):
-    return RTC.BAD_PARAMETER
+  #if CORBA.is_nil(port1):
+  #  return RTC.BAD_PARAMETER
+  if not CORBA.is_nil(port1):
+    if port0._is_equivalent(port1):
+      return RTC.BAD_PARAMETER
   cprof = create_connector(name, prop, port0, port1)
   return port0.connect(cprof)[0]
 
