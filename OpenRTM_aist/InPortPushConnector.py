@@ -22,6 +22,7 @@ from omniORB import cdrUnmarshal
 from omniORB import any
 
 import OpenRTM_aist
+import threading
 
 
 ##
@@ -141,8 +142,21 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
     self._provider.init(info.properties)
     self._provider.setBuffer(self._buffer)
     self._provider.setListener(info, self._listeners)
-    
     self.onConnect()
+    
+
+    self._sync_readwrite = False
+    if OpenRTM_aist.toBool(info.properties.getProperty("sync_readwrite"),"YES","NO",False):
+      self._sync_readwrite = True
+      
+
+    
+    
+    
+
+    self._writecompleted_worker = InPortPushConnector.WorkerThreadCtrl()
+    self._readcompleted_worker = InPortPushConnector.WorkerThreadCtrl()
+    self._readready_worker = InPortPushConnector.WorkerThreadCtrl()
     return
 
     
@@ -212,7 +226,29 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
       return self.PRECONDITION_NOT_MET
 
     cdr = [""]
+
+    if self._sync_readwrite:
+      self._readcompleted_worker._completed = False
+      
+      self._readready_worker._completed = True
+      self._readready_worker._cond.acquire()
+      self._readready_worker._cond.notify()
+      self._readready_worker._cond.release()
+
+      self._writecompleted_worker._cond.acquire()
+      while not self._writecompleted_worker._completed:
+        self._writecompleted_worker._cond.wait()
+      self._writecompleted_worker._cond.release()
+
     ret = self._buffer.read(cdr)
+
+    if self._sync_readwrite:
+      self._readcompleted_worker._completed = True
+      self._readcompleted_worker._cond.acquire()
+      self._readcompleted_worker._cond.notify()
+      self._readcompleted_worker._cond.release()
+      
+      self._readready_worker._completed = False
 
     if not self._dataType:
       return self.PRECONDITION_NOT_MET
@@ -232,11 +268,11 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
       return self.PORT_OK
 
     elif ret == OpenRTM_aist.BufferStatus.BUFFER_EMPTY:
-      self.onBufferEmpty()
+      self.onBufferEmpty(cdr[0])
       return self.BUFFER_EMPTY
 
     elif ret == OpenRTM_aist.BufferStatus.TIMEOUT:
-      self.onBufferReadTimeout()
+      self.onBufferReadTimeout(cdr[0])
       return self.BUFFER_TIMEOUT
 
     elif ret == OpenRTM_aist.BufferStatus.PRECONDITION_NOT_MET:
@@ -381,7 +417,28 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
   #
   # ReturnCode write(const OpenRTM::CdrData& data);
   def write(self, data):
-    return self._buffer.write(data)
+    if self._sync_readwrite:
+      self._readready_worker._cond.acquire()
+      while not self._readready_worker._completed:
+        self._readready_worker._cond.wait()
+      self._readready_worker._cond.release()
+
+    ret = self._buffer.write(data)
+
+    if self._sync_readwrite:
+      self._writecompleted_worker._completed = True
+      self._writecompleted_worker._cond.acquire()
+      self._writecompleted_worker._cond.notify()
+      self._writecompleted_worker._cond.release()
+
+      self._readcompleted_worker._cond.acquire()
+      while not self._readcompleted_worker._completed:
+        self._readcompleted_worker._cond.wait()
+      self._readcompleted_worker._cond.release()
+      
+      self._writecompleted_worker._completed = False
+    
+    return ret
         
     
   ##
@@ -414,11 +471,17 @@ class InPortPushConnector(OpenRTM_aist.InPortConnector):
     if self._listeners and self._profile:
       self._listeners.connectorData_[OpenRTM_aist.ConnectorDataListenerType.ON_BUFFER_READ].notify(self._profile, data)
     return
-  def onBufferEmpty(self):
+  def onBufferEmpty(self, data):
     if self._listeners and self._profile:
       self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_EMPTY].notify(self._profile)
     return
-  def onBufferReadTimeout(self):
+  def onBufferReadTimeout(self, data):
     if self._listeners and self._profile:
       self._listeners.connector_[OpenRTM_aist.ConnectorListenerType.ON_BUFFER_READ_TIMEOUT].notify(self._profile)
     return
+
+  class WorkerThreadCtrl:
+    def __init__(self):
+      self._mutex = threading.RLock()
+      self._cond = threading.Condition(self._mutex)
+      self._completed = False  

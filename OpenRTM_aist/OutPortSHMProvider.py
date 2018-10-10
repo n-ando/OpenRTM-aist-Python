@@ -166,17 +166,14 @@ class OutPortSHMProvider(OpenRTM_aist.OutPortProvider,OpenRTM_aist.SharedMemory)
   def get(self):
     self._rtcout.RTC_PARANOID("OutPortSHMProvider.get()")
     
-    if not self._buffer:
+    if not self._connector:
       self.onSenderError()
       return OpenRTM.UNKNOWN_ERROR
 
     try:
-      if self._buffer.empty():
-        self._rtcout.RTC_ERROR("buffer is empty.")
-        return OpenRTM.BUFFER_EMPTY
 
       cdr = [None]
-      ret = self._buffer.read(cdr)
+      ret = self._connector.read(cdr)
       
       if ret == OpenRTM_aist.BufferStatus.BUFFER_OK:
         if cdr[0] is None:

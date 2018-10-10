@@ -211,3 +211,9 @@ class InPortConnector(OpenRTM_aist.ConnectorBase):
   # void setDataTyep(DataType data);
   def setDataType(self, data):
     self._dataType = data
+
+
+  def write(self, data):
+    pass
+  def read(self, data):
+    pass

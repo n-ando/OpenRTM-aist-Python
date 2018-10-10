@@ -229,7 +229,7 @@ class InPort(OpenRTM_aist.InPortBase):
   # @endif
   #
   # bool isEmpty()
-  def isEmpty(self):
+  def isEmpty(self, names=None):
     self._rtcout.RTC_TRACE("isEmpty()")
     if self._directNewData == True:
       return False
@@ -237,10 +237,33 @@ class InPort(OpenRTM_aist.InPortBase):
       self._rtcout.RTC_DEBUG("no connectors")
       return True
 
-    r = self._connectors[0].getBuffer().readable()
-    if r == 0:
-      self._rtcout.RTC_DEBUG("isEmpty() = true, buffer is empty")
-      return True
+    if names is None:
+      r = self._connectors[0].getBuffer().readable()
+      if r == 0:
+        self._rtcout.RTC_DEBUG("isEmpty() = true, buffer is empty")
+        return True
+    elif isinstance(names, str):
+      for con in self._connectors:
+        if  con.name() == names:
+          r = con.getBuffer().readable()
+          if r == 0:
+            self._rtcout.RTC_DEBUG("isEmpty() = True, connector name: %s, buffer is empty",(names))
+            return True
+          else:
+            self._rtcout.RTC_DEBUG("isEmpty() = False, connector name: %s, readable data: %d",(names,r))
+            return False
+    elif isinstance(names, list):
+      del names[:]
+      for con in self._connectors:
+          r = con.getBuffer().readable()
+          if r == 0:
+            self._rtcout.RTC_DEBUG("isEmpty() = True, connector name: %s",(names))
+            names.append(con.name())
+      if len(names) > 0:
+        return True
+    else:
+        self._rtcout.RTC_DEBUG("isEmpty() = False, no readable data")
+        return False
       
     self._rtcout.RTC_DEBUG("isEmpty() = false, data exists in the buffer")
     return False

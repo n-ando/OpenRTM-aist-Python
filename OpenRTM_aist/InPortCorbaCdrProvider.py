@@ -171,7 +171,7 @@ class InPortCorbaCdrProvider(OpenRTM_aist.InPortProvider,
     try:
       self._rtcout.RTC_PARANOID("InPortCorbaCdrProvider.put()")
             
-      if not self._buffer:
+      if not self._connector:
         self.onReceiverError(data)
         return OpenRTM.PORT_ERROR
 

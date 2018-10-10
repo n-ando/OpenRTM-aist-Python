@@ -184,3 +184,9 @@ class OutPortConnector(OpenRTM_aist.ConnectorBase):
   # const char* name();
   def directMode(self):
     return self._directMode
+
+
+  def write(self, data):
+    pass
+  def read(self, data):
+    pass

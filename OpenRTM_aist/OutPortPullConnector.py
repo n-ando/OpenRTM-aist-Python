@@ -145,6 +145,15 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
     self._provider.setConnector(self)
     self._provider.setListener(info, self._listeners)
     self.onConnect()
+
+    self._sync_readwrite = False
+    if OpenRTM_aist.toBool(info.properties.getProperty("sync_readwrite"),"YES","NO",False):
+      self._sync_readwrite = True
+
+    self._writecompleted_worker = OutPortPullConnector.WorkerThreadCtrl()
+    self._readcompleted_worker = OutPortPullConnector.WorkerThreadCtrl()
+    self._readready_worker = OutPortPullConnector.WorkerThreadCtrl()
+    
     return
 
 
@@ -195,11 +204,65 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
       self._rtcout.RTC_ERROR("write(): endian %s is not support.",self._endian)
       return self.UNKNOWN_ERROR
     if self._buffer:
+      if self._sync_readwrite:
+        self._readready_worker._cond.acquire()
+        while not self._readready_worker._completed:
+          self._readready_worker._cond.wait()
+        self._readready_worker._cond.release()
+        
       self._buffer.write(cdr_data)
+      
+      if self._sync_readwrite:
+        self._writecompleted_worker._completed = True
+        self._writecompleted_worker._cond.acquire()
+        self._writecompleted_worker._cond.notify()
+        self._writecompleted_worker._cond.release()
+
+        self._readcompleted_worker._cond.acquire()
+        while not self._readcompleted_worker._completed:
+          self._readcompleted_worker._cond.wait()
+        self._readcompleted_worker._cond.release()
+      
+        self._writecompleted_worker._completed = False      
     else:
       return self.UNKNOWN_ERROR
     return self.PORT_OK
 
+  def read(self, data):
+
+    if self._sync_readwrite:
+      self._readcompleted_worker._completed = False
+      
+      self._readready_worker._completed = True
+      self._readready_worker._cond.acquire()
+      self._readready_worker._cond.notify()
+      self._readready_worker._cond.release()
+
+      self._writecompleted_worker._cond.acquire()
+      while not self._writecompleted_worker._completed:
+        self._writecompleted_worker._cond.wait()
+      self._writecompleted_worker._cond.release()
+
+
+    if self._buffer.empty():
+      self._rtcout.RTC_ERROR("buffer is empty.")
+      data[0] = ""
+      return OpenRTM_aist.BufferStatus.BUFFER_EMPTY
+      
+      
+    ret = self._buffer.read(data)
+
+    if self._sync_readwrite:
+      self._readcompleted_worker._completed = True
+      self._readcompleted_worker._cond.acquire()
+      self._readcompleted_worker._cond.notify()
+      self._readcompleted_worker._cond.release()
+      
+      self._readready_worker._completed = False
+
+
+    return ret
+    
 
   ##
   # @if jp
@@ -340,5 +403,9 @@ class OutPortPullConnector(OpenRTM_aist.OutPortConnector):
   def setDirectMode(self):
     self._directMode = True
   
-
+  class WorkerThreadCtrl:
+    def __init__(self):
+      self._mutex = threading.RLock()
+      self._cond = threading.Condition(self._mutex)
+      self._completed = False  
 

@@ -286,17 +286,14 @@ class OutPortDSProvider(OpenRTM_aist.OutPortProvider,
   # virtual ::OpenRTM::PortStatus pull(::RTC::CdrData_out data);
   def pull(self):
     self._rtcout.RTC_PARANOID("OutPortDSProvider.pull()")
-    if not self._buffer:
+    if not self._connector:
       self.onSenderError()
       return (RTC.UNKNOWN_ERROR, "")
 
     try:
-      if self._buffer.empty():
-        self._rtcout.RTC_ERROR("buffer is empty.")
-        return (RTC.BUFFER_EMPTY, "")
 
       cdr = [None]
-      ret = self._buffer.read(cdr)
+      ret = self._connector.read(cdr)
 
       if ret == OpenRTM_aist.BufferStatus.BUFFER_OK:
         if not cdr[0]:
