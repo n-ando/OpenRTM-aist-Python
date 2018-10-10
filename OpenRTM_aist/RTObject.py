@@ -5064,7 +5064,7 @@ class RTObject_impl:
                        "transition_timeout",
                        "activation_timeout",
                        "deactivation_timeout",
-                       "reset_timeout"
+                       "reset_timeout",
                        "cpu_affinity"]
 
     p_ = self._properties.findNode("exec_cxt")
