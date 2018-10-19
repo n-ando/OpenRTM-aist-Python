@@ -127,7 +127,7 @@ def instantiateDataType(dtype):
     else : 
         desc=omniORB.findType(dtype._NP_RepositoryId) 
 
-    if desc[0] in [omniORB.tcInternal.tv_alias ]: return instantiateDataType(desc[2])
+    if desc[0] in [omniORB.tcInternal.tv_alias ]: return instantiateDataType(desc[3])
 
     if desc[0] in [omniORB.tcInternal.tv_short, 
                    omniORB.tcInternal.tv_long, 
