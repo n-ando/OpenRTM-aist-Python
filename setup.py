@@ -234,7 +234,12 @@ pkg_scripts_win32 = ['OpenRTM_aist/utils/rtcd/rtcd.py',
 
 
 pkg_data_files_unix  = []
-pkg_data_files_win32 = [("Scripts", ['OpenRTM_aist/utils/rtcd/rtcd_python.exe'])]
+
+rtcd_python = 'OpenRTM_aist/utils/rtcd/rtcd_python.exe'
+if os.path.exists(rtcd_python):
+  pkg_data_files_win32 = [("Scripts", [rtcd_python])]
+else:
+  pkg_data_files_win32 = [("Scripts", [])]
 
 
 #
