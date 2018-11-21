@@ -797,8 +797,8 @@ def getFileList(dir, ext, filelist):
     dirs = glob.glob(os.path.join(dir,"*"))
     for d in dirs:
         if os.path.isdir(d):
-            getFileList(d, ext, filelist)
+          getFileList(d, ext, filelist)
     files = glob.glob(os.path.join(dir,"*."+ext))
     for f in files:
-        if os.path.isfile(d):
-            filelist.append(f)
+        if os.path.isfile(f):
+          filelist.append(f)
