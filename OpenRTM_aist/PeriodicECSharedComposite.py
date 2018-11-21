@@ -238,13 +238,15 @@ class PeriodicECOrganization(OpenRTM_aist.Organization_impl):
       self.removeParticipantFromEC(member)
       self.removeOrganizationFromTarget(member)
       self.startOwnedEC(member)
-      rm_rtc.append(member)
+      #rm_rtc.append(member)
+      self._rtcMembers.remove(member)
+      break
 
-    for m in rm_rtc:
-      self._rtcMembers.remove(m)
-            
+    #for m in rm_rtc:
+    #  self._rtcMembers.remove(m)
     result = OpenRTM_aist.Organization_impl.remove_member(self, id)
     return result
+
 
 
   ##
