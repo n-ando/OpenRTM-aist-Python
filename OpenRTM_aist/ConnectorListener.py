@@ -674,11 +674,11 @@ class ConnectorDataListenerHolder:
   # @endif
   #
   def __del__(self):
-    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
-    for listener in self._listeners:
-      for (k,v) in listener.items():
-        if v:
-          del k
+    #guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
+    #for listener in self._listeners:
+    #  for (k,v) in listener.items():
+    #    if v:
+    #      del k
     return
 
     
@@ -810,11 +810,11 @@ class ConnectorListenerHolder:
   # @endif
   #
   def __del__(self):
-    guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
-    for listener in self._listeners:
-      for (k,v) in listener.items():
-        if v:
-          del k
+    #guard = OpenRTM_aist.Guard.ScopedLock(self._mutex)
+    #for listener in self._listeners:
+    #  for (k,v) in listener.items():
+    #    if v:
+    #      del k
     return
         
     
