@@ -3365,12 +3365,16 @@ class Manager:
     def __init__(self, name=None, factory=None, prop=None):
       if prop:
         self._name = prop.getProperty("instance_name")
-      if factory:
+      elif factory:
         self._name = factory.getInstanceName()
       elif name:
         self._name = name
+      else:
+        self._name = ""
 
     def __call__(self, comp):
+      if not self._name:
+        return False
       return self._name == comp.getInstanceName()
 
 
